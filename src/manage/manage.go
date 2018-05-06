@@ -1,21 +1,20 @@
 package manage
 
 import (
+	"api"
 	"html/template"
 	"net/http"
-	"api"
 )
 
 const TEMPLATE_DIR = "./templates/manage/"
 
-
-type Handler struct {}
+type Handler struct{}
 
 func (h Handler) View(w http.ResponseWriter, r *http.Request) {
 
 	//特にないかな？
 
-	h.parse(w, TEMPLATE_DIR + "top.tmpl", nil)
+	h.parse(w, TEMPLATE_DIR+"top.tmpl", nil)
 }
 
 func (h Handler) parse(w http.ResponseWriter, tName string, obj interface{}) {
@@ -24,12 +23,12 @@ func (h Handler) parse(w http.ResponseWriter, tName string, obj interface{}) {
 	//tmpl, err := template.New("root").Funcs(funcMap).ParseFiles("./templates/layout.tmpl", tName)
 
 	funcMap := template.FuncMap{
-		"convert" : api.Convert,
-		"convertDate" : api.ConvertDate,
-		"convertTemplateType" : convertTemplateType,
+		"html":                api.ConvertHTML,
+		"convertDate":         api.ConvertDate,
+		"convertTemplateType": convertTemplateType,
 	}
 
-	tmpl, err := template.New(api.SITE_TEMPLATE).Funcs(funcMap).ParseFiles(TEMPLATE_DIR + "layout.tmpl", tName)
+	tmpl, err := template.New(api.SITE_TEMPLATE).Funcs(funcMap).ParseFiles(TEMPLATE_DIR+"layout.tmpl", tName)
 	if err != nil {
 		h.errorPage(w, "Template Parse Error", err.Error(), 500)
 		return
@@ -42,14 +41,14 @@ func (h Handler) parse(w http.ResponseWriter, tName string, obj interface{}) {
 	}
 }
 
-func (h Handler) errorPage(w http.ResponseWriter, t string ,e string,num int) {
+func (h Handler) errorPage(w http.ResponseWriter, t string, e string, num int) {
 	dto := struct {
-		Title string
+		Title       string
 		Description string
-		Number int
-	} {t,e,num}
+		Number      int
+	}{t, e, num}
 
-	h.parse(w, TEMPLATE_DIR + "error.tmpl", dto)
+	h.parse(w, TEMPLATE_DIR+"error.tmpl", dto)
 	w.WriteHeader(num)
 }
 

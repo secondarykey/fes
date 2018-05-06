@@ -146,6 +146,7 @@ func (p Public) fileHandler(w http.ResponseWriter, r *http.Request) {
 		p.errorPage(w, "Writing FileData Error", err.Error(), 500)
 		return
 	}
+	return
 }
 
 func (p Public) errorPage(w http.ResponseWriter, t string, msg string, num int) {

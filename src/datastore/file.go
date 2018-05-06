@@ -185,6 +185,5 @@ func SelectFileData(r *http.Request, name string) (*FileData, error) {
 			return nil, nil
 		}
 	}
-
 	return &rtn, nil
 }

@@ -53,8 +53,6 @@ func SelectChildPages(r *http.Request, id string) ([]Page, error) {
 }
 
 func SelectRootPage(r *http.Request) (*Page, error) {
-
-	c := appengine.NewContext(r)
 	site := GetSite(r)
 	if site.Root == "" {
 		return nil, nil
