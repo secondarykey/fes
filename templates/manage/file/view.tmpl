@@ -1,0 +1,77 @@
+{{define "title"}}
+File
+{{end}}
+
+{{define "page_template"}}
+
+<table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
+  <thead>
+    <tr>
+      <th class="mdl-data-table__cell--non-numeric">Name</th>
+      <th class="mdl-data-table__cell--non-numeric">Size</th>
+      <th class="mdl-data-table__cell--non-numeric">Update</th>
+      <th class="mdl-data-table__cell--non-numeric"> </th>
+    </tr>
+  </thead>
+  <tbody>
+{{ range .Files}}
+    <tr>
+      <td class="mdl-data-table__cell--non-numeric"><a href="/file/{{ .Key.StringID}}" target="_blank">{{ .Key.StringID }}</a></td>
+      <td>{{.Size}}</td>
+      <td>{{convertDate .UpdatedAt}}</td>
+      <td>
+      <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--colored removeBtn" data-id="{{ .Key.StringID }}">
+        Remove
+      </button>
+      </td>
+    </tr>
+{{ end }}
+  </tbody>
+</table>
+
+<form id="deleteForm" method="post" action="/manage/file/delete" style="display:none;">
+<input type="text" name="fileName" id="fileName" value="" />
+</form>
+
+<form id="uploadForm" method="post" action="/manage/file/add" enctype="multipart/form-data" style="display:none;">
+<input type="file" name="file" id="file" value="" />
+</form>
+
+<!-- view template -->
+<button id="add-content" class="mdl-button mdl-js-button mdl-button--fab mdl-button--colored">
+  <i class="material-icons">add</i>
+</button>
+
+<script>
+
+    var deleteFile = document.querySelector('#deleteForm');
+    var fileName = document.querySelector('#fileName');
+    var removes = document.querySelectorAll('button.removeBtn');
+
+    for (var i=0; i< removes.length; i++) {
+        removes[i].addEventListener('click', function(e) {
+            confirmFes(function() {
+              var id = e.target.parentElement.getAttribute('data-id');
+              fileName.value = id;
+              deleteForm.submit();
+            });
+        });
+    }
+
+    var add = document.querySelector('#add-content');
+    var file = document.querySelector('#file');
+
+    add.addEventListener('click', function(e) {
+      file.click();
+    });
+
+    file.addEventListener('change', function(e) {
+      var form = document.querySelector('#uploadForm');
+      form.submit();
+    });
+
+
+
+</script>
+
+{{ end }}

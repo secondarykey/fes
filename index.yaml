@@ -1,0 +1,15 @@
+indexes:
+
+- kind: Template
+  properties:
+    - name: UpdatedAt
+
+- kind: Page
+  properties:
+    - name: Parent
+    - name: Seq
+    - name: CreatedAt
+
+- kind: File
+  properties:
+    - name: UpdatedAt

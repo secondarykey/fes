@@ -1,0 +1,108 @@
+{{define "title"}}
+Edit Template
+{{end}}
+
+{{define "page_template"}}
+<table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp" width="100%">
+  <tbody>
+  <tr>
+  <td class="mdl-data-table__cell--non-numeric">
+  <div class="mdl-textfield mdl-js-textfield">
+    <input class="mdl-textfield__input" type="text" id="templateName" value="{{ .Template.Name }}">
+    <label class="mdl-textfield__label" for="templateName">Name...</label>
+  </div>
+  </td>
+  </tr>
+
+  <tr>
+  <td class="mdl-data-table__cell--non-numeric">
+  <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label mdl-select">
+    <input class="mdl-textfield__input" type="text" id="templateType" value="{{ convertTemplateType .Template.Type }}" readonly/>
+    <label class="mdl-textfield__label" for="templateType">Template Type</label>
+    <ul class="mdl-menu mdl-menu--bottom-left mdl-js-menu mdl-js-ripple-effect" for="templateType">
+        <li class="mdl-menu__item">Page</li>
+        <li class="mdl-menu__item">Site</li>
+      </ul>
+  </div>
+  </td>
+  </tr>
+
+  <tr>
+    <td class="mdl-data-table__cell--non-numeric">
+      <button type="button" id="templateTxt" class="mdl-button mdl-js-button mdl-button--raised">Edit Template</button>
+      <div class="mdl-textfield mdl-js-textfield">
+        <textarea class="mdl-textfield__input" type="text" id="templateData" style="display:none;">{{ convert .TemplateData.Content }}</textarea>
+      </div>
+    </td>
+  </tr>
+
+  <tr>
+  <td>
+  <button id="updateBtn" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">
+    Update
+  </button>
+  </td>
+  </tr>
+  </tbody>
+</table>
+
+<script>
+
+    var list = document.querySelectorAll('div.mdl-select > ul > li');
+    var typeName = document.querySelector('#templateType');
+    for (var i=0; i< list.length; i++) {
+        list[i].addEventListener('click', function(e) {
+            typeName.setAttribute('value', e.target.textContent);
+        });
+    }
+    var txtDialogBtn = document.querySelector('#templateTxt');
+    txtDialogBtn.addEventListener('click', function() {
+      editTextArea(document.querySelector('#templateData'));
+    });
+
+    var showDialogButton = document.querySelector('#updateBtn');
+    showDialogButton.addEventListener('click', function() {
+
+      var nameTag = document.querySelector('#templateName');
+      if ( nameTag.value == "" ) {
+        alertFes("Edit Name!");
+        return;
+      }
+
+      confirmFes(function() {
+
+        xmlhttp.open("POST", "/manage/template/edit/{{ .Template.Key.StringID }}", true);
+        xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        xmlhttp.setRequestHeader("Cache-Control", "no-cache");
+
+        var typeTag = document.querySelector('#templateType');
+        var templateTag = document.querySelector('#templateData');
+
+        var typeName = typeTag.value;
+        var type = 1;
+        if ( typeName == 'Page' ) {
+          type = 2;
+        }
+
+        var data = {
+            name : nameTag.value,
+            type : type,
+            template : templateTag.value
+        };
+
+        xmlhttp.onreadystatechange = function() {
+            if (xmlhttp.readyState == 4 ) {
+                if ( xmlhttp.status != 200) {
+                  //error
+                } else {
+                  //success
+                }
+            }
+        }
+        xmlhttp.send(EncodeHTMLForm(data));
+      });
+    });
+
+
+</script>
+{{ end }}

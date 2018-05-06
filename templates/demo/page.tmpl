@@ -1,0 +1,66 @@
+<!-- トップ絵 -->
+<div class="slogan-section mdl-typography--text-center">
+  <div class="logo-font slogan">One good thing about music, when it hits you, you feel no pain.</div>
+  <div class="logo-font sub-slogan">音楽を自然と楽しもう</div>
+</div>
+
+<!-- アクセス -->
+<div class="access-section">
+  <div class="android-wear-band">
+    <div class="android-wear-band-text">
+      <div class="mdl-typography--display-2 mdl-typography--font-thin">静岡駅から徒歩５分！</div>
+      <p class="mdl-typography--headline mdl-typography--font-thin">
+      静岡からセノバに向かって進むと、そこにはラスタファリアン・カラーのお店が。それが静岡のオアシス「OneBlood」
+      </p>
+      <p>
+        <a class="mdl-typography--font-regular mdl-typography--text-uppercase android-alt-link" href="/page/a4105249-ac7b-4783-a2fe-cb089798f60c">
+          When one door is closed, many more is open.<i class="material-icons">chevron_right</i>
+        </a>
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- アーティスト一覧 -->
+<div class="artist-section">
+  <div class="android-customized-section-text">
+    <div class="mdl-typography--font-light mdl-typography--display-1-color-contrast">おだぎりさんとゆかいななかまたち</div>
+    <p class="mdl-typography--font-light">
+      ワンブラには様々なアーティストが出演、イベントを行っています。個性的なアーティストの紹介をしていきましょう！
+      <br>
+      <a href="" class="android-link mdl-typography--font-light">ゆかいななかまたち</a>
+    </p>
+  </div>
+  <div class="android-customized-section-image"></div>
+</div>
+
+
+<!-- ニュース一覧 -->
+<div class="android-more-section">
+
+  <div class="android-section-title mdl-typography--display-1-color-contrast">ニュース一覧</div>
+
+  <div class="android-card-container mdl-grid">
+
+{{ range list "e2e35f4b-7a43-4b1a-b95e-5651d8ae36a1" }}
+    <div class="mdl-cell mdl-cell--3-col mdl-cell--4-col-tablet mdl-cell--4-col-phone mdl-card mdl-shadow--3dp">
+      <div class="mdl-card__media">
+        <img src="/file/{{ .Key.StringID }}">
+      </div>
+      <div class="mdl-card__title">
+         <h4 class="mdl-card__title-text">{{ .Name }}</h4>
+      </div>
+      <div class="mdl-card__supporting-text">
+        <span class="mdl-typography--font-light mdl-typography--subhead">{{ .Description }}</span>
+      </div>
+      <div class="mdl-card__actions">
+         <a class="android-link mdl-button mdl-js-button mdl-typography--text-uppercase" href="/page/{{ .Key.StringID }}">
+           詳細
+           <i class="material-icons">chevron_right</i>
+         </a>
+      </div>
+    </div>
+{{ end }}
+
+  </div>
+</div>

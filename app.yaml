@@ -1,0 +1,18 @@
+runtime: go
+api_version: go1
+
+handlers:
+  - url: /file/.*
+    script: _go_app
+  - url: /page/.*
+    script: _go_app
+  - url: /(.*\.(gif|png|jpg|css|js))$
+    static_files: public/\1
+    upload: public/.*\.(gif|png|jpg|css|js)$
+  - url: /manage/.*
+    script: _go_app
+    login: admin
+    secure: always
+  - url: /.*
+    script: _go_app
+

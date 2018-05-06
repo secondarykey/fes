@@ -1,0 +1,184 @@
+{{define "title"}}
+Edit Page[
+{{ range .Breadcrumbs}}
+&gt; <a href="/manage/page/{{ .Key.StringID }}">{{ .Name }}</a>
+{{ end }}
+]
+{{end}}
+
+{{define "page_template"}}
+
+
+
+<form id="editForm" method="post" action="/manage/page/{{ .Page.Key.StringID }}" enctype="multipart/form-data">
+<table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp" width="100%">
+  <tbody>
+    <tr>
+      <td class="mdl-data-table__cell--non-numeric">
+        <div class="mdl-textfield mdl-js-textfield">
+          <input class="mdl-textfield__input" type="text" id="pageName" name="pageName" value="{{ .Page.Name }}">
+          <label class="mdl-textfield__label" for="pageName">Name...</label>
+        </div>
+      </td>
+    </tr>
+
+    <tr>
+      <td class="mdl-data-table__cell--non-numeric">
+        <div id="siteTemplate" class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label mdl-select">
+          <input class="mdl-textfield__input" type="text" id="site" value="{{.SiteTemplateName}}" readonly/>
+          <label class="mdl-textfield__label" for="site">Site Template</label>
+          <ul class="mdl-menu mdl-menu--bottom-left mdl-js-menu mdl-js-ripple-effect" for="site">
+{{ range .Templates}}
+  {{ if eq .Type 1}}
+              <li class="mdl-menu__item" data-id="{{ .Key.StringID }}">{{ .Name }}</li>
+  {{ end }}
+{{ end }}
+          </ul>
+        </div>
+      </td>
+    </tr>
+
+    <tr>
+      <td class="mdl-data-table__cell--non-numeric">
+        <div id="pageTemplate" class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label mdl-select">
+          <input class="mdl-textfield__input" type="text" id="page" value="{{.PageTemplateName}}" readonly/>
+          <label class="mdl-textfield__label" for="page">Page Template</label>
+          <ul class="mdl-menu mdl-menu--bottom-left mdl-js-menu mdl-js-ripple-effect" for="page">
+{{ range .Templates}}
+  {{ if eq .Type 2}}
+              <li class="mdl-menu__item" data-id="{{ .Key.StringID }}">{{ .Name }}</li>
+  {{ end }}
+{{ end }}
+          </ul>
+        </div>
+      </td>
+    </tr>
+
+    <tr>
+      <td class="mdl-data-table__cell--non-numeric">
+        <!-- Image upload-->
+        <button type="button" id="uploadBtn" class="mdl-button mdl-js-button mdl-button--raised">
+          Image
+        </button>
+        <a href="/file/{{ .Page.Key.StringID }}" target="_blank">Page Image</a>
+        <input type="file" name="file" id="file" value="" style="display:none;"/>
+        <input type="hidden" name="parentID" id="parentID" value="{{ .Page.Parent }}" />
+        <input type="hidden" name="siteTemplateID" id="siteTemplateID" value="{{ .Page.SiteTemplate }}" />
+        <input type="hidden" name="pageTemplateID" id="pageTemplateID" value="{{ .Page.PageTemplate }}" />
+      </td>
+    </tr>
+
+    <tr>
+      <td class="mdl-data-table__cell--non-numeric">
+        <div class="mdl-textfield mdl-js-textfield">
+          <input class="mdl-textfield__input" type="text" id="pageDescription" name="pageDescription" value="{{ .Page.Description }}">
+          <label class="mdl-textfield__label" for="pageDescription">Description...</label>
+        </div>
+      </td>
+    </tr>
+
+    <tr>
+      <td class="mdl-data-table__cell--non-numeric">
+        <button type="button" id="contentBtn" class="mdl-button mdl-js-button mdl-button--raised">Edit Content</button>
+        <div class="mdl-textfield mdl-js-textfield">
+          <textarea class="mdl-textfield__input" type="text" id="pageContent" name="pageContent" style="display:none;">{{ convert .PageData.Content }}</textarea>
+        </div>
+      </td>
+    </tr>
+
+    <tr>
+      <td class="mdl-data-table__cell--non-numeric">
+        <div id="children" class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label mdl-select">
+        <input class="mdl-textfield__input" type="text" id="childrenPage" value="Edit..." readonly/>
+        <label class="mdl-textfield__label" for="childrenPage">Children Page</label>
+        <ul class="mdl-menu mdl-menu--bottom-left mdl-js-menu mdl-js-ripple-effect" for="childrenPage">
+          <li class="mdl-menu__item" data-id=""><i class="material-icons">add</i>Add...</li>
+{{range .Children}}
+          <li class="mdl-menu__item" data-id="{{ .Key.StringID }}">{{ .Name }}</li>
+{{end}}
+        </ul>
+        </div>
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        <button type="button" id="updateBtn" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">
+          Update
+        </button>
+      </td>
+    </tr>
+  </tbody>
+
+</table>
+</form>
+
+<script>
+
+    var list = document.querySelectorAll('#siteTemplate.mdl-select > ul > li');
+    var siteName = document.querySelector('#site');
+    var siteId = document.querySelector('#siteTemplateID');
+    for (var i=0; i< list.length; i++) {
+        list[i].addEventListener('click', function(e) {
+          var id = e.target.getAttribute("data-id");
+          var name = e.target.textContent;
+          siteName.setAttribute('value', name);
+          siteId.setAttribute('value', id);
+        });
+    }
+
+    var list = document.querySelectorAll('#pageTemplate.mdl-select > ul > li');
+    var pageName = document.querySelector('#page');
+    var pageId = document.querySelector('#pageTemplateID');
+    for (var i=0; i< list.length; i++) {
+        list[i].addEventListener('click', function(e) {
+          var id = e.target.getAttribute("data-id");
+          var name = e.target.textContent;
+          pageName.setAttribute('value', name);
+          pageId.setAttribute('value', id);
+        });
+    }
+
+    var list = document.querySelectorAll('#children.mdl-select > ul > li');
+    for (var i=0; i< list.length; i++) {
+        list[i].addEventListener('click', function(e) {
+          var id = e.target.getAttribute("data-id");
+          if ( id == "" ) {
+            window.location.href = "/manage/page/add/" + {{ .Page.Key.StringID }};
+          } else {
+            window.location.href = "/manage/page/" + id;
+          }
+        });
+    }
+
+    var txtDialogBtn = document.querySelector('#contentBtn');
+    txtDialogBtn.addEventListener('click', function() {
+      editTextArea(document.querySelector('#pageContent'));
+    });
+
+    var uploadBtn = document.querySelector('#uploadBtn');
+    uploadBtn.addEventListener('click', function() {
+      var fileBtn = document.querySelector('#file');
+      fileBtn.click();
+      return false;
+    });
+
+    var updateBtn = document.querySelector('#updateBtn');
+    updateBtn.addEventListener('click', function() {
+      var siteId = document.querySelector('#siteTemplateID');
+      var pageId = document.querySelector('#pageTemplateID');
+
+      if ( siteId.value == "" || pageId.value == "" ) {
+        alertFes("select template");
+        return;
+      }
+
+      confirmFes(function() {
+        var updateForm = document.querySelector('#editForm');
+        updateForm.submit();
+      });
+    });
+
+
+</script>
+{{ end }}
