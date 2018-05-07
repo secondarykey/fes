@@ -1,10 +1,9 @@
-// +build ignore
 package src
 
 import (
 	"github.com/gorilla/mux"
-	"net/http"
 	"manage"
+	"net/http"
 )
 
 func init() {
@@ -14,7 +13,6 @@ func init() {
 	h := manage.Handler{}
 
 	r.HandleFunc("/manage/", h.View).Methods("GET")
-	//r.HandleFunc("/manage/template/", templateManageHandler).Methods("GET")
 	//Page
 	r.HandleFunc("/manage/page/", h.ViewPage).Methods("GET")
 	r.HandleFunc("/manage/page/{key}", h.EditPage)
@@ -24,14 +22,11 @@ func init() {
 	r.HandleFunc("/manage/file/", h.ViewFile).Methods("GET")
 	r.HandleFunc("/manage/file/add", h.AddFile).Methods("POST")
 	r.HandleFunc("/manage/file/delete", h.DeleteFile).Methods("POST")
-
 	//Template
 	r.HandleFunc("/manage/template/", h.ViewTemplate).Methods("GET")
 	r.HandleFunc("/manage/template/add", h.AddTemplate).Methods("GET")
 	r.HandleFunc("/manage/template/edit/{key}", h.EditTemplate)
 	r.HandleFunc("/manage/template/delete/{key}", h.DeleteTemplate)
-
-	//r.HandleFunc("/manage/view/", viewManageHandler).Methods("GET")
 	//Site
 	r.HandleFunc("/manage/site/", h.ViewSetting).Methods("GET")
 	r.HandleFunc("/manage/site/edit", h.EditSetting).Methods("POST")

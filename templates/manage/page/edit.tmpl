@@ -81,7 +81,7 @@ Edit Page[
       <td class="mdl-data-table__cell--non-numeric">
         <button type="button" id="contentBtn" class="mdl-button mdl-js-button mdl-button--raised">Edit Content</button>
         <div class="mdl-textfield mdl-js-textfield">
-          <textarea class="mdl-textfield__input" type="text" id="pageContent" name="pageContent" style="display:none;">{{ convert .PageData.Content }}</textarea>
+          <textarea class="mdl-textfield__input" type="text" id="pageContent" name="pageContent" style="display:none;">{{ html .PageData.Content }}</textarea>
         </div>
       </td>
     </tr>
