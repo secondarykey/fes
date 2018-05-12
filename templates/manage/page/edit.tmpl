@@ -86,6 +86,7 @@ Edit Page[
       </td>
     </tr>
 
+{{ if ne .Page.Name "" }}
     <tr>
       <td class="mdl-data-table__cell--non-numeric">
         <div id="children" class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label mdl-select">
@@ -100,6 +101,7 @@ Edit Page[
         </div>
       </td>
     </tr>
+{{ end }}
 
     <tr>
       <td>

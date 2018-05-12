@@ -17,6 +17,7 @@ func init() {
 	r.HandleFunc("/manage/page/", h.ViewPage).Methods("GET")
 	r.HandleFunc("/manage/page/{key}", h.EditPage)
 	r.HandleFunc("/manage/page/add/{key}", h.AddPage).Methods("GET")
+	r.HandleFunc("/manage/page/delete/{key}", h.DeletePage).Methods("GET")
 
 	//File
 	r.HandleFunc("/manage/file/", h.ViewFile).Methods("GET")

@@ -22,7 +22,7 @@ func (p Public) topHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if top == nil {
-		p.errorPage(w, err.Error(), "Not Found[main]", 404)
+		p.errorPage(w, "Not Found[main]", "Top Page Not Found", 404)
 		return
 	}
 	p.pageParse(w, r, top)

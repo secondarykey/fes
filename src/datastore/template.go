@@ -7,6 +7,7 @@ import (
 	kerr "github.com/knightso/base/errors"
 	"github.com/knightso/base/gae/ds"
 	"github.com/satori/go.uuid"
+	"golang.org/x/net/context"
 
 	"google.golang.org/appengine"
 	"google.golang.org/appengine/datastore"
@@ -37,17 +38,19 @@ func PutTemplate(r *http.Request) error {
 	}
 	templateData.Content = datastore.ByteString(r.FormValue("template"))
 
-	err = ds.Put(c, &template)
-	if err != nil {
-		return err
-	}
+	option := &datastore.TransactionOptions{XG: true}
+	return datastore.RunInTransaction(c, func(ctx context.Context) error {
+		err = ds.Put(c, &template)
+		if err != nil {
+			return err
+		}
 
-	err = ds.Put(c, &templateData)
-	if err != nil {
-		return err
-	}
-
-	return nil
+		err = ds.Put(c, &templateData)
+		if err != nil {
+			return err
+		}
+		return nil
+	}, option)
 }
 
 const KIND_TEMPLATE = "Template"
@@ -138,17 +141,20 @@ func RemoveTemplate(r *http.Request, id string) error {
 
 	var err error
 	c := appengine.NewContext(r)
-	key := datastore.NewKey(c, KIND_TEMPLATE, id, 0, nil)
-	err = ds.Delete(c, key)
-	if err != nil {
-		return err
-	}
 
-	dataKey := datastore.NewKey(c, KIND_TEMPLATEDATA, id, 0, nil)
-	err = ds.Delete(c, dataKey)
-	if err != nil {
-		return err
-	}
+	option := &datastore.TransactionOptions{XG: true}
+	return datastore.RunInTransaction(c, func(ctx context.Context) error {
+		key := datastore.NewKey(c, KIND_TEMPLATE, id, 0, nil)
+		err = ds.Delete(c, key)
+		if err != nil {
+			return err
+		}
 
-	return nil
+		dataKey := datastore.NewKey(c, KIND_TEMPLATEDATA, id, 0, nil)
+		err = ds.Delete(c, dataKey)
+		if err != nil {
+			return err
+		}
+		return nil
+	}, option)
 }

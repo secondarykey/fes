@@ -7,6 +7,7 @@ import (
 
 	kerr "github.com/knightso/base/errors"
 	"github.com/knightso/base/gae/ds"
+	"golang.org/x/net/context"
 
 	"errors"
 	"google.golang.org/appengine"
@@ -107,50 +108,56 @@ func PutPage(r *http.Request) error {
 		Content: datastore.ByteString(r.FormValue("pageContent")),
 	}
 
-	page.SetKey(CreatePageKey(r, id))
-	err = ds.Put(c, page)
-	if err != nil {
-		return err
-	}
-	pageData.SetKey(CreatePageDataKey(r, id))
-	err = ds.Put(c, pageData)
-	if err != nil {
-		return err
-	}
-
-	err = SaveFile(r, id)
-	if err != nil {
-		//ファイル指定なしの場合の動作
-	}
-
-	//一番親ページの場合
-	if page.Parent == "" {
-		//SiteのページKeyを変更する
-		err = SetRoot(r, page.Key.StringID())
+	option := &datastore.TransactionOptions{XG: true}
+	return datastore.RunInTransaction(c, func(ctx context.Context) error {
+		page.SetKey(CreatePageKey(r, id))
+		err = ds.Put(c, page)
 		if err != nil {
 			return err
 		}
-	}
-	return nil
+		pageData.SetKey(CreatePageDataKey(r, id))
+		err = ds.Put(c, pageData)
+		if err != nil {
+			return err
+		}
+
+		err = SaveFile(r, id)
+		if err != nil {
+			//ファイル指定なしの場合の動作
+		}
+
+		//一番親ページの場合
+		if page.Parent == "" {
+			//SiteのページKeyを変更する
+			err = SetRoot(r, page.Key.StringID())
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	}, option)
 }
 
 func RemovePage(r *http.Request, id string) error {
 
 	var err error
 	c := appengine.NewContext(r)
-	pkey := CreatePageKey(r, id)
-	err = ds.Delete(c, pkey)
-	if err != nil {
-		return nil
-	}
-	pdkey := CreatePageDataKey(r, id)
-	err = ds.Delete(c, pdkey)
-	if err != nil {
-		return nil
-	}
 
-	//TODO 存在しない場合
-	return RemoveFile(r, id)
+	option := &datastore.TransactionOptions{XG: true}
+	return datastore.RunInTransaction(c, func(ctx context.Context) error {
+		pkey := CreatePageKey(r, id)
+		err = ds.Delete(c, pkey)
+		if err != nil {
+			return nil
+		}
+		pdkey := CreatePageDataKey(r, id)
+		err = ds.Delete(c, pdkey)
+		if err != nil {
+			return nil
+		}
+		//TODO 存在しない場合
+		return RemoveFile(r, id)
+	}, option)
 }
 
 const KIND_PAGEDATA = "PageData"

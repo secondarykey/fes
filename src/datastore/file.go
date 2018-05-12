@@ -10,6 +10,7 @@ import (
 
 	verr "github.com/knightso/base/errors"
 	"github.com/knightso/base/gae/ds"
+	"golang.org/x/net/context"
 
 	"bytes"
 	"github.com/nfnt/resize"
@@ -68,52 +69,56 @@ func SaveFile(r *http.Request, id string) error {
 	if err != nil {
 		return err
 	}
-	c := appengine.NewContext(r)
 
+	c := appengine.NewContext(r)
 	if id == "" {
 		id = header.Filename
 	}
 
-	file := &File{
-		Size: int64(len(b)),
-	}
-	file.Key = createFileKey(r, id)
-	err = ds.Put(c, file)
-	if err != nil {
-		return err
-	}
+	option := &datastore.TransactionOptions{XG: true}
+	err = datastore.RunInTransaction(c, func(ctx context.Context) error {
+		file := &File{
+			Size: int64(len(b)),
+		}
+		file.Key = createFileKey(r, id)
+		err = ds.Put(ctx, file)
+		if err != nil {
+			return err
+		}
 
-	mime := header.Header["Content-Type"][0]
-	if flg {
-		mime = "image/jpeg"
-	}
+		mime := header.Header["Content-Type"][0]
+		if flg {
+			mime = "image/jpeg"
+		}
 
-	fileData := &FileData{
-		Content: b,
-		Mime:    mime,
-	}
-	fileData.SetKey(createFileDataKey(r, id))
-	err = ds.Put(c, fileData)
-	if err != nil {
-		return err
-	}
-	return nil
+		fileData := &FileData{
+			Content: b,
+			Mime:    mime,
+		}
+		fileData.SetKey(createFileDataKey(r, id))
+		err = ds.Put(ctx, fileData)
+		if err != nil {
+			return err
+		}
+		return nil
+	}, option)
+
+	return err
 }
 
 func RemoveFile(r *http.Request, id string) error {
-
-	//TODO トランザクション
-
 	c := appengine.NewContext(r)
 
-	fkey := createFileKey(r, id)
-	err := ds.Delete(c, fkey)
-	if err != nil {
-		return err
-	}
-
-	fdkey := createFileDataKey(r, id)
-	err = ds.Delete(c, fdkey)
+	option := &datastore.TransactionOptions{XG: true}
+	err := datastore.RunInTransaction(c, func(ctx context.Context) error {
+		fkey := createFileKey(r, id)
+		err := ds.Delete(c, fkey)
+		if err != nil {
+			return err
+		}
+		fdkey := createFileDataKey(r, id)
+		return ds.Delete(c, fdkey)
+	}, option)
 	return err
 }
 

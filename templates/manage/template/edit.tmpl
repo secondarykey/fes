@@ -31,7 +31,7 @@ Edit Template
     <td class="mdl-data-table__cell--non-numeric">
       <button type="button" id="templateTxt" class="mdl-button mdl-js-button mdl-button--raised">Edit Template</button>
       <div class="mdl-textfield mdl-js-textfield">
-        <textarea class="mdl-textfield__input" type="text" id="templateData" style="display:none;">{{ convert .TemplateData.Content }}</textarea>
+        <textarea class="mdl-textfield__input" type="text" id="templateData" style="display:none;">{{ html .TemplateData.Content }}</textarea>
       </div>
     </td>
   </tr>
