@@ -18,7 +18,7 @@ Template
       <td class="mdl-data-table__cell--non-numeric"><a href="/manage/template/edit/{{ .Key.StringID}}">{{ .Name }}</a></td>
       <td>{{convertDate .UpdatedAt}}</td>
       <td>
-      <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--colored removeBtn" data-id="{{ .Key.StringID }}">
+      <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent removeBtn" data-id="{{ .Key.StringID }}">
         Remove
       </button>
       </td>
@@ -30,7 +30,7 @@ Template
 
 <!-- view template -->
 <a href="/manage/template/add">
-<button id="add-content" class="mdl-button mdl-js-button mdl-button--fab mdl-button--colored">
+<button id="add-content" class="mdl-button mdl-js-button mdl-button--fab mdl-button--primary">
   <i class="material-icons">add</i>
 </button>
 </a>

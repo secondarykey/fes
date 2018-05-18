@@ -12,6 +12,7 @@ import (
 	"errors"
 	"google.golang.org/appengine"
 	"google.golang.org/appengine/datastore"
+	"fmt"
 )
 
 const KIND_PAGE = "Page"
@@ -143,6 +144,13 @@ func RemovePage(r *http.Request, id string) error {
 	var err error
 	c := appengine.NewContext(r)
 
+	children,err := SelectChildPages(r,id)
+
+	if  children != nil {
+
+		return fmt.Errorf("Exist child page[%s]",id)
+	}
+
 	option := &datastore.TransactionOptions{XG: true}
 	return datastore.RunInTransaction(c, func(ctx context.Context) error {
 		pkey := CreatePageKey(r, id)
@@ -155,8 +163,10 @@ func RemovePage(r *http.Request, id string) error {
 		if err != nil {
 			return nil
 		}
-		//TODO 存在しない場合
-		return RemoveFile(r, id)
+		if ExistFile(r,id) {
+			return RemoveFile(r, id)
+		}
+		return nil
 	}, option)
 }
 

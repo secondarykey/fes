@@ -105,6 +105,21 @@ func SaveFile(r *http.Request, id string) error {
 
 	return err
 }
+func ExistFile(r *http.Request, id string) bool {
+
+	c := appengine.NewContext(r)
+	file := &File{}
+	file.Key = createFileKey(r, id)
+	err := ds.Get(c,file.Key,file)
+	if err != nil {
+		if verr.Root(err) != datastore.ErrNoSuchEntity {
+			return true
+		} else if verr.Root(err) == datastore.ErrNoSuchEntity {
+			return false
+		}
+	}
+	return true
+}
 
 func RemoveFile(r *http.Request, id string) error {
 	c := appengine.NewContext(r)
