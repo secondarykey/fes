@@ -70,7 +70,7 @@ func (pub Public) pageParse(w http.ResponseWriter, r *http.Request, page *datast
 		pub.errorPage(w, err.Error(), "Datastore:Select Page Data Error", 500)
 		return
 	}
-	children, err := datastore.SelectChildPages(r, id)
+	children, err := datastore.SelectChildPages(r, id,0)
 	if err != nil {
 		pub.errorPage(w, "Datastore:Select Children page Error", err.Error(), 500)
 		return
@@ -109,13 +109,13 @@ func (pub Public) pageParse(w http.ResponseWriter, r *http.Request, page *datast
 
 	err = tmpl.Execute(w, dto)
 	if err != nil {
-		pub.errorPage(w, err.Error(), "Template:Exevute Page Data Error", 500)
+		pub.errorPage(w, err.Error(), "Template:Execute Page Data Error", 500)
 		return
 	}
 }
 
 func (p Public) list(id string) []datastore.Page {
-	pages, err := datastore.SelectChildPages(p.r, id)
+	pages, err := datastore.SelectChildPages(p.r, id,5)
 	if err != nil {
 		return make([]datastore.Page, 0)
 	}

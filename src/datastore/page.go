@@ -33,10 +33,15 @@ func CreatePageKey(r *http.Request, id string) *datastore.Key {
 	return datastore.NewKey(c, KIND_PAGE, id, 0, nil)
 }
 
-func SelectChildPages(r *http.Request, id string) ([]Page, error) {
+func SelectChildPages(r *http.Request, id string,limit int) ([]Page, error) {
 	c := appengine.NewContext(r)
 	var pages []Page
 	q := datastore.NewQuery(KIND_PAGE).Filter("Parent=", id).Order("Seq").Order("CreatedAt")
+
+	if limit > 0 {
+		q = q.Limit(limit)
+	}
+
 	t := q.Run(c)
 	for {
 		var page Page
@@ -139,15 +144,36 @@ func PutPage(r *http.Request) error {
 	}, option)
 }
 
+func UsingTemplate(r *http.Request, id string) bool {
+
+	var err error
+	c := appengine.NewContext(r)
+	siteQ := datastore.NewQuery(KIND_PAGE).Filter("SiteTemplate=", id).Limit(1)
+	siteT := siteQ.Run(c)
+	var page Page
+	_, err = siteT.Next(&page)
+	if err == datastore.Done {
+		pageQ := datastore.NewQuery(KIND_PAGE).Filter("PageTemplate=", id).Limit(1)
+		pageT := pageQ.Run(c)
+		_, err = pageT.Next(&page)
+		if err == datastore.Done {
+			return false
+		}
+	}
+	return true
+}
+
 func RemovePage(r *http.Request, id string) error {
 
 	var err error
 	c := appengine.NewContext(r)
 
-	children,err := SelectChildPages(r,id)
+	children,err := SelectChildPages(r,id,1)
+	if  err != nil {
+		return fmt.Errorf("Datastore Error SelectChildPages child page[%v]",err)
+	}
 
 	if  children != nil {
-
 		return fmt.Errorf("Exist child page[%s]",id)
 	}
 

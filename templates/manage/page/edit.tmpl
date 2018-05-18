@@ -149,7 +149,7 @@ Edit Page[
         list[i].addEventListener('click', function(e) {
           var id = e.target.getAttribute("data-id");
           if ( id == "" ) {
-            window.location.href = "/manage/page/add/" + {{ .Page.Key.StringID }};
+            window.location.href = "/manage/page/add/{{ .Page.Key.StringID }}";
           } else {
             window.location.href = "/manage/page/" + id;
           }
@@ -168,11 +168,17 @@ Edit Page[
       return false;
     });
 
+    var removeBtn = document.querySelector('#removeBtn');
+    removeBtn.addEventListener('click', function() {
+      confirmFes(function() {
+        window.location.href = "/manage/page/delete/{{ .Page.Key.StringID }}";
+      });
+    });
+
     var updateBtn = document.querySelector('#updateBtn');
     updateBtn.addEventListener('click', function() {
       var siteId = document.querySelector('#siteTemplateID');
       var pageId = document.querySelector('#pageTemplateID');
-
       if ( siteId.value == "" || pageId.value == "" ) {
         alertFes("select template");
         return;

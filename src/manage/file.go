@@ -6,6 +6,7 @@ import (
 
 )
 
+//URL = /manage/file/
 func (h Handler) ViewFile(w http.ResponseWriter, r *http.Request) {
 
 	files,err := datastore.SelectFiles(r)
@@ -20,6 +21,7 @@ func (h Handler) ViewFile(w http.ResponseWriter, r *http.Request) {
 	h.parse(w, TEMPLATE_DIR + "file/view.tmpl", dto)
 }
 
+//URL = /manage/file/add
 func (h Handler) AddFile(w http.ResponseWriter, r *http.Request) {
 
 	err := datastore.SaveFile(r,"")
@@ -31,6 +33,7 @@ func (h Handler) AddFile(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/manage/file/", 302)
 }
 
+//URL = /manage/file/delete
 func (h Handler) DeleteFile(w http.ResponseWriter, r *http.Request) {
 	//リダイレクト
 	id := r.FormValue("fileName")

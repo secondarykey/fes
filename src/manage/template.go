@@ -85,12 +85,19 @@ func (h Handler) EditTemplate(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h Handler) DeleteTemplate(w http.ResponseWriter, r *http.Request) {
-	//リダイレクト
 	vars := mux.Vars(r)
 	id := vars["key"]
+
+	if datastore.UsingTemplate(r,id) {
+		h.errorPage(w,"Using Template",id,500)
+		return
+	}
+
 	err := datastore.RemoveTemplate(r,id)
 	if err != nil {
 		h.errorPage(w,err.Error(),id,500)
+		return
 	}
+	//リダイレクト
 	http.Redirect(w, r, "/manage/template/", 302)
 }

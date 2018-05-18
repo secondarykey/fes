@@ -65,6 +65,6 @@ function confirmFes(func) {
 }
 
 function alertFes(txt) {
-alert(txt);
+    alert(txt);
 }
 
