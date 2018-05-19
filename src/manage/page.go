@@ -27,7 +27,7 @@ func (h Handler) view(w http.ResponseWriter, r *http.Request, id string, parent 
 	var page *datastore.Page
 	var pageData *datastore.PageData
 
-	templates, err := datastore.SelectTemplates(r)
+	templates, err := datastore.SelectTemplates(r,-1)
 	if err != nil {
 		h.errorPage(w, err.Error(), "Select template", 500)
 		return

@@ -11,6 +11,7 @@ import (
 
 	"google.golang.org/appengine"
 	"google.golang.org/appengine/datastore"
+	"google.golang.org/appengine/memcache"
 	"strconv"
 )
 
@@ -85,15 +86,34 @@ func SelectTemplate(r *http.Request, id string) (*Template, error) {
 	return &temp, nil
 }
 
-func SelectTemplates(r *http.Request) ([]Template, error) {
+func get_template_cursor(p int) string {
+	return "template_"+strconv.Itoa(p)+"_cursor"
+}
+
+func SelectTemplates(r *http.Request,p int) ([]Template, error) {
 
 	var rtn []Template
 
 	c := appengine.NewContext(r)
+	cursor := ""
 
-	q := datastore.NewQuery(KIND_TEMPLATE)
+	q := datastore.NewQuery(KIND_TEMPLATE).Order("- UpdatedAt")
+	//負の場合は全権
+	if  p > 0 {
+		item, err := memcache.Get(c, get_template_cursor(p))
+		if err == nil {
+			cursor = string(item.Value)
+		}
+		q = q.Limit(10)
+		if cursor != "" {
+			cur, err := datastore.DecodeCursor(cursor)
+			if err == nil {
+				q  = q.Start(cur)
+			}
+		}
+	}
+
 	t := q.Run(c)
-
 	for {
 		var tmp Template
 		key, err := t.Next(&tmp)
@@ -107,6 +127,24 @@ func SelectTemplates(r *http.Request) ([]Template, error) {
 		tmp.SetKey(key)
 		rtn = append(rtn, tmp)
 	}
+
+	if p > 0 {
+
+		cur, err := t.Cursor()
+		if err != nil {
+			return nil, err
+		}
+
+		err = memcache.Set(c, &memcache.Item{
+			Key:   get_template_cursor(p+1),
+			Value: []byte(cur.String()),
+		})
+
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	return rtn, nil
 }
 

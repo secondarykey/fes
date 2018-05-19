@@ -6,11 +6,22 @@ import (
 	"datastore"
 
 	"github.com/gorilla/mux"
+	"strconv"
 )
 
 func (h Handler) ViewTemplate(w http.ResponseWriter, r *http.Request) {
 
-	data,err := datastore.SelectTemplates(r)
+	p := 1
+	q := r.URL.Query()
+	pageBuf := q.Get("page")
+	if pageBuf != "" {
+		page,err := strconv.Atoi(pageBuf)
+		if err == nil {
+			p = page
+		}
+	}
+
+	data,err := datastore.SelectTemplates(r,p)
 	if err != nil {
 		h.errorPage(w,err.Error(),"Select Error",500)
 		return
@@ -22,7 +33,10 @@ func (h Handler) ViewTemplate(w http.ResponseWriter, r *http.Request) {
 
 	dto := struct {
 		Templates []datastore.Template
-	} {data}
+		Page int
+		Prev int
+		Next int
+	} {data,p,p-1,p+1}
 
 	h.parse(w, TEMPLATE_DIR + "template/view.tmpl", dto)
 }

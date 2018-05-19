@@ -28,6 +28,27 @@ File
       </td>
     </tr>
 {{ end }}
+    <tr>
+      <td class="mdl-data-table__cell--non-numeric">
+{{if ne .Prev 0}}
+        <a href="/manage/file/?page={{.Prev}}" class="demo-nav__button" title="Older">
+          <button class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon">
+             <i class="material-icons">arrow_back</i>
+          </button>
+        </a>
+{{end}}
+      </td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td>
+        <a href="/manage/file/?page={{.Next}}" class="demo-nav__button" title="Newer">
+          <button class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon">
+            <i class="material-icons" role="presentation">arrow_forward</i>
+          </button>
+        </a>
+      </td>
+    </tr>
   </tbody>
 </table>
 

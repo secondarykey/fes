@@ -16,8 +16,10 @@ import (
 	"github.com/nfnt/resize"
 	"google.golang.org/appengine"
 	"google.golang.org/appengine/datastore"
+	"google.golang.org/appengine/memcache"
 	"image"
 	"image/jpeg"
+	"strconv"
 )
 
 const KIND_FILE = "File"
@@ -32,13 +34,31 @@ func createFileKey(r *http.Request, name string) *datastore.Key {
 	return datastore.NewKey(c, KIND_FILE, name, 0, nil)
 }
 
-func SelectFiles(r *http.Request) ([]File, error) {
+func get_file_cursor(p int) string {
+	return "file_"+strconv.Itoa(p)+"_cursor"
+}
 
-	c := appengine.NewContext(r)
-	q := datastore.NewQuery(KIND_FILE).
-		Order("- UpdatedAt")
+func SelectFiles(r *http.Request,p int) ([]File, error) {
 
 	var s []File
+
+	c := appengine.NewContext(r)
+	cursor := ""
+
+	q := datastore.NewQuery(KIND_FILE).Order("- UpdatedAt")
+	if  p > 0 {
+		item, err := memcache.Get(c, get_file_cursor(p))
+		if err == nil {
+			cursor = string(item.Value)
+		}
+		q = q.Limit(10)
+		if cursor != "" {
+			cur, err := datastore.DecodeCursor(cursor)
+			if err == nil {
+				q  = q.Start(cur)
+			}
+		}
+	}
 
 	t := q.Run(c)
 	for {
@@ -54,6 +74,22 @@ func SelectFiles(r *http.Request) ([]File, error) {
 		f.SetKey(key)
 		s = append(s, f)
 	}
+
+	if p > 0 {
+		cur,err := t.Cursor()
+		if err != nil {
+			return nil,err
+		}
+
+		err = memcache.Set(c,&memcache.Item{
+			Key:get_file_cursor(p+1),
+			Value:[]byte(cur.String()),
+		})
+		if err != nil {
+			return nil,err
+		}
+	}
+
 	return s, nil
 }
 

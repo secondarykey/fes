@@ -4,12 +4,23 @@ import (
 	"net/http"
 	"datastore"
 
+	"strconv"
 )
 
 //URL = /manage/file/
 func (h Handler) ViewFile(w http.ResponseWriter, r *http.Request) {
 
-	files,err := datastore.SelectFiles(r)
+	p:= 1
+	q := r.URL.Query()
+	pageBuf := q.Get("page")
+	if pageBuf != "" {
+		page,err := strconv.Atoi(pageBuf)
+		if err == nil {
+			p = page
+		}
+	}
+
+	files,err := datastore.SelectFiles(r,p)
 	if err != nil {
 		h.errorPage(w,err.Error(),"Select File",500)
 		return
@@ -17,7 +28,10 @@ func (h Handler) ViewFile(w http.ResponseWriter, r *http.Request) {
 
 	dto := struct {
 		Files []datastore.File
-	} {files}
+		Page int
+		Prev int
+		Next int
+	} {files,p,p-1,p+1}
 	h.parse(w, TEMPLATE_DIR + "file/view.tmpl", dto)
 }
 
