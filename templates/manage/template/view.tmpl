@@ -8,6 +8,7 @@ Template
   <thead>
     <tr>
       <th class="mdl-data-table__cell--non-numeric">Name</th>
+      <th class="mdl-data-table__cell--non-numeric">Create</th>
       <th class="mdl-data-table__cell--non-numeric">Update</th>
       <th class="mdl-data-table__cell--non-numeric"> </th>
     </tr>
@@ -16,6 +17,7 @@ Template
 {{ range .Templates}}
     <tr>
       <td class="mdl-data-table__cell--non-numeric"><a href="/manage/template/edit/{{ .Key.StringID}}">{{ .Name }}</a></td>
+      <td>{{convertDate .CreatedAt}}</td>
       <td>{{convertDate .UpdatedAt}}</td>
       <td>
       <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent removeBtn" data-id="{{ .Key.StringID }}">

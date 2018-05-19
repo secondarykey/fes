@@ -17,7 +17,7 @@ type Public struct {
 func (p Public) topHandler(w http.ResponseWriter, r *http.Request) {
 	top, err := datastore.SelectRootPage(r)
 	if err != nil {
-		p.errorPage(w, err.Error(), "Datastore Select Page [main]", 500)
+		p.errorPage(w,"Datastore Select Page [main]", err.Error(),  500)
 		return
 	}
 
@@ -33,7 +33,7 @@ func (p Public) pageHandler(w http.ResponseWriter, r *http.Request) {
 	id := vars["key"]
 	page, err := datastore.SelectPage(r, id)
 	if err != nil {
-		p.errorPage(w, err.Error(), "Datastore Select Page ["+id+"]", 500)
+		p.errorPage(w, "Datastore Select Page ["+id+"]",err.Error(),  500)
 		return
 	}
 
@@ -56,18 +56,18 @@ func (pub Public) pageParse(w http.ResponseWriter, r *http.Request, page *datast
 	//テンプレートを取得
 	siteTmp, err := datastore.SelectTemplateData(r, page.SiteTemplate)
 	if err != nil {
-		pub.errorPage(w, err.Error(), "Datastore:Select Site Template Error", 500)
+		pub.errorPage(w, "Datastore:Select Site Template Error", err.Error() ,500)
 		return
 	}
 	pageTmp, err := datastore.SelectTemplateData(r, page.PageTemplate)
 	if err != nil {
-		pub.errorPage(w, err.Error(), "Datastore:Select Page Template Error", 500)
+		pub.errorPage(w, "Datastore:Select Page Template Error", err.Error(), 500)
 		return
 	}
 
 	pData, err := datastore.SelectPageData(r, id)
 	if err != nil {
-		pub.errorPage(w, err.Error(), "Datastore:Select Page Data Error", 500)
+		pub.errorPage(w,"Datastore:Select Page Data Error",  err.Error(), 500)
 		return
 	}
 	children, err := datastore.SelectChildPages(r, id,0)
@@ -91,12 +91,12 @@ func (pub Public) pageParse(w http.ResponseWriter, r *http.Request, page *datast
 	//適用する
 	tmpl, err := template.New(api.SITE_TEMPLATE).Funcs(funcMap).Parse(siteTmpData)
 	if err != nil {
-		pub.errorPage(w, err.Error(), "Template:Parse Site Template Error", 500)
+		pub.errorPage(w, "Template:Parse Site Template Error",err.Error(),  500)
 		return
 	}
 	tmpl, err = tmpl.Parse(pageTmpData)
 	if err != nil {
-		pub.errorPage(w, err.Error(), "Template:Parse Page Template Error", 500)
+		pub.errorPage(w,"Template:Parse Page Template Error", err.Error(),  500)
 		return
 	}
 
@@ -109,13 +109,13 @@ func (pub Public) pageParse(w http.ResponseWriter, r *http.Request, page *datast
 
 	err = tmpl.Execute(w, dto)
 	if err != nil {
-		pub.errorPage(w, err.Error(), "Template:Execute Page Data Error", 500)
+		pub.errorPage(w, "Template:Execute Page Data Error",err.Error(),  500)
 		return
 	}
 }
 
 func (p Public) list(id string) []datastore.Page {
-	pages, err := datastore.SelectChildPages(p.r, id,5)
+	pages, err := datastore.SelectChildPages(p.r, id,10)
 	if err != nil {
 		return make([]datastore.Page, 0)
 	}
@@ -131,12 +131,12 @@ func (p Public) fileHandler(w http.ResponseWriter, r *http.Request) {
 	//表示
 	fileData, err := datastore.SelectFileData(r, id)
 	if err != nil {
-		p.errorPage(w, err.Error(), "Datastore:FileData Search Error", 500)
+		p.errorPage(w ,"Datastore:FileData Search Error", err.Error(), 500)
 		return
 	}
 
 	if fileData == nil {
-		p.errorPage(w, err.Error(), "Datastore:Not Found FileData Error", 404)
+		p.errorPage(w, "Datastore:Not Found FileData Error", err.Error(), 404)
 		return
 	}
 

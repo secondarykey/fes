@@ -9,6 +9,7 @@ File
     <tr>
       <th class="mdl-data-table__cell--non-numeric">Name</th>
       <th class="mdl-data-table__cell--non-numeric">Size</th>
+      <th class="mdl-data-table__cell--non-numeric">Create</th>
       <th class="mdl-data-table__cell--non-numeric">Update</th>
       <th class="mdl-data-table__cell--non-numeric"> </th>
     </tr>
@@ -18,6 +19,7 @@ File
     <tr>
       <td class="mdl-data-table__cell--non-numeric"><a href="/file/{{ .Key.StringID}}" target="_blank">{{ .Key.StringID }}</a></td>
       <td>{{.Size}}</td>
+      <td>{{convertDate .CreatedAt}}</td>
       <td>{{convertDate .UpdatedAt}}</td>
       <td>
       <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent removeBtn" data-id="{{ .Key.StringID }}">

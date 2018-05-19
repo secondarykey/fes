@@ -23,6 +23,7 @@ func (h Handler) parse(w http.ResponseWriter, tName string, obj interface{}) {
 	//tmpl, err := template.New("root").Funcs(funcMap).ParseFiles("./templates/layout.tmpl", tName)
 
 	funcMap := template.FuncMap{
+		"plane":               api.ConvertString,
 		"html":                api.ConvertHTML,
 		"convertDate":         api.ConvertDate,
 		"convertTemplateType": convertTemplateType,
