@@ -19,16 +19,12 @@ func (h Handler) View(w http.ResponseWriter, r *http.Request) {
 
 func (h Handler) parse(w http.ResponseWriter, tName string, obj interface{}) {
 
-	//funcMap := template.FuncMap{"convert": convert, "deleteDir": deleteDir}
-	//tmpl, err := template.New("root").Funcs(funcMap).ParseFiles("./templates/layout.tmpl", tName)
-
 	funcMap := template.FuncMap{
 		"plane":               api.ConvertString,
 		"html":                api.ConvertHTML,
 		"convertDate":         api.ConvertDate,
 		"convertTemplateType": convertTemplateType,
 	}
-
 	tmpl, err := template.New(api.SITE_TEMPLATE).Funcs(funcMap).ParseFiles(TEMPLATE_DIR+"layout.tmpl", tName)
 	if err != nil {
 		h.errorPage(w, "Template Parse Error", err.Error(), 500)

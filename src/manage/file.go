@@ -3,6 +3,7 @@ package manage
 import (
 	"net/http"
 	"datastore"
+	"api"
 
 	"strconv"
 )
@@ -38,7 +39,7 @@ func (h Handler) ViewFile(w http.ResponseWriter, r *http.Request) {
 //URL = /manage/file/add
 func (h Handler) AddFile(w http.ResponseWriter, r *http.Request) {
 
-	err := datastore.SaveFile(r,"")
+	err := datastore.SaveFile(r,"",api.DATA_FILE)
 	if err != nil {
 		h.errorPage(w,err.Error(),"Add File Error",500)
 		return

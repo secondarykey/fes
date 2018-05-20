@@ -86,7 +86,7 @@ func SelectTemplate(r *http.Request, id string) (*Template, error) {
 	return &temp, nil
 }
 
-func get_template_cursor(p int) string {
+func getTemplateCursor(p int) string {
 	return "template_"+strconv.Itoa(p)+"_cursor"
 }
 
@@ -100,7 +100,7 @@ func SelectTemplates(r *http.Request,p int) ([]Template, error) {
 	q := datastore.NewQuery(KIND_TEMPLATE).Order("- UpdatedAt")
 	//負の場合は全権
 	if  p > 0 {
-		item, err := memcache.Get(c, get_template_cursor(p))
+		item, err := memcache.Get(c, getTemplateCursor(p))
 		if err == nil {
 			cursor = string(item.Value)
 		}
@@ -136,7 +136,7 @@ func SelectTemplates(r *http.Request,p int) ([]Template, error) {
 		}
 
 		err = memcache.Set(c, &memcache.Item{
-			Key:   get_template_cursor(p+1),
+			Key:   getTemplateCursor(p+1),
 			Value: []byte(cur.String()),
 		})
 

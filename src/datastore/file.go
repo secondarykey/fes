@@ -1,10 +1,15 @@
 package datastore
 
 import (
+	"api"
+
 	"io"
 	"io/ioutil"
 	"net/http"
-
+	"bytes"
+	"image"
+	"image/jpeg"
+	"strconv"
 	_ "image/gif"
 	_ "image/png"
 
@@ -12,20 +17,17 @@ import (
 	"github.com/knightso/base/gae/ds"
 	"golang.org/x/net/context"
 
-	"bytes"
 	"github.com/nfnt/resize"
 	"google.golang.org/appengine"
 	"google.golang.org/appengine/datastore"
 	"google.golang.org/appengine/memcache"
-	"image"
-	"image/jpeg"
-	"strconv"
 )
 
 const KIND_FILE = "File"
 
 type File struct {
 	Size int64
+	Type int
 	ds.Meta
 }
 
@@ -34,7 +36,7 @@ func createFileKey(r *http.Request, name string) *datastore.Key {
 	return datastore.NewKey(c, KIND_FILE, name, 0, nil)
 }
 
-func get_file_cursor(p int) string {
+func getFileCursor(p int) string {
 	return "file_"+strconv.Itoa(p)+"_cursor"
 }
 
@@ -45,9 +47,10 @@ func SelectFiles(r *http.Request,p int) ([]File, error) {
 	c := appengine.NewContext(r)
 	cursor := ""
 
-	q := datastore.NewQuery(KIND_FILE).Order("- UpdatedAt")
+	//q := datastore.NewQuery(KIND_FILE).Order("- UpdatedAt")
+	q := datastore.NewQuery(KIND_FILE).Order("- UpdatedAt").Filter("Type=",api.DATA_FILE)
 	if  p > 0 {
-		item, err := memcache.Get(c, get_file_cursor(p))
+		item, err := memcache.Get(c, getFileCursor(p))
 		if err == nil {
 			cursor = string(item.Value)
 		}
@@ -82,7 +85,7 @@ func SelectFiles(r *http.Request,p int) ([]File, error) {
 		}
 
 		err = memcache.Set(c,&memcache.Item{
-			Key:get_file_cursor(p+1),
+			Key:getFileCursor(p+1),
 			Value:[]byte(cur.String()),
 		})
 		if err != nil {
@@ -93,7 +96,7 @@ func SelectFiles(r *http.Request,p int) ([]File, error) {
 	return s, nil
 }
 
-func SaveFile(r *http.Request, id string) error {
+func SaveFile(r *http.Request, id string,t int) error {
 
 	upload, header, err := r.FormFile("file")
 	if err != nil {
@@ -115,6 +118,7 @@ func SaveFile(r *http.Request, id string) error {
 	err = datastore.RunInTransaction(c, func(ctx context.Context) error {
 		file := &File{
 			Size: int64(len(b)),
+			Type: t,
 		}
 		file.Key = createFileKey(r, id)
 		err = ds.Put(ctx, file)

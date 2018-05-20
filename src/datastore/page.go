@@ -13,6 +13,7 @@ import (
 	"google.golang.org/appengine"
 	"google.golang.org/appengine/datastore"
 	"fmt"
+	"api"
 )
 
 const KIND_PAGE = "Page"
@@ -127,7 +128,7 @@ func PutPage(r *http.Request) error {
 			return err
 		}
 
-		err = SaveFile(r, id)
+		err = SaveFile(r, id,api.PAGE_IMAGE)
 		if err != nil {
 			//ファイル指定なしの場合の動作
 		}

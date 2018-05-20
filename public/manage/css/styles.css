@@ -26,6 +26,16 @@ a {
     color:#444444;
 }
 
+table {
+    width: 100%;
+    table-layout: fixed;
+}
+
+table td {
+    word-break: break-all;
+    overflow-wrap : break-word;
+}
+
 .demo-layout .mdl-layout__header .mdl-layout__drawer-button {
   color: rgba(0, 0, 0, 0.54);
 }

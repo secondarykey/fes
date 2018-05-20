@@ -12,4 +12,5 @@ indexes:
 
 - kind: File
   properties:
+    - name: Type
     - name: UpdatedAt
