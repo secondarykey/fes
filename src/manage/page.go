@@ -29,7 +29,7 @@ func (h Handler) view(w http.ResponseWriter, r *http.Request, id string, parent 
 
 	templates, err := datastore.SelectTemplates(r,-1)
 	if err != nil {
-		h.errorPage(w, err.Error(), "Select template", 500)
+		h.errorPage(w, "Error Select Template",err.Error(), 500)
 		return
 	}
 
@@ -41,7 +41,7 @@ func (h Handler) view(w http.ResponseWriter, r *http.Request, id string, parent 
 	}
 
 	if err != nil {
-		h.errorPage(w, err.Error(), "Select Page", 500)
+		h.errorPage(w, "Error Select Page",err.Error() ,500)
 		return
 	}
 
@@ -70,13 +70,13 @@ func (h Handler) view(w http.ResponseWriter, r *http.Request, id string, parent 
 	} else {
 		pageData, err = datastore.SelectPageData(r, page.Key.StringID())
 		if err != nil {
-			h.errorPage(w, err.Error(), "Select PageData", 500)
+			h.errorPage(w, "Error Select PageData", err.Error(),500)
 			return
 		}
 
 		children, err = datastore.SelectChildPages(r, page.Key.StringID(),0)
 		if err != nil {
-			h.errorPage(w, err.Error(), "Children page", 500)
+			h.errorPage(w, "Error Select Children page", err.Error(),500)
 			return
 		}
 
@@ -128,7 +128,7 @@ func (h Handler) EditPage(w http.ResponseWriter, r *http.Request) {
 	if POST(r) {
 		err := datastore.PutPage(r)
 		if err != nil {
-			h.errorPage(w, err.Error(), "Put Page", 500)
+			h.errorPage(w, "Error Put Page",err.Error() ,500)
 			return
 		}
 	}
@@ -144,7 +144,8 @@ func (h Handler) DeletePage(w http.ResponseWriter, r *http.Request) {
 
 	err := datastore.RemovePage(r, id)
 	if err != nil {
-		h.errorPage(w, "Delete Page", err.Error(), 500)
+		h.errorPage(w, "Error Delete Page", err.Error(), 500)
+		return
 	}
 	http.Redirect(w, r, "/manage/page/", 302)
 }

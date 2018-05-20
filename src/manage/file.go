@@ -23,7 +23,7 @@ func (h Handler) ViewFile(w http.ResponseWriter, r *http.Request) {
 
 	files,err := datastore.SelectFiles(r,p)
 	if err != nil {
-		h.errorPage(w,err.Error(),"Select File",500)
+		h.errorPage(w,"Error Select File",err.Error(),500)
 		return
 	}
 
@@ -41,7 +41,7 @@ func (h Handler) AddFile(w http.ResponseWriter, r *http.Request) {
 
 	err := datastore.SaveFile(r,"",api.DATA_FILE)
 	if err != nil {
-		h.errorPage(w,err.Error(),"Add File Error",500)
+		h.errorPage(w,"Error Add File",err.Error(),500)
 		return
 	}
 	//リダイレクト
@@ -55,6 +55,7 @@ func (h Handler) DeleteFile(w http.ResponseWriter, r *http.Request) {
 	err := datastore.RemoveFile(r,id)
 	if err != nil {
 		h.errorPage(w,err.Error(),id,500)
+		return
 	}
 	http.Redirect(w, r, "/manage/file/", 302)
 }

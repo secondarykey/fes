@@ -18,6 +18,7 @@ func (h Handler) EditSetting(w http.ResponseWriter, r *http.Request) {
 	err := datastore.PutSite(r)
 	if err != nil {
 		h.errorPage(w,"Datastore site put Error",err.Error(),500)
+		return
 	}
 }
 

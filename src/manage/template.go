@@ -23,7 +23,7 @@ func (h Handler) ViewTemplate(w http.ResponseWriter, r *http.Request) {
 
 	data,err := datastore.SelectTemplates(r,p)
 	if err != nil {
-		h.errorPage(w,err.Error(),"Select Error",500)
+		h.errorPage(w,"Error Select Template",err.Error(),500)
 		return
 	}
 
@@ -42,12 +42,9 @@ func (h Handler) ViewTemplate(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h Handler) AddTemplate(w http.ResponseWriter, r *http.Request) {
-
 	tmp := &datastore.Template{}
 	tmpData := &datastore.TemplateData{}
-
 	tmp.SetKey(datastore.CreateTemplateKey(r))
-
 	//新規作成用のテンプレート
 	dto := struct {
 		Template *datastore.Template
@@ -63,20 +60,22 @@ func (h Handler) EditTemplate(w http.ResponseWriter, r *http.Request) {
 		//更新
 		err := datastore.PutTemplate(r)
 		if err != nil {
-
+			h.errorPage(w,"Error Put Template",err.Error() ,500)
+			return
 		}
-		//JSONで返す
+
+		//TODO JSON
 
 	} else {
 		vars := mux.Vars(r)
 		id := vars["key"]
 		tmp,err := datastore.SelectTemplate(r,id)
 		if err != nil {
-			h.errorPage(w,err.Error(),id,500)
+			h.errorPage(w,"Error SelectTemplate",err.Error(),500)
 			return
 		}
 		if tmp == nil {
-			h.errorPage(w,"NotFound Template",id ,500)
+			h.errorPage(w,"NotFound Template",id ,404)
 			return
 		}
 
@@ -86,7 +85,7 @@ func (h Handler) EditTemplate(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if tmpData == nil {
-			h.errorPage(w,"NotFound TemplateData",id,500)
+			h.errorPage(w,"NotFound TemplateData",id,404)
 			return
 		}
 
