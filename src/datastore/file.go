@@ -116,12 +116,23 @@ func SaveFile(r *http.Request, id string,t int) error {
 
 	option := &datastore.TransactionOptions{XG: true}
 	err = datastore.RunInTransaction(c, func(ctx context.Context) error {
-		file := &File{
-			Size: int64(len(b)),
-			Type: t,
+
+		fileKey := createFileKey(r, id)
+
+		file := File{}
+		err = ds.Get(c,fileKey,&file)
+		if err != nil {
+			if verr.Root(err) != datastore.ErrNoSuchEntity {
+				return err
+			}
+
+			file.Key = fileKey
 		}
-		file.Key = createFileKey(r, id)
-		err = ds.Put(ctx, file)
+
+		file.Size= int64(len(b))
+		file.Type= t
+
+		err = ds.Put(ctx, &file)
 		if err != nil {
 			return err
 		}

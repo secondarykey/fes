@@ -23,6 +23,7 @@ func (h Handler) parse(w http.ResponseWriter, tName string, obj interface{}) {
 		"plane":               api.ConvertString,
 		"html":                api.ConvertHTML,
 		"convertDate":         api.ConvertDate,
+		"convertSize":         api.ConvertSize,
 		"convertTemplateType": convertTemplateType,
 	}
 	tmpl, err := template.New(api.SITE_TEMPLATE).Funcs(funcMap).ParseFiles(TEMPLATE_DIR+"layout.tmpl", tName)

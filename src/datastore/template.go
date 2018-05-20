@@ -29,6 +29,12 @@ func PutTemplate(r *http.Request) error {
 	template := Template{}
 	templateData := TemplateData{}
 
+	err = ds.Get(c,tmpKey, &template)
+	if err != nil {
+		if kerr.Root(err) != datastore.ErrNoSuchEntity {
+			return  err
+		}
+	}
 	template.SetKey(tmpKey)
 	templateData.SetKey(tmpDataKey)
 
@@ -41,6 +47,7 @@ func PutTemplate(r *http.Request) error {
 
 	option := &datastore.TransactionOptions{XG: true}
 	return datastore.RunInTransaction(c, func(ctx context.Context) error {
+
 		err = ds.Put(c, &template)
 		if err != nil {
 			return err
