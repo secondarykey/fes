@@ -1,4 +1,4 @@
-package fes
+package app
 
 // Package: このファイルは動作には関係しません
 //
@@ -10,9 +10,9 @@ package fes
 // References:
 //   https://github.com/secondarykey/fes/wiki
 import (
-	_ "api"
-	_ "datastore"
-	_ "manage"
+	_ "src/api"
+	_ "src/datastore"
+	_ "src/manage"
 
 	_ "github.com/gorilla/mux"
 	_ "github.com/knightso/base/gae/ds"
