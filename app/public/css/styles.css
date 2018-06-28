@@ -46,12 +46,12 @@ img.fill {
 }
 
 ::-moz-selection {
-  background-color: #6ab344;
+  background-color: #446ae3;
   color: #fff;
 }
 
 ::selection {
-  background-color: #6ab344;
+  background-color: #446ae3;
   color: #fff;
 }
 
@@ -181,7 +181,7 @@ img.fill {
 
 .android-drawer .mdl-layout-title {
   position: relative;
-  background: #6ab344;
+  background: #446ae3;
   height: 160px;
 }
 

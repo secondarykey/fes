@@ -3,10 +3,12 @@ indexes:
 - kind: Template
   properties:
     - name: UpdatedAt
+      direction: desc
 
 - kind: Page
   properties:
     - name: Parent
+    - name: Deleted
     - name: Seq
     - name: CreatedAt
 

@@ -37,7 +37,7 @@ func CreatePageKey(r *http.Request, id string) *datastore.Key {
 func SelectChildPages(r *http.Request, id string,limit int) ([]Page, error) {
 	c := appengine.NewContext(r)
 	var pages []Page
-	q := datastore.NewQuery(KIND_PAGE).Filter("Parent=", id).Order("Seq").Order("CreatedAt")
+	q := datastore.NewQuery(KIND_PAGE).Filter("Parent=", id).Filter("Deleted=",false).Order("Seq").Order("CreatedAt")
 
 	if limit > 0 {
 		q = q.Limit(limit)

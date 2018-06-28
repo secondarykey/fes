@@ -25,6 +25,39 @@ Setting
     </tr>
 
     <tr>
+      <td class="mdl-data-table__cell--non-numeric">
+         Template Cache
+         <label class = "mdl-switch mdl-js-switch mdl-js-ripple-effect" for = "templateCache">
+            <input type = "checkbox" id = "templateCache" name="templateCache" class = "mdl-switch__input" {{if .Site.TemplateCache }} checked {{end}}>
+         </label>
+      </td>
+    </tr>
+
+    <tr>
+      <td class="mdl-data-table__cell--non-numeric">
+         Page Cache
+         <label class = "mdl-switch mdl-js-switch mdl-js-ripple-effect" for = "pageCache">
+            <input type = "checkbox" id = "pageCache" name="pageCache" class = "mdl-switch__input" {{if .Site.PageCache }} checked {{end}}>
+         </label>
+      </td>
+    </tr>
+
+    <tr>
+      <td class="mdl-data-table__cell--non-numeric">
+         File Cache
+         <label class = "mdl-switch mdl-js-switch mdl-js-ripple-effect" for = "fileCache">
+            <input type = "checkbox" id = "fileCache" name="fileCache" class = "mdl-switch__input" {{if .Site.FileCache }} checked {{end}}>
+         </label>
+      </td>
+    </tr>
+
+    <tr>
+      <td class="mdl-data-table__cell--non-numeric">
+      <a href="/" target="_site">Public Page</a>
+      </td>
+    </tr>
+
+    <tr>
       <td>
         <button id="updateBtn" type="button" class="mdl-button mdl-js-button mdl-button--raised mdl-button--primary">
           Update
@@ -54,10 +87,18 @@ Setting
         var descTag = document.querySelector('#siteDescription');
         var rootTag = document.querySelector('#siteRoot');
 
+        //cache
+        var templateTag = document.querySelector('#templateCache');
+        var pageTag = document.querySelector('#pageCache');
+        var fileTag = document.querySelector('#fileCache');
+
         var data = {
             name : nameTag.value,
             description : descTag.value,
-            rootPage : rootTag.value
+            rootPage : rootTag.value,
+            templateCache : templateTag.checked,
+            pageCache : pageTag.checked,
+            fileCache : fileTag.checked
         };
 
         xmlhttp.onreadystatechange = function() {

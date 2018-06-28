@@ -9,13 +9,10 @@ package app
 //
 // References:
 //   https://github.com/secondarykey/fes/wiki
+//
 import (
-	_ "src/api"
-	_ "src/datastore"
-	_ "src/manage"
+	_ "api"
+	_ "datastore"
+	_ "manage"
 
-	_ "github.com/gorilla/mux"
-	_ "github.com/knightso/base/gae/ds"
-	_ "github.com/nfnt/resize"
-	_ "github.com/satori/go.uuid"
 )
