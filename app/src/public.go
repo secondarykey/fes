@@ -104,8 +104,9 @@ func (pub Public) pageParse(w http.ResponseWriter, r *http.Request, page *datast
 		Site     *datastore.Site
 		Page     *datastore.Page
 		PageData *datastore.PageData
+		Content  string
 		Children []datastore.Page
-	}{site, page, pData, children}
+	}{site, page, pData,string(pData.Content), children}
 
 	err = tmpl.Execute(w, dto)
 	if err != nil {
@@ -136,7 +137,7 @@ func (p Public) fileHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if fileData == nil {
-		p.errorPage(w, "Datastore:Not Found FileData Error", err.Error(), 404)
+		p.errorPage(w, "Datastore:Not Found FileData Error",id , 404)
 		return
 	}
 
@@ -156,8 +157,6 @@ func (p Public) errorPage(w http.ResponseWriter, t string, msg string, num int) 
 		Message string
 		No      int
 	}{t, msg, num}
-
-	w.WriteHeader(num)
 
 	tmpl, err := template.ParseFiles("templates/error.tmpl")
 	if err != nil {

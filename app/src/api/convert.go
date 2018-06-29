@@ -33,7 +33,7 @@ func ConvertSize(size int64) string {
 	return fmt.Sprintf("%0.1f%s",s, unit)
 }
 
-func ConvertHTML(data []byte) template.HTML {
+func ConvertHTML(data string) template.HTML {
 	return template.HTML(data)
 }
 

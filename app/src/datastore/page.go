@@ -112,7 +112,7 @@ func PutPage(r *http.Request) error {
 
 	//Data については検索せずに更新
 	pageData := &PageData{
-		Content: datastore.ByteString(r.FormValue("pageContent")),
+		Content: []byte(r.FormValue("pageContent")),
 	}
 
 	option := &datastore.TransactionOptions{XG: true}
