@@ -23,6 +23,9 @@ func init() {
 	r.HandleFunc("/manage/file/", h.ViewFile).Methods("GET")
 	r.HandleFunc("/manage/file/add", h.AddFile).Methods("POST")
 	r.HandleFunc("/manage/file/delete", h.DeleteFile).Methods("POST")
+	r.HandleFunc("/manage/file/resize/{key}", h.ResizeFile).Methods("GET")
+	r.HandleFunc("/manage/file/resize/view/{key}", h.ResizeFileView).Methods("GET")
+
 	//Template
 	r.HandleFunc("/manage/template/", h.ViewTemplate).Methods("GET")
 	r.HandleFunc("/manage/template/add", h.AddTemplate).Methods("GET")

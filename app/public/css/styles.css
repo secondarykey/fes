@@ -1,6 +1,11 @@
 
 body {
   margin: 0;
+  background-color: white;
+}
+
+footer {
+  background-color: white;
 }
 
 /* Disable ugly boxes around ../images in IE10 */
@@ -59,7 +64,7 @@ img.fill {
   color: rgba(0, 0, 0, 0.87);
 }
 
-.android-header .mdl-menu__container {
+.mdl-menu__container {
   z-index: 50;
   margin: 0 !important;
 }
@@ -82,15 +87,14 @@ img.fill {
   display: none !important;
 }
 
-
 .logo-image {
   height: 28px;
   width: 140px;
 }
 
 .android-header {
+    background-color: white;
   overflow: visible;
-  background-color: white;
 }
 
 .android-header .material-icons {
@@ -98,7 +102,6 @@ img.fill {
 }
 
 .android-header .mdl-layout__drawer-button {
-  background: transparent;
   color: #767777;
 }
 
@@ -394,12 +397,6 @@ img.fill {
     padding-top: 16px;
   }
 
-.android-customized-section-image {
-  background: url('/file/artist.jpg') center top no-repeat;
-  background-size: cover;
-  height: 400px;
-}
-
 .android-more-section {
   padding: 80px 0;
   max-width: 1044px;
@@ -450,28 +447,28 @@ img.fill {
     font-size: 16px;
   }
 
-.android-footer {
-  background-color: #fafafa;
-  position: relative;
-}
-
   .android-footer a:hover {
+    background-color: white;
     color: #8bc34a;
   }
 
   .android-footer .mdl-mega-footer--top-section::after {
+    background-color: white;
     border-bottom: none;
   }
 
   .android-footer .mdl-mega-footer--middle-section::after {
+    background-color: white;
     border-bottom: none;
   }
 
   .android-footer .mdl-mega-footer--bottom-section {
+    background-color: white;
     position: relative;
   }
 
   .android-footer .mdl-mega-footer--bottom-section a {
+    background-color: white;
     margin-right: 2em;
   }
 

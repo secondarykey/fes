@@ -96,6 +96,23 @@ func SelectFiles(r *http.Request,p int) ([]File, error) {
 	return s, nil
 }
 
+func SelectFile(r *http.Request, name string) (*File, error) {
+	c := appengine.NewContext(r)
+
+	rtn := File{}
+	key := createFileKey(r, name)
+
+	err := ds.Get(c, key, &rtn)
+	if err != nil {
+		if verr.Root(err) != datastore.ErrNoSuchEntity {
+			return nil, verr.Root(err)
+		} else if verr.Root(err) == datastore.ErrNoSuchEntity {
+			return nil, nil
+		}
+	}
+	return &rtn, nil
+}
+
 func SaveFile(r *http.Request, id string,t int) error {
 
 	upload, header, err := r.FormFile("file")
@@ -227,6 +244,8 @@ func convertImage(r io.Reader) ([]byte, bool, error) {
 				return nil, false, err
 			}
 		}
+
+
 		img = resize.Resize(1000, 0, img, resize.Lanczos3)
 		cnv = true
 	}

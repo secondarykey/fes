@@ -74,7 +74,7 @@ func (h Handler) view(w http.ResponseWriter, r *http.Request, id string, parent 
 			return
 		}
 
-		children, err = datastore.SelectChildPages(r, page.Key.StringID(),0)
+		children, err = datastore.SelectChildPages(r, page.Key.StringID(),0,true)
 		if err != nil {
 			h.errorPage(w, "Error Select Children page", err.Error(),500)
 			return

@@ -25,7 +25,7 @@ func (p Public) topHandler(w http.ResponseWriter, r *http.Request) {
 		p.errorPage(w, "Not Found[main]", "Top Page Not Found", 404)
 		return
 	}
-	p.pageParse(w, r, top)
+	p.pageParse(w, r, top,true)
 }
 
 func (p Public) pageHandler(w http.ResponseWriter, r *http.Request) {
@@ -42,10 +42,19 @@ func (p Public) pageHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	p.pageParse(w, r, page)
+	p.pageParse(w, r, page,true)
 }
 
-func (pub Public) pageParse(w http.ResponseWriter, r *http.Request, page *datastore.Page) {
+func (pub Public) pageParse(w http.ResponseWriter, r *http.Request, page *datastore.Page,flag bool) {
+
+	dir := "/manage/view/"
+	if flag {
+		if page.Deleted {
+			pub.errorPage(w, "This page is private", "",401)
+			return
+		}
+		dir = "/page/"
+	}
 
 	var err error
 
@@ -70,7 +79,7 @@ func (pub Public) pageParse(w http.ResponseWriter, r *http.Request, page *datast
 		pub.errorPage(w,"Datastore:Select Page Data Error",  err.Error(), 500)
 		return
 	}
-	children, err := datastore.SelectChildPages(r, id,0)
+	children, err := datastore.SelectChildPages(r,id,0,false)
 	if err != nil {
 		pub.errorPage(w, "Datastore:Select Children page Error", err.Error(), 500)
 		return
@@ -106,7 +115,8 @@ func (pub Public) pageParse(w http.ResponseWriter, r *http.Request, page *datast
 		PageData *datastore.PageData
 		Content  string
 		Children []datastore.Page
-	}{site, page, pData,string(pData.Content), children}
+		Dir      string
+	}{site, page, pData,string(pData.Content), children,dir}
 
 	err = tmpl.Execute(w, dto)
 	if err != nil {
@@ -116,7 +126,7 @@ func (pub Public) pageParse(w http.ResponseWriter, r *http.Request, page *datast
 }
 
 func (p Public) list(id string) []datastore.Page {
-	pages, err := datastore.SelectChildPages(p.r, id,10)
+	pages, err := datastore.SelectChildPages(p.r, id,10,false)
 	if err != nil {
 		return make([]datastore.Page, 0)
 	}

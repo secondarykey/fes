@@ -34,10 +34,14 @@ func CreatePageKey(r *http.Request, id string) *datastore.Key {
 	return datastore.NewKey(c, KIND_PAGE, id, 0, nil)
 }
 
-func SelectChildPages(r *http.Request, id string,limit int) ([]Page, error) {
+func SelectChildPages(r *http.Request, id string,limit int,mng bool) ([]Page, error) {
 	c := appengine.NewContext(r)
 	var pages []Page
-	q := datastore.NewQuery(KIND_PAGE).Filter("Parent=", id).Filter("Deleted=",false).Order("Seq").Order("CreatedAt")
+
+	q := datastore.NewQuery(KIND_PAGE).Filter("Parent=", id).Order("Seq").Order("CreatedAt")
+	if !mng {
+		q = q.Filter("Deleted=",false)
+	}
 
 	if limit > 0 {
 		q = q.Limit(limit)
@@ -99,11 +103,19 @@ func PutPage(r *http.Request) error {
 	if page == nil {
 		page = &Page{}
 	}
+
 	page.Name = r.FormValue("pageName")
 	page.Parent = r.FormValue("parentID")
 	page.Description = r.FormValue("pageDescription")
 	page.SiteTemplate = r.FormValue("siteTemplateID")
 	page.PageTemplate = r.FormValue("pageTemplateID")
+
+	flag := r.FormValue("publish")
+	if flag == "on" {
+		page.Deleted = false
+	} else {
+		page.Deleted = true
+	}
 
 	if page.SiteTemplate == "" {
 		//ページは選択しなくても表示はできるのでOK
@@ -169,7 +181,7 @@ func RemovePage(r *http.Request, id string) error {
 	var err error
 	c := appengine.NewContext(r)
 
-	children,err := SelectChildPages(r,id,1)
+	children,err := SelectChildPages(r,id,1,false)
 	if  err != nil {
 		return fmt.Errorf("Datastore Error SelectChildPages child page[%v]",err)
 	}

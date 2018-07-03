@@ -12,6 +12,8 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	"golang.org/x/sync/errgroup"
+	"os"
+	"flag"
 )
 
 type Root struct {
@@ -20,24 +22,50 @@ type Root struct {
 	errors []error
 }
 
+func init() {
+
+}
+
 // 基準URLからサーバ用のURLを取得し、すべてリクエストする処理です
-// クラウドの負荷を純粋にかけたいので、ページに対する処理を厳密化しました。
 func main() {
 
-	url := "https://www.hagoromo-shizuoka.com/"
+	dur := flag.Int("d",60,"Duration time")
+	flag.Parse()
+
+	args := flag.Args()
+	if len(args) < 1  {
+		flag.Usage()
+		return
+	}
+
+	url := flag.Arg(0)
+	//URL解析
 	root ,err := NewRoot(url)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	//一回排除する処理を入れるかな？
+	var ch chan error
 
-	err = root.loop(30)
-	if err != nil {
+	//負荷用のループ
+	go func() {
+		ch  <- root.loop(*dur)
+	}()
+
+	//終了用のループ
+	go func() {
+		ch <- input()
+	}()
+
+	//エラーだった場合
+	if ch != nil {
 		log.Fatal(err)
 	}
+	os.Exit(0)
 }
 
+//
 func NewRoot(root string) (*Root,error) {
 	var err error
 	r := &Root {
@@ -52,6 +80,7 @@ func NewRoot(root string) (*Root,error) {
 	return r,nil
 }
 
+//全URLリクエスト処理
 func (r *Root) request() error {
 
 	eg := errgroup.Group{}
@@ -62,6 +91,7 @@ func (r *Root) request() error {
 		})
 	}
 
+	//エラー判定
 	if err := eg.Wait(); err != nil {
 		r.errors = append(r.errors,err)
 	}
@@ -79,10 +109,11 @@ func (r *Root) printError() {
 	r.errors = make([]error,0)
 }
 
-func (r *Root) loop(dur time.Duration) error {
+//アクセス処理
+func (r *Root) loop(dur int) error {
 
-	timestamp("Start")
-	t := time.NewTicker(dur * time.Second)
+	log.Println("Start")
+	t := time.NewTicker(time.Duration(dur) * time.Second)
 
 	cnt := 1
 	errCnt := 0
@@ -90,7 +121,7 @@ func (r *Root) loop(dur time.Duration) error {
 	for {
 		select {
 		case <-t.C:
-			timestamp(fmt.Sprintf("Access[%s]", r.url))
+			log.Printf(fmt.Sprintf("Access[%s]\n", r.url))
 			err := r.request()
 			if err != nil {
 				fmt.Printf("Error[%s]\n", err.Error())
@@ -99,7 +130,7 @@ func (r *Root) loop(dur time.Duration) error {
 				r.printError()
 				errCnt++
 			}
-			timestamp(fmt.Sprintf("[%06d/%06d]", errCnt,cnt))
+			log.Printf(fmt.Sprintf("[%06d/%06d]", errCnt,cnt))
 			cnt++
 		}
 	}
@@ -273,19 +304,21 @@ func request(url string, w io.Writer) error {
 	return nil
 }
 
-//現在時刻の表示
-func timestamp(log string) {
-	now := time.Now()
-	fmt.Println(convertDate(now),log)
-}
+//入力待ち
+func input() error {
 
-//JST変換
-func convertDate(t time.Time) string {
-	if t.IsZero() {
-		return "None"
+	stdin := bufio.NewScanner(os.Stdin)
+	for {
+		stdin.Scan()
+		text := stdin.Text()
+		if text == "q" || text == "quit" {
+			fmt.Println("Quit?[Y/n]")
+			stdin.Scan()
+			text = stdin.Text()
+			if text == "Y" || text == "yes" {
+				return nil
+			}
+		}
 	}
-	jst, _ := time.LoadLocation("Asia/Tokyo")
-	jt := t.In(jst)
-	return jt.Format("2006/01/02 15:04:05")
+	return nil
 }
-

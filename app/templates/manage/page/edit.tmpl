@@ -8,8 +8,6 @@ Edit Page[
 
 {{define "page_template"}}
 
-
-
 <form id="editForm" method="post" action="/manage/page/{{ .Page.Key.StringID }}" enctype="multipart/form-data">
 <table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp" width="100%">
   <tbody>
@@ -19,6 +17,10 @@ Edit Page[
           <input class="mdl-textfield__input" type="text" id="pageName" name="pageName" value="{{ .Page.Name }}">
           <label class="mdl-textfield__label" for="pageName">Name...</label>
         </div>
+
+        <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="publish">
+          <input type="checkbox" name="publish" id="publish" class="mdl-switch__input" {{if not .Page.Deleted}}checked{{end}}>
+        </label>
       </td>
     </tr>
 
@@ -53,6 +55,7 @@ Edit Page[
         </div>
       </td>
     </tr>
+
 
     <tr>
       <td class="mdl-data-table__cell--non-numeric">
@@ -94,8 +97,9 @@ Edit Page[
         <label class="mdl-textfield__label" for="childrenPage">Children Page</label>
         <ul class="mdl-menu mdl-menu--bottom-left mdl-js-menu mdl-js-ripple-effect" for="childrenPage">
           <li class="mdl-menu__item" data-id=""><i class="material-icons">add</i>Add...</li>
+
 {{range .Children}}
-          <li class="mdl-menu__item" data-id="{{ .Key.StringID }}">{{ .Name }}</li>
+          <li class="mdl-menu__item" data-id="{{ .Key.StringID }}" {{if .Deleted}}style="color:red;"{{end}}>{{ .Name }}</li>
 {{end}}
         </ul>
         </div>
@@ -183,7 +187,8 @@ Edit Page[
         alertFes("select template");
         return;
       }
-
+      //var publish = document.querySelector('#publish');
+      //console.log(publish.value);
       confirmFes(function() {
         var updateForm = document.querySelector('#editForm');
         updateForm.submit();
