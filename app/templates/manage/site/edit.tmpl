@@ -26,6 +26,15 @@ Setting
 
     <tr>
       <td class="mdl-data-table__cell--non-numeric">
+         HTML Cache
+         <label class = "mdl-switch mdl-js-switch mdl-js-ripple-effect" for = "htmlCache">
+            <input type="checkbox" id="htmlCache" name="htmlCache" class="mdl-switch__input" {{if .Site.HTMLCache }} checked {{end}}>
+         </label>
+      </td>
+    </tr>
+
+    <tr>
+      <td class="mdl-data-table__cell--non-numeric">
          Template Cache
          <label class = "mdl-switch mdl-js-switch mdl-js-ripple-effect" for = "templateCache">
             <input type = "checkbox" id = "templateCache" name="templateCache" class = "mdl-switch__input" {{if .Site.TemplateCache }} checked {{end}}>
@@ -94,6 +103,7 @@ Setting
         var rootTag = document.querySelector('#siteRoot');
 
         //cache
+        var htmlTag = document.querySelector('#htmlCache');
         var templateTag = document.querySelector('#templateCache');
         var pageTag = document.querySelector('#pageCache');
         var fileTag = document.querySelector('#fileCache');
@@ -102,6 +112,7 @@ Setting
             name : nameTag.value,
             description : descTag.value,
             rootPage : rootTag.value,
+            htmlCache : htmlTag.checked,
             templateCache : templateTag.checked,
             pageCache : pageTag.checked,
             fileCache : fileTag.checked

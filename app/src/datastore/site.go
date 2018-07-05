@@ -16,6 +16,7 @@ type Site struct {
 	Name        string
 	Description string
 	Root        string
+	HTMLCache     bool
 	TemplateCache bool
 	FileCache     bool
 	PageCache     bool
@@ -50,9 +51,12 @@ func PutSite(r *http.Request) error {
 	gSite.Description = r.FormValue("description")
 	gSite.Root = r.FormValue("rootPage")
 
-	log.Println(r.FormValue("templateCache"))
+	if cache := r.FormValue("htmlCache") ; cache != "" {
+		if val,err := strconv.ParseBool(cache) ; err == nil {
+			gSite.HTMLCache = val
+		}
+	}
 	if cache := r.FormValue("templateCache") ; cache != "" {
-		log.Println(cache)
 		if val,err := strconv.ParseBool(cache) ; err == nil {
 			gSite.TemplateCache = val
 		}

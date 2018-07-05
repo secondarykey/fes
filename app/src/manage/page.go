@@ -149,3 +149,25 @@ func (h Handler) DeletePage(w http.ResponseWriter, r *http.Request) {
 	}
 	http.Redirect(w, r, "/manage/page/", 302)
 }
+
+func (h Handler) PublicPage(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id := vars["key"]
+	err := datastore.PutHTML(r,id)
+	if err != nil {
+		h.errorPage(w, "Error Private HTML", err.Error(), 500)
+		return
+	}
+	http.Redirect(w, r, "/manage/page/" + id, 302)
+}
+
+func (h Handler) PrivatePage(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id := vars["key"]
+	err := datastore.RemoveHTML(r,id)
+	if err != nil {
+		h.errorPage(w, "Error Private HTML", err.Error(), 500)
+		return
+	}
+	http.Redirect(w, r, "/manage/page/" + id, 302)
+}

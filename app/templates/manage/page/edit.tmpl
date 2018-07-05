@@ -4,6 +4,13 @@ Edit Page[
 &gt; <a href="/manage/page/{{ .Key.StringID }}">{{ .Name }}</a>
 {{ end }}
 ]
+
+{{ if not .Page.Deleted }}
+        <button type="button" id="generateBtn" class="mdl-button mdl-js-button mdl-button--raised mdl-button--primary">
+          Publish
+        </button>
+{{ end }}
+
 {{end}}
 
 {{define "page_template"}}
@@ -109,9 +116,11 @@ Edit Page[
 
     <tr>
       <td>
+
         <button type="button" id="removeBtn" class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent">
           Remove
         </button>
+
         <button type="button" id="updateBtn" class="mdl-button mdl-js-button mdl-button--raised mdl-button--primary">
           Update
         </button>
@@ -171,6 +180,16 @@ Edit Page[
       fileBtn.click();
       return false;
     });
+
+{{ if not .Page.Deleted }}
+    var generateBtn = document.querySelector('#generateBtn');
+    generateBtn.addEventListener('click', function() {
+      confirmFes(function() {
+        var type = "public";
+        window.location.href = "/manage/page/" + type + "/{{ .Page.Key.StringID }}";
+      });
+    });
+{{ end }}
 
     var removeBtn = document.querySelector('#removeBtn');
     removeBtn.addEventListener('click', function() {

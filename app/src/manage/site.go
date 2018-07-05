@@ -64,8 +64,9 @@ func (h Handler) DownloadSitemap(w http.ResponseWriter, r *http.Request) {
 	}
 
 	dto := struct {
+		Header string
 		Pages []URL
-	}{urls}
+	}{`<?xml version="1.0" encoding="UTF-8"?>`,urls}
 
 	//Topと同じだった場合
 	tmpl, err := template.ParseFiles("templates/manage/site/map.tmpl")

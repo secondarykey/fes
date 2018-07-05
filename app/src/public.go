@@ -7,7 +7,6 @@ import (
 
 	"github.com/gorilla/mux"
 	"log"
-	"src/logic"
 )
 
 type Public struct {}
@@ -26,7 +25,7 @@ func (p Public) pagingTop(w http.ResponseWriter, r *http.Request,flag bool) {
 		p.errorPage(w,"Not Found","Root page not found",404)
 		return
 	}
-	logic.GenerateHTML(w,r,site.Root,flag)
+	datastore.GenerateHTML(w,r,site.Root,flag)
 }
 
 
@@ -42,7 +41,7 @@ func (p Public) pageHandler(w http.ResponseWriter, r *http.Request) {
 func (p Public) paging(w http.ResponseWriter, r *http.Request,flag bool) {
 	vars := mux.Vars(r)
 	id := vars["key"]
-	err := logic.GenerateHTML(w,r,id,flag)
+	err := datastore.GenerateHTML(w,r,id,flag)
 	if err != nil {
 		p.errorPage(w,"ERROR:Generate HTML",err.Error(),500)
 		return

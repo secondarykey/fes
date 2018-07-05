@@ -219,12 +219,12 @@ func RemovePage(r *http.Request, id string) error {
 		pkey := CreatePageKey(r, id)
 		err = ds.Delete(c, pkey)
 		if err != nil {
-			return nil
+			return err
 		}
 		pdkey := CreatePageDataKey(r, id)
 		err = ds.Delete(c, pdkey)
 		if err != nil {
-			return nil
+			return err
 		}
 		if ExistFile(r,id) {
 			return RemoveFile(r, id)
