@@ -27,6 +27,8 @@ func (h Handler) view(w http.ResponseWriter, r *http.Request, id string, parent 
 	var page *datastore.Page
 	var pageData *datastore.PageData
 
+	publish := false
+
 	templates, err := datastore.SelectTemplates(r,-1)
 	if err != nil {
 		h.errorPage(w, "Error Select Template",err.Error(), 500)
@@ -80,6 +82,12 @@ func (h Handler) view(w http.ResponseWriter, r *http.Request, id string, parent 
 			return
 		}
 
+		if !page.Deleted {
+			if page.UpdatedAt.Unix() > page.Publish.Unix() + 5 {
+				publish = true
+			}
+		}
+
 		for _, elm := range templates {
 			if elm.Key.StringID() == page.SiteTemplate {
 				siteTemplateName = elm.Name
@@ -117,9 +125,10 @@ func (h Handler) view(w http.ResponseWriter, r *http.Request, id string, parent 
 		Children         []datastore.Page
 		Breadcrumbs      []datastore.Page
 		Templates        []datastore.Template
+		Publish          bool
 		SiteTemplateName string
 		PageTemplateName string
-	}{page, pageData, children, breadcrumbs, templates, siteTemplateName, pageTemplateName}
+	}{page, pageData, children, breadcrumbs, templates, publish,siteTemplateName, pageTemplateName}
 	h.parse(w, TEMPLATE_DIR+"page/edit.tmpl", dto)
 }
 

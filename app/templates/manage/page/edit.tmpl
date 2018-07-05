@@ -5,7 +5,7 @@ Edit Page[
 {{ end }}
 ]
 
-{{ if not .Page.Deleted }}
+{{ if .Publish }}
         <button type="button" id="generateBtn" class="mdl-button mdl-js-button mdl-button--raised mdl-button--primary">
           Publish
         </button>
@@ -181,7 +181,7 @@ Edit Page[
       return false;
     });
 
-{{ if not .Page.Deleted }}
+{{ if .Publish }}
     var generateBtn = document.querySelector('#generateBtn');
     generateBtn.addEventListener('click', function() {
       confirmFes(function() {
