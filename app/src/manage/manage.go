@@ -2,8 +2,12 @@ package manage
 
 import (
 	"api"
+	"datastore"
+
 	"html/template"
 	"net/http"
+
+	"github.com/gorilla/mux"
 )
 
 const TEMPLATE_DIR = "./templates/manage/"
@@ -11,12 +15,32 @@ const TEMPLATE_DIR = "./templates/manage/"
 type Handler struct{}
 
 func (h Handler) View(w http.ResponseWriter, r *http.Request) {
-
 	//特にないかな？
-
 	h.parse(w, TEMPLATE_DIR+"top.tmpl", nil)
 }
 
+func (h Handler) TopHandler(w http.ResponseWriter, r *http.Request) {
+	site := datastore.GetSite(r)
+	if site.Root == "" {
+		h.errorPage(w,"Not Found","Root page not found",404)
+		return
+	}
+	err := datastore.GenerateHTML(w,r,site.Root,true)
+	if err != nil {
+		h.errorPage(w,"ERROR:Generate HTML",err.Error(),500)
+		return
+	}
+}
+
+func (h Handler) PageHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id := vars["key"]
+	err := datastore.GenerateHTML(w,r,id,true)
+	if err != nil {
+		h.errorPage(w,"ERROR:Generate HTML",err.Error(),500)
+		return
+	}
+}
 func (h Handler) parse(w http.ResponseWriter, tName string, obj interface{}) {
 
 	funcMap := template.FuncMap{

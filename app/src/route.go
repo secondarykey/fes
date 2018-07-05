@@ -20,6 +20,8 @@ func init() {
 	r.HandleFunc("/manage/page/delete/{key}", h.DeletePage).Methods("GET")
 	r.HandleFunc("/manage/page/public/{key}", h.PublicPage).Methods("GET")
 	r.HandleFunc("/manage/page/private/{key}", h.PrivatePage).Methods("GET")
+	r.HandleFunc("/manage/page/view/{key}", h.PageHandler).Methods("GET")
+	r.HandleFunc("/manage/page/view/", h.TopHandler).Methods("GET")
 
 	//File
 	r.HandleFunc("/manage/file/", h.ViewFile).Methods("GET")
@@ -41,8 +43,6 @@ func init() {
 
 	pub := Public{}
 	//管理用に変更
-	r.HandleFunc("/manage/page/view/{key}", pub.managePageHandler).Methods("GET")
-	r.HandleFunc("/manage/page/view/", pub.manageTopHandler).Methods("GET")
 	r.HandleFunc("/page/{key}", pub.pageHandler).Methods("GET")
 	r.HandleFunc("/file/{key}", pub.fileHandler).Methods("GET")
 	r.HandleFunc("/", pub.topHandler).Methods("GET")

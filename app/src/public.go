@@ -11,41 +11,41 @@ import (
 
 type Public struct {}
 
-func (p Public) manageTopHandler(w http.ResponseWriter, r *http.Request) {
-	p.pagingTop(w,r,true)
+
+
+func (p Public) pageHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id := vars["key"]
+	p.pageView(w,r,id)
+}
+
+func (p Public) pageView(w http.ResponseWriter, r *http.Request,id string) {
+
+	html,err := datastore.GetHTML(r,id)
+	if err != nil {
+		p.errorPage(w,"error get html",err.Error(),500)
+		return
+	}
+	if html == nil {
+		p.errorPage(w,"page not found",id,404)
+		return
+	}
+
+	w.Header().Set("Content-Type","text/html")
+	w.WriteHeader(200)
+	_,err = w.Write(html.Content)
+	if err != nil {
+		log.Println("Write Error")
+	}
 }
 
 func (p Public) topHandler(w http.ResponseWriter, r *http.Request) {
-	p.pagingTop(w,r,false)
-}
-
-func (p Public) pagingTop(w http.ResponseWriter, r *http.Request,flag bool) {
 	site := datastore.GetSite(r)
 	if site.Root == "" {
 		p.errorPage(w,"Not Found","Root page not found",404)
 		return
 	}
-	datastore.GenerateHTML(w,r,site.Root,flag)
-}
-
-
-func (p Public) managePageHandler(w http.ResponseWriter, r *http.Request) {
-	p.paging(w,r,true)
-}
-
-func (p Public) pageHandler(w http.ResponseWriter, r *http.Request) {
-	//TODO HTMLアクセス
-	p.paging(w,r,false)
-}
-
-func (p Public) paging(w http.ResponseWriter, r *http.Request,flag bool) {
-	vars := mux.Vars(r)
-	id := vars["key"]
-	err := datastore.GenerateHTML(w,r,id,flag)
-	if err != nil {
-		p.errorPage(w,"ERROR:Generate HTML",err.Error(),500)
-		return
-	}
+	p.pageView(w,r,site.Root)
 }
 
 func (p Public) fileHandler(w http.ResponseWriter, r *http.Request) {

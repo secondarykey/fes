@@ -72,7 +72,7 @@ func PutHTML(r *http.Request,id string) error {
 
 	var buf []byte
 	w := bytes.NewBuffer(buf)
-	err = GenerateHTML(w,r,id,true)
+	err = GenerateHTML(w,r,id,false)
 	if err != nil {
 		return err
 	}
