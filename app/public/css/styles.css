@@ -1,11 +1,11 @@
 
 body {
   margin: 0;
-  background-color: white;
+  background-color: ivory;
 }
 
 footer {
-  background-color: white;
+  background-color: ivory;
 }
 
 /* Disable ugly boxes around ../images in IE10 */
@@ -48,6 +48,16 @@ img.fill {
 .imageTitle {
   font-size:24px;
   text-shadow:0px -1px #aaa, 1px 0px #555, 0px 1px #aaa, -1px 1px #555;
+}
+
+.private-mark {
+  position: fixed;
+  display: block;
+  right: 0;
+  bottom: 0;
+  margin-right: 40px;
+  margin-bottom: 40px;
+  z-index: 900;
 }
 
 ::-moz-selection {
@@ -93,7 +103,7 @@ img.fill {
 }
 
 .android-header {
-    background-color: white;
+  background-color: ivory;
   overflow: visible;
 }
 
@@ -327,7 +337,7 @@ img.fill {
 
 .access-section {
   position: relative;
-  background: url('/file/access.jpg') center top no-repeat;
+  background: url('/file/gate.jpg') center top no-repeat;
   background-size: cover;
   height: 500px;
 }
@@ -448,27 +458,26 @@ img.fill {
   }
 
   .android-footer a:hover {
-    background-color: white;
     color: #8bc34a;
   }
 
   .android-footer .mdl-mega-footer--top-section::after {
-    background-color: white;
+    background-color: ivory;
     border-bottom: none;
   }
 
   .android-footer .mdl-mega-footer--middle-section::after {
-    background-color: white;
+    background-color: ivory;
     border-bottom: none;
   }
 
   .android-footer .mdl-mega-footer--bottom-section {
-    background-color: white;
+    background-color: ivory;
     position: relative;
   }
 
   .android-footer .mdl-mega-footer--bottom-section a {
-    background-color: white;
+    background-color: ivory;
     margin-right: 2em;
   }
 

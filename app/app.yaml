@@ -6,9 +6,9 @@ handlers:
     script: _go_app
   - url: /page/.*
     script: _go_app
-  - url: /(.*\.(gif|png|jpg|css|js))$
+  - url: /(.*\.(gif|png|jpg|css|js|ico))$
     static_files: public/\1
-    upload: public/.*\.(gif|png|jpg|css|js)$
+    upload: public/.*\.(gif|png|jpg|css|js|ico)$
   - url: /manage/.*
     script: _go_app
     login: admin

@@ -14,6 +14,7 @@ import (
 	"google.golang.org/appengine/datastore"
 	"fmt"
 	"api"
+	"time"
 )
 
 const KIND_PAGE = "Page"
@@ -23,6 +24,7 @@ type Page struct {
 	Seq         int
 	Description string
 	Parent      string
+	Publish     time.Time
 
 	SiteTemplate string
 	PageTemplate string
@@ -32,6 +34,26 @@ type Page struct {
 func CreatePageKey(r *http.Request, id string) *datastore.Key {
 	c := appengine.NewContext(r)
 	return datastore.NewKey(c, KIND_PAGE, id, 0, nil)
+}
+
+func SelectPages(r *http.Request) ([]Page, error) {
+	c := appengine.NewContext(r)
+	var pages []Page
+	q := datastore.NewQuery(KIND_PAGE).Filter("Deleted=",false).Order("CreatedAt")
+	t := q.Run(c)
+	for {
+		var page Page
+		key, err := t.Next(&page)
+		if err == datastore.Done {
+			break
+		}
+		if err != nil {
+			return nil, err
+		}
+		page.SetKey(key)
+		pages = append(pages, page)
+	}
+	return pages, nil
 }
 
 func SelectChildPages(r *http.Request, id string,limit int,mng bool) ([]Page, error) {
@@ -144,6 +166,8 @@ func PutPage(r *http.Request) error {
 		if err != nil {
 			//ファイル指定なしの場合の動作
 		}
+
+		//TODO Deletedにされている場合、HTMLを検索して削除
 
 		//一番親ページの場合
 		if page.Parent == "" {

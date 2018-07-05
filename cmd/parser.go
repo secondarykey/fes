@@ -38,6 +38,7 @@ func main() {
 		return
 	}
 
+
 	url := flag.Arg(0)
 	//URL解析
 	root ,err := NewRoot(url)
@@ -47,21 +48,31 @@ func main() {
 
 	//一回排除する処理を入れるかな？
 	var ch chan error
-
+	closeFlag := make(chan bool)
 	//負荷用のループ
 	go func() {
-		ch  <- root.loop(*dur)
+		ch  <- root.loop(*dur,closeFlag)
+		if ch != nil {
+			log.Fatal(ch)
+			closeFlag <- true
+		}
+		return
 	}()
 
 	//終了用のループ
 	go func() {
-		ch <- input()
+		err = input()
+		if err != nil {
+			if err != ErrorQuit {
+				log.Fatal(err)
+			}
+			closeFlag <- true
+		}
 	}()
 
+	<-closeFlag
+	close(closeFlag)
 	//エラーだった場合
-	if ch != nil {
-		log.Fatal(err)
-	}
 	os.Exit(0)
 }
 
@@ -110,7 +121,7 @@ func (r *Root) printError() {
 }
 
 //アクセス処理
-func (r *Root) loop(dur int) error {
+func (r *Root) loop(dur int,flag chan bool) error {
 
 	log.Println("Start")
 	t := time.NewTicker(time.Duration(dur) * time.Second)
@@ -132,6 +143,8 @@ func (r *Root) loop(dur int) error {
 			}
 			log.Printf(fmt.Sprintf("[%06d/%06d]", errCnt,cnt))
 			cnt++
+			case <-flag:
+				return nil
 		}
 	}
 	return nil
@@ -304,20 +317,23 @@ func request(url string, w io.Writer) error {
 	return nil
 }
 
+var (
+	ErrorQuit = fmt.Errorf("Quit")
+)
+
 //入力待ち
 func input() error {
 
 	stdin := bufio.NewScanner(os.Stdin)
-	for {
+	stdin.Scan()
+	text := stdin.Text()
+
+	if text == "q" || text == "quit" {
+		fmt.Println("Quit?[Y/n]")
 		stdin.Scan()
-		text := stdin.Text()
-		if text == "q" || text == "quit" {
-			fmt.Println("Quit?[Y/n]")
-			stdin.Scan()
-			text = stdin.Text()
-			if text == "Y" || text == "yes" {
-				return nil
-			}
+		text = stdin.Text()
+		if text == "Y" || text == "yes" {
+			return ErrorQuit
 		}
 	}
 	return nil

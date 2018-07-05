@@ -4,7 +4,18 @@ import(
 	"datastore"
 
 	"net/http"
+	"html/template"
+	"time"
 )
+
+type URL struct {
+	URL string
+	LastModified string
+	Priority string
+	Change string
+	Image string
+	Caption string
+}
 
 //setting画面
 func (h Handler) ViewSetting(w http.ResponseWriter, r *http.Request) {
@@ -24,13 +35,47 @@ func (h Handler) EditSetting(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-//初回アクセスにおける設定
-func (h Handler) FirstSetting(r *http.Request) {
+func (h Handler) DownloadSitemap(w http.ResponseWriter, r *http.Request) {
 
-	//テンプレートを登録
+	//URLを解析
+	root := "https://www.hagoromo-shizuoka.com/"
 
-    //サイトを登録
+	//Page全体でアクセス
+	pages,err := datastore.SelectPages(r)
+	if err != nil {
+		h.errorPage(w,"Datastore select pages Error",err.Error(),500)
+		return
+	}
 
-    //最初のページを設定
+	urls := make([]URL,len(pages))
+	//Page数回繰り返す
+	for _,page := range pages {
 
+		url := URL{}
+
+		url.URL = root + "page/" + page.Key.StringID()
+		url.LastModified = page.UpdatedAt.Format(time.RFC3339)
+		url.Change = "weekly"
+		url.Priority = "0.8"
+		url.Image = root + "file/" + page.Key.StringID()
+		url.Caption = page.Description
+	}
+
+	dto := struct {
+		Pages []URL
+	}{urls}
+
+	//Topと同じだった場合
+	tmpl, err := template.ParseFiles("templates/sitemap.tmpl")
+	if err != nil {
+		h.errorPage(w,"Sitemap template parse Error",err.Error(),500)
+		return
+	}
+
+	err = tmpl.Execute(w, dto)
+	if err != nil {
+		h.errorPage(w,"Sitemap template execute Error",err.Error(),500)
+		return
+	}
 }
+

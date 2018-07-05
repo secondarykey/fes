@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset
+    xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+    xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+
+{{ range .Pages}}
+<url>
+  <loc>{{ .URL }}</loc>
+  <lastmod>{{ .LastModified }}</lastmod>
+  <priority>{{ .Priority }}</priority>
+  <changefreq>{{ .Change }}</changefreq>
+  <image:image>
+     <image:loc>{{ .Image }}</image:loc>
+     <image:caption>{{ .Caption }}</image:caption>
+  </image:image>
+</url>
+
+{{ end }}
+</urlset>
