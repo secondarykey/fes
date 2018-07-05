@@ -17,6 +17,12 @@ import (
 //URL = /manage/file/
 func (h Handler) ViewFile(w http.ResponseWriter, r *http.Request) {
 
+	vars := mux.Vars(r)
+	t,flag := vars["type"]
+	if !flag {
+		t = "1"
+	}
+
 	p:= 1
 	q := r.URL.Query()
 	pageBuf := q.Get("page")
@@ -27,7 +33,7 @@ func (h Handler) ViewFile(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	files,err := datastore.SelectFiles(r,p)
+	files,err := datastore.SelectFiles(r,t,p)
 	if err != nil {
 		h.errorPage(w,"Error Select File",err.Error(),500)
 		return

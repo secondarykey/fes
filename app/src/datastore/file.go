@@ -40,15 +40,25 @@ func getFileCursor(p int) string {
 	return "file_"+strconv.Itoa(p)+"_cursor"
 }
 
-func SelectFiles(r *http.Request,p int) ([]File, error) {
+func SelectFiles(r *http.Request,tBuf string,p int) ([]File, error) {
 
 	var s []File
+
+	typ := 0
+	if tBuf == "1" || tBuf == "2" {
+		typ,_ = strconv.Atoi(tBuf)
+	}
 
 	c := appengine.NewContext(r)
 	cursor := ""
 
 	//q := datastore.NewQuery(KIND_FILE).Order("- UpdatedAt")
-	q := datastore.NewQuery(KIND_FILE).Order("- UpdatedAt").Filter("Type=",api.DATA_FILE)
+	q := datastore.NewQuery(KIND_FILE).Order("- UpdatedAt")
+
+	if typ == api.DATA_FILE || typ == api.PAGE_IMAGE {
+		q = q.Filter("Type=",typ)
+	}
+
 	if  p > 0 {
 		item, err := memcache.Get(c, getFileCursor(p))
 		if err == nil {
