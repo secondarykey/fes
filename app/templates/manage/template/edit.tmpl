@@ -29,9 +29,11 @@ Edit Template
 
   <tr>
     <td class="mdl-data-table__cell--non-numeric">
-      <button type="button" id="templateTxt" class="mdl-button mdl-js-button mdl-button--raised">Edit Template</button>
+      <button type="button" id="templateTxt" class="mdl-button mdl-js-button mdl-button--raised">EditTool</button>
+      <br>
       <div class="mdl-textfield mdl-js-textfield">
-        <textarea class="mdl-textfield__input" type="text" id="templateData" style="display:none;">{{ plane .TemplateData.Content }}</textarea>
+        <textarea class="mdl-textfield__input" type="text" id="templateData" rows="10">{{ plane .TemplateData.Content }}</textarea>
+        <label class="mdl-textfield__label" for="pageContent">Template Data...</label>
       </div>
     </td>
   </tr>

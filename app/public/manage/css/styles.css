@@ -9,6 +9,36 @@ html, body {
     margin: 0px;
 }
 
+#add-content {
+    position: fixed;
+    display: block;
+    right: 0;
+    bottom: 0;
+    margin-right: 40px;
+    margin-bottom: 40px;
+    z-index: 900;
+}
+
+#updateBtn {
+    position: fixed;
+    display: block;
+    right: 0;
+    bottom: 0;
+    margin-right: 40px;
+    margin-bottom: 40px;
+    z-index: 900;
+}
+
+#generateBtn {
+    position: fixed;
+    display: block;
+    right: 0;
+    top: 0;
+    margin-right: 40px;
+    margin-top: 10px;
+    z-index: 900;
+}
+
 #editTxt {
     left: 50%;
     min-height: 100%;

@@ -41,8 +41,8 @@ func init() {
 	r.HandleFunc("/manage/site/edit", h.EditSetting).Methods("POST")
 	r.HandleFunc("/manage/site/map", h.DownloadSitemap).Methods("GET")
 
+	//外部アクセス
 	pub := Public{}
-	//管理用に変更
 	r.HandleFunc("/page/{key}", pub.pageHandler).Methods("GET")
 	r.HandleFunc("/file/{key}", pub.fileHandler).Methods("GET")
 	r.HandleFunc("/", pub.topHandler).Methods("GET")
