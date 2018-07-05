@@ -10,15 +10,28 @@ import (
 )
 
 func (h Handler) ViewPage(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	id := vars["key"]
-	h.view(w, r, id, "")
+	h.view(w, r, "", "")
 }
 
 func (h Handler) AddPage(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	parent := vars["key"]
 	h.view(w, r, "", parent)
+}
+
+func (h Handler) EditPage(w http.ResponseWriter, r *http.Request) {
+
+	if POST(r) {
+		err := datastore.PutPage(r)
+		if err != nil {
+			h.errorPage(w, "Error Put Page",err.Error() ,500)
+			return
+		}
+	}
+
+	vars := mux.Vars(r)
+	id := vars["key"]
+	h.view(w, r, id, "")
 }
 
 func (h Handler) view(w http.ResponseWriter, r *http.Request, id string, parent string) {
@@ -57,10 +70,13 @@ func (h Handler) view(w http.ResponseWriter, r *http.Request, id string, parent 
 		page = &datastore.Page{
 			Parent: parent,
 		}
+		page.Deleted = true
 		pageData = &datastore.PageData{}
 
 		uid, err := uuid.NewV4()
 		if err != nil {
+			h.errorPage(w, "Generate uuid ",err.Error() ,500)
+			return
 		}
 
 		id = uid.String()
@@ -132,20 +148,7 @@ func (h Handler) view(w http.ResponseWriter, r *http.Request, id string, parent 
 	h.parse(w, TEMPLATE_DIR+"page/edit.tmpl", dto)
 }
 
-func (h Handler) EditPage(w http.ResponseWriter, r *http.Request) {
 
-	if POST(r) {
-		err := datastore.PutPage(r)
-		if err != nil {
-			h.errorPage(w, "Error Put Page",err.Error() ,500)
-			return
-		}
-	}
-
-	vars := mux.Vars(r)
-	id := vars["key"]
-	h.view(w, r, id, "")
-}
 
 func (h Handler) DeletePage(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
@@ -179,4 +182,36 @@ func (h Handler) PrivatePage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	http.Redirect(w, r, "/manage/page/" + id, 302)
+}
+
+func (h Handler) ToolPage(w http.ResponseWriter, r *http.Request) {
+
+	vars := mux.Vars(r)
+	id := vars["key"]
+
+	children, err := datastore.SelectChildPages(r, id,0,true)
+	if err != nil {
+		h.errorPage(w, "Error Select Children page", err.Error(),500)
+		return
+	}
+
+	dto := struct {
+		Parent string
+		Pages []datastore.Page
+	} {id,children}
+	h.parse(w, TEMPLATE_DIR+"page/view.tmpl", dto)
+}
+
+func (h Handler) SequencePage(w http.ResponseWriter, r *http.Request) {
+
+	id := r.FormValue("id")
+	idCsv := r.FormValue("ids")
+
+	err := datastore.PutPageSequence(r,idCsv)
+	if err != nil {
+		h.errorPage(w, "Error Page sequence update", err.Error(),500)
+		return
+	}
+
+	http.Redirect(w, r, "/manage/page/tool/" + id, 302)
 }

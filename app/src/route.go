@@ -20,6 +20,9 @@ func init() {
 	r.HandleFunc("/manage/page/delete/{key}", h.DeletePage).Methods("GET")
 	r.HandleFunc("/manage/page/public/{key}", h.PublicPage).Methods("GET")
 	r.HandleFunc("/manage/page/private/{key}", h.PrivatePage).Methods("GET")
+	r.HandleFunc("/manage/page/tool/{key}", h.ToolPage).Methods("GET")
+	r.HandleFunc("/manage/page/tool/sequence", h.SequencePage).Methods("POST")
+
 	r.HandleFunc("/manage/page/view/{key}", h.PageHandler).Methods("GET")
 	r.HandleFunc("/manage/page/view/", h.TopHandler).Methods("GET")
 

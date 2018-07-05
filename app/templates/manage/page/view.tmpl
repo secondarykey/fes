@@ -1,0 +1,143 @@
+{{define "title"}}
+Children Page Tool[<a href="/manage/page/{{ .Parent }}">Parent</a>]
+        <button type="button" id="generateBtn" class="mdl-button mdl-js-button mdl-button--raised mdl-button--primary">
+        Sequence
+        </button>
+{{end}}
+{{define "page_template"}}
+
+<table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
+  <thead>
+    <tr>
+      <th> </th>
+      <th class="mdl-data-table__cell--non-numeric">Name</th>
+      <th>Create</th>
+      <th>Update</th>
+      <th> </th>
+    </tr>
+  </thead>
+  <tbody id="seqBody">
+{{ range $i, $v := .Pages}}
+    <tr class="seqRow" data-index="{{$i}}" data-id="{{.Key.StringID}}">
+      <td>
+        <button class="mdl-button mdl-js-button mdl-button--icon upBtn">
+            <i class="material-icons">arrow_upward</i>
+        </button>
+      </td>
+
+      <td class="mdl-data-table__cell--non-numeric"><a href="/manage/page/{{ .Key.StringID}}" target="_page_editor" {{if .Deleted}}style="color:red;"{{end}}>{{ .Name }}</a></td>
+      <td>{{convertDate .CreatedAt}}</td>
+      <td>{{convertDate .UpdatedAt}}</td>
+
+      <td>
+        <button class="mdl-button mdl-js-button mdl-button--icon downBtn">
+            <i class="material-icons">arrow_downward</i>
+        </button>
+      </td>
+    </tr>
+{{ end }}
+  </tbody>
+  <form id="sequenceForm" name="sequenceForm" method="post" action="/manage/page/tool/sequence">
+  <input type="hidden" name="id" value="{{.Parent}}" />
+  <input type="hidden" name="ids" id="ids" value="" />
+  </form>
+</table>
+
+<!-- view template -->
+<button type="button" id="add-content" class="mdl-button mdl-js-button mdl-button--fab mdl-button--primary">
+  <i class="material-icons">add</i>
+</button>
+
+<script>
+
+    var addBtn = document.querySelector('#add-content');
+    addBtn.addEventListener('click', function() {
+      var url = "/manage/page/add/{{.Parent}}";
+      var name = "_page_editor";
+      window.open(url,name);
+      return false;
+    });
+
+    var upList = document.querySelectorAll('button.upBtn');
+    for (var i=0; i< upList.length; i++) {
+        upList[i].addEventListener('click', function(e) {
+          var tr = e.target;
+          while ( tr.getAttribute("data-index") == null ) {
+             tr = tr.parentNode;
+          }
+          var index = tr.getAttribute("data-index");
+          moveRow(index,parseInt(index)-1);
+        });
+    }
+
+    var downList = document.querySelectorAll('button.downBtn');
+    for (var i=0; i< downList.length; i++) {
+        downList[i].addEventListener('click', function(e) {
+          var tr = e.target;
+          while ( tr.getAttribute("data-index") == null ) {
+             tr = tr.parentNode;
+          }
+          var index = tr.getAttribute("data-index");
+          moveRow(index,parseInt(index)+1);
+        });
+    }
+
+    function moveRow(src,target) {
+        var seqRows = document.querySelectorAll('tr.seqRow');
+        var srcElm;
+        var targetElm;
+        if ( target < 0 || target >= (seqRows.length) ) {
+          return;
+        }
+
+        for (var i=0; i< seqRows.length; i++) {
+          var addElm = seqRows[i];
+          if ( i == src )  {
+             addElm.setAttribute("data-index",target);
+             srcElm = addElm;
+          } else if ( i == target )  {
+             addElm.setAttribute("data-index",src);
+             targetElm = addElm;
+          }
+        }
+
+        var elm = document.querySelector('#seqBody');
+        //空にする
+        while (elm.firstChild) elm.removeChild(elm.firstChild);
+
+        for (var i=0; i< seqRows.length; i++) {
+          var addElm = seqRows[i];
+          if ( i == src )  {
+            addElm = targetElm;
+          } else if ( i == target )  {
+            addElm = srcElm;
+          }
+          elm.appendChild(addElm);
+        }
+    }
+
+    var generateBtn = document.querySelector('#generateBtn');
+    generateBtn.addEventListener('click', function() {
+      confirmFes(function() {
+        var seqRows = document.querySelectorAll('tr.seqRow');
+        var ids = "";
+        for (var i=0; i< seqRows.length; i++) {
+          var seqElm = seqRows[i];
+          var id = seqElm.getAttribute("data-id");
+          if ( ids != "" ) {
+            ids += ",";
+          }
+          ids += id;
+        }
+
+        var idsForm = document.querySelector('#ids');
+        idsForm.value = ids;
+
+        var seqForm = document.querySelector('#sequenceForm');
+        seqForm.submit();
+      });
+    });
+
+</script>
+
+{{ end }}

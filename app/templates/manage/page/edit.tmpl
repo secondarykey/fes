@@ -3,7 +3,11 @@ Edit Page[
 {{ range .Breadcrumbs}}
 &gt; <a href="/manage/page/{{ .Key.StringID }}">{{ .Name }}</a>
 {{ end }}
-]
+] &lt;
+{{ if ne .Page.Name "" }}
+<a href="/manage/page/tool/{{ .Page.Key.StringID }}">Tool</a>
+{{ end }}
+
 
 {{ if .Publish }}
         <button type="button" id="generateBtn" class="mdl-button mdl-js-button mdl-button--raised mdl-button--primary">
@@ -115,8 +119,6 @@ Edit Page[
         </div>
       </td>
     </tr>
-
-
 
     <tr>
       <td class="mdl-data-table__cell--non-numeric">

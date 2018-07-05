@@ -15,6 +15,7 @@ import (
 	"fmt"
 	"api"
 	"time"
+	"strings"
 )
 
 const KIND_PAGE = "Page"
@@ -267,4 +268,29 @@ func SelectPageData(r *http.Request, id string) (*PageData, error) {
 		}
 	}
 	return &page, nil
+}
+
+
+func PutPageSequence(r *http.Request, ids string) (error) {
+
+	idArray := strings.Split(ids,",")
+
+	keys := make([]*datastore.Key,len(idArray))
+	for idx,id := range idArray {
+		key := CreatePageKey(r,id)
+		keys[idx] = key
+	}
+
+	c := appengine.NewContext(r)
+
+	pages := make([]*Page,len(keys))
+	err := ds.GetMulti(c,keys,pages)
+	if err != nil {
+		return err
+	}
+	for idx,page := range pages {
+		page.Seq = idx + 1
+	}
+
+	return ds.PutMulti(c,keys,pages)
 }
