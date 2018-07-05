@@ -49,7 +49,7 @@ func (h Handler) DownloadSitemap(w http.ResponseWriter, r *http.Request) {
 
 	urls := make([]URL,len(pages))
 	//Page数回繰り返す
-	for _,page := range pages {
+	for idx,page := range pages {
 
 		url := URL{}
 
@@ -59,6 +59,8 @@ func (h Handler) DownloadSitemap(w http.ResponseWriter, r *http.Request) {
 		url.Priority = "0.8"
 		url.Image = root + "file/" + page.Key.StringID()
 		url.Caption = page.Description
+
+		urls[idx] = url
 	}
 
 	dto := struct {
@@ -66,7 +68,7 @@ func (h Handler) DownloadSitemap(w http.ResponseWriter, r *http.Request) {
 	}{urls}
 
 	//Topと同じだった場合
-	tmpl, err := template.ParseFiles("templates/sitemap.tmpl")
+	tmpl, err := template.ParseFiles("templates/manage/site/map.tmpl")
 	if err != nil {
 		h.errorPage(w,"Sitemap template parse Error",err.Error(),500)
 		return

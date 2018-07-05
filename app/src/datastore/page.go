@@ -39,7 +39,7 @@ func CreatePageKey(r *http.Request, id string) *datastore.Key {
 func SelectPages(r *http.Request) ([]Page, error) {
 	c := appengine.NewContext(r)
 	var pages []Page
-	q := datastore.NewQuery(KIND_PAGE).Filter("Deleted=",false).Order("CreatedAt")
+	q := datastore.NewQuery(KIND_PAGE).Filter("Deleted=",false)
 	t := q.Run(c)
 	for {
 		var page Page

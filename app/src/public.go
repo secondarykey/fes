@@ -5,38 +5,30 @@ import (
 	"html/template"
 	"net/http"
 
-	"api"
 	"github.com/gorilla/mux"
 	"log"
+	"src/logic"
 )
 
-type Public struct {
-	r *http.Request
-	manage bool
-}
+type Public struct {}
 
 func (p Public) manageTopHandler(w http.ResponseWriter, r *http.Request) {
 	p.pagingTop(w,r,true)
 }
 
-func (p Public) pagingTop(w http.ResponseWriter, r *http.Request,flag bool) {
-	top, err := datastore.SelectRootPage(r)
-	if err != nil {
-		p.errorPage(w,"Datastore Select Page [main]", err.Error(),  500)
-		return
-	}
-
-	if top == nil {
-		p.errorPage(w, "Not Found[main]", "Top Page Not Found", 404)
-		return
-	}
-	p.parsePage(w, r, top,flag)
-}
-
 func (p Public) topHandler(w http.ResponseWriter, r *http.Request) {
-	//TODO HTMLアクセス
 	p.pagingTop(w,r,false)
 }
+
+func (p Public) pagingTop(w http.ResponseWriter, r *http.Request,flag bool) {
+	site := datastore.GetSite(r)
+	if site.Root == "" {
+		p.errorPage(w,"Not Found","Root page not found",404)
+		return
+	}
+	logic.GenerateHTML(w,r,site.Root,flag)
+}
+
 
 func (p Public) managePageHandler(w http.ResponseWriter, r *http.Request) {
 	p.paging(w,r,true)
@@ -50,118 +42,11 @@ func (p Public) pageHandler(w http.ResponseWriter, r *http.Request) {
 func (p Public) paging(w http.ResponseWriter, r *http.Request,flag bool) {
 	vars := mux.Vars(r)
 	id := vars["key"]
-	page, err := datastore.SelectPage(r, id)
+	err := logic.GenerateHTML(w,r,id,flag)
 	if err != nil {
-		p.errorPage(w, "Datastore Select Page ["+id+"]",err.Error(),  500)
+		p.errorPage(w,"ERROR:Generate HTML",err.Error(),500)
 		return
 	}
-	if page == nil {
-		p.errorPage(w, "Not Found", "Not found page["+id+"]", 404)
-		return
-	}
-	p.parsePage(w, r, page,flag)
-}
-
-func (pub Public) parsePage(w http.ResponseWriter, r *http.Request, page *datastore.Page,flag bool) {
-
-	pub.manage = flag
-
-	dir := "/manage/page/view/"
-	top := "/manage/page/view/"
-	if !flag {
-		if page.Deleted {
-			pub.errorPage(w, "This page is private", "",401)
-			return
-		}
-		dir = "/page/"
-		top = "/"
-	}
-
-	var err error
-
-	id := page.Key.StringID()
-	pub.r = r
-	site := datastore.GetSite(r)
-
-	//テンプレートを取得
-	siteTmp, err := datastore.SelectTemplateData(r, page.SiteTemplate)
-	if err != nil {
-		pub.errorPage(w, "Datastore:Select Site Template Error", err.Error() ,500)
-		return
-	}
-	pageTmp, err := datastore.SelectTemplateData(r, page.PageTemplate)
-	if err != nil {
-		pub.errorPage(w, "Datastore:Select Page Template Error", err.Error(), 500)
-		return
-	}
-
-	pData, err := datastore.SelectPageData(r, id)
-	if err != nil {
-		pub.errorPage(w,"Datastore:Select Page Data Error",  err.Error(), 500)
-		return
-	}
-	children, err := datastore.SelectChildPages(r,id,0,flag)
-	if err != nil {
-		pub.errorPage(w, "Datastore:Select Children page Error", err.Error(), 500)
-		return
-	}
-
-	siteTmpData := string(siteTmp.Content)
-	pageTmpData := string(pageTmp.Content)
-	siteTmpData = "{{define \"" + api.SITE_TEMPLATE + "\"}}" + "\n" + siteTmpData + "\n" + "{{end}}"
-	pageTmpData = "{{define \"" + api.PAGE_TEMPLATE + "\"}}" + "\n" + pageTmpData + "\n" + "{{end}}"
-
-	funcMap := template.FuncMap{
-		"html":        api.ConvertHTML,
-		"plane":       api.ConvertString,
-		"convertDate": api.ConvertDate,
-		"list":        pub.list,
-		"mark":     pub.mark,
-	}
-
-	//適用する
-	tmpl, err := template.New(api.SITE_TEMPLATE).Funcs(funcMap).Parse(siteTmpData)
-	if err != nil {
-		pub.errorPage(w, "Template:Parse Site Template Error",err.Error(),  500)
-		return
-	}
-	tmpl, err = tmpl.Parse(pageTmpData)
-	if err != nil {
-		pub.errorPage(w,"Template:Parse Page Template Error", err.Error(),  500)
-		return
-	}
-
-	dto := struct {
-		Site     *datastore.Site
-		Page     *datastore.Page
-		PageData *datastore.PageData
-		Content  string
-		Children []datastore.Page
-		Top      string
-		Dir      string
-	}{site, page, pData,string(pData.Content), children,top,dir}
-
-	err = tmpl.Execute(w, dto)
-	if err != nil {
-		pub.errorPage(w, "Template:Execute Page Data Error",err.Error(),  500)
-		return
-	}
-}
-
-func (p Public) list(id string) []datastore.Page {
-	pages, err := datastore.SelectChildPages(p.r, id,10,p.manage)
-	if err != nil {
-		return make([]datastore.Page, 0)
-	}
-	return pages
-}
-
-func (p Public) mark() template.HTML {
-	src := ""
-	if p.manage {
-		src = `<img src="/images/private.png" class="private-mark" />`
-	}
-	return template.HTML(src)
 }
 
 func (p Public) fileHandler(w http.ResponseWriter, r *http.Request) {

@@ -12,6 +12,10 @@ indexes:
     - name: Seq
     - name: CreatedAt
 
+- kind: Page
+  properties:
+    - name: Deleted
+
 - kind: File
   properties:
     - name: Type
