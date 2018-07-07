@@ -234,6 +234,57 @@ func RemovePage(r *http.Request, id string) error {
 	}, option)
 }
 
+func PutPageSequence(r *http.Request, ids string) (error) {
+
+	idArray := strings.Split(ids,",")
+
+	keys := make([]*datastore.Key,len(idArray))
+	for idx,id := range idArray {
+		key := CreatePageKey(r,id)
+		keys[idx] = key
+	}
+
+	c := appengine.NewContext(r)
+
+	pages := make([]*Page,len(keys))
+	err := ds.GetMulti(c,keys,pages)
+	if err != nil {
+		return err
+	}
+	for idx,page := range pages {
+		page.Seq = idx + 1
+	}
+
+	return ds.PutMulti(c,keys,pages)
+}
+
+func SelectReferencePages(r *http.Request,id string,typ string) ([]Page,error){
+
+	c := appengine.NewContext(r)
+	var pages []Page
+	filter := "SiteTemplate="
+	if typ == "2" {
+		filter = "PageTemplate="
+	}
+
+	q := datastore.NewQuery(KIND_PAGE).Filter(filter,id)
+	t := q.Run(c)
+	for {
+		var page Page
+		key, err := t.Next(&page)
+		if err == datastore.Done {
+			break
+		}
+
+		if err != nil {
+			return nil, err
+		}
+		page.SetKey(key)
+		pages = append(pages, page)
+	}
+	return pages,nil
+}
+
 const KIND_PAGEDATA = "PageData"
 
 type PageData struct {
@@ -271,26 +322,3 @@ func SelectPageData(r *http.Request, id string) (*PageData, error) {
 }
 
 
-func PutPageSequence(r *http.Request, ids string) (error) {
-
-	idArray := strings.Split(ids,",")
-
-	keys := make([]*datastore.Key,len(idArray))
-	for idx,id := range idArray {
-		key := CreatePageKey(r,id)
-		keys[idx] = key
-	}
-
-	c := appengine.NewContext(r)
-
-	pages := make([]*Page,len(keys))
-	err := ds.GetMulti(c,keys,pages)
-	if err != nil {
-		return err
-	}
-	for idx,page := range pages {
-		page.Seq = idx + 1
-	}
-
-	return ds.PutMulti(c,keys,pages)
-}

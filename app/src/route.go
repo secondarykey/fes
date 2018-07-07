@@ -39,6 +39,7 @@ func init() {
 	r.HandleFunc("/manage/template/add", h.AddTemplate).Methods("GET")
 	r.HandleFunc("/manage/template/edit/{key}", h.EditTemplate)
 	r.HandleFunc("/manage/template/delete/{key}", h.DeleteTemplate)
+	r.HandleFunc("/manage/template/reference/{key}", h.ReferenceTemplate)
 
 	//Site
 	r.HandleFunc("/manage/site/", h.ViewSetting).Methods("GET")

@@ -18,6 +18,14 @@ img.fill {
   object-fit:contain;
 }
 
+#modified {
+  position: absolute;
+  display: block;
+  right: 0;
+  margin-right: 40px;
+  color:#aaaaaa;
+}
+
 .playbutton {
 	width: auto;
 	padding:0;

@@ -50,35 +50,27 @@ func GetHTML(r *http.Request,id string) (*HTML,error) {
 
 func PutHTML(r *http.Request,id string) error {
 
-	c := appengine.NewContext(r)
-	page,err := SelectPage(r,id)
-	if err != nil {
-		return err
-	}
-	if page == nil {
-		return fmt.Errorf("page not found[%s]",id)
-	}
-
 	html,err:= GetHTML(r,id)
 	if err != nil {
 		return err
 	}
 
-	key := createHTMLKey(r,id)
 	if html == nil {
+		key := createHTMLKey(r,id)
 		html = &HTML{}
 		html.SetKey(key)
 	}
 
 	var buf []byte
 	w := bytes.NewBuffer(buf)
-	err = GenerateHTML(w,r,id,false)
+	page,err := GenerateHTML(w,r,id,false)
 	if err != nil {
 		return err
 	}
 
 	html.Content = w.Bytes()
 
+	c := appengine.NewContext(r)
 	option := &datastore.TransactionOptions{XG: true}
 	return datastore.RunInTransaction(c, func(ctx context.Context) error {
 		err = ds.Put(c, html)
@@ -123,22 +115,76 @@ func RemoveHTML(r *http.Request,id string) error {
 	}, option)
 }
 
+func PutHTMLs(r *http.Request,pages []Page) error {
+
+	var err error
+	//HTMLとを作成
+	//HTMLキーを作成
+	htmlData := make([][]byte,0)
+	keys     := make([]*datastore.Key,0)
+	for _,elm := range pages {
+		if elm.Deleted {
+			continue
+		}
+		var buf []byte
+		w := bytes.NewBuffer(buf)
+		err := createHTMLData(w,r,&elm,false)
+		if err != nil {
+			return err
+		}
+		htmlData = append(htmlData,w.Bytes())
+		keys = append(keys,createHTMLKey(r,elm.Key.StringID()))
+	}
+
+	c := appengine.NewContext(r)
+	htmls := make([]HTML,len(keys))
+
+	err = ds.GetMulti(c,keys,htmls)
+	if err != nil {
+		if berr,ok := err.(*kerr.BaseError); ok {
+			err = berr.Cause()
+			_,flag := err.(appengine.MultiError)
+			if !flag {
+				return err
+			}
+		} else {
+			return err
+		}
+	}
+
+	for idx,elm := range htmls {
+		if err != nil {
+			multi := err.(appengine.MultiError)
+			if m := multi[idx] ; m != nil && m != datastore.ErrNoSuchEntity {
+				return err
+			}
+		}
+		elm.SetKey(keys[idx])
+		elm.Content = htmlData[idx]
+	}
+
+	return ds.PutMulti(c,keys,htmls)
+}
+
 type Public struct {
 	request *http.Request
 	manage  bool
 }
 
-func GenerateHTML(w io.Writer, r *http.Request, id string,mng bool) error {
-
+func GenerateHTML(w io.Writer, r *http.Request, id string,mng bool) (*Page,error) {
 	var err error
-
 	page, err := SelectPage(r, id)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if page == nil {
-		return fmt.Errorf("Page not found[%s]",id)
+		return nil, fmt.Errorf("Page not found[%s]", id)
 	}
+	err = createHTMLData(w,r,page,mng)
+	return page,err
+}
+
+func createHTMLData(w io.Writer, r *http.Request, page *Page,mng bool) (error) {
 
 	p := Public {
 		request:r,
@@ -147,6 +193,8 @@ func GenerateHTML(w io.Writer, r *http.Request, id string,mng bool) error {
 
 	dir := "/manage/page/view/"
 	top := "/manage/page/view/"
+
+	id := page.Key.StringID()
 
 	if !mng {
 		if page.Deleted {

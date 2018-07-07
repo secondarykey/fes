@@ -114,3 +114,30 @@ func (h Handler) DeleteTemplate(w http.ResponseWriter, r *http.Request) {
 	//リダイレクト
 	http.Redirect(w, r, "/manage/template/", 302)
 }
+
+func (h Handler) ReferenceTemplate(w http.ResponseWriter, r *http.Request) {
+
+	vars := mux.Vars(r)
+	id := vars["key"]
+
+	t := r.FormValue("type")
+	//参照しているページを取得
+	pages,err := datastore.SelectReferencePages(r,id,t)
+	if err != nil {
+		h.errorPage(w,"Reference template pages Error",err.Error(),500)
+		return
+	}
+	if pages == nil || len(pages) <= 0 {
+		h.errorPage(w,"Reference template pages NotFound",id,404)
+		return
+	}
+
+	//ページからHTMLを更新
+	err = datastore.PutHTMLs(r,pages)
+	if err != nil {
+		h.errorPage(w,"Put HTML data Error",err.Error(),500)
+		return
+	}
+
+	http.Redirect(w, r, "/manage/template/edit/" + id, 302)
+}

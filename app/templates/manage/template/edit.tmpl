@@ -1,5 +1,8 @@
 {{define "title"}}
 Edit Template
+        <button type="button" id="generateBtn" class="mdl-button mdl-js-button mdl-button--raised mdl-button--primary">
+        Update reference
+        </button>
 {{end}}
 
 {{define "page_template"}}
@@ -47,6 +50,10 @@ Edit Template
   </tr>
   </tbody>
 </table>
+
+  <form id="referenceForm" name="referenceForm" method="post" action="/manage/template/reference/{{.Template.Key.StringID}}">
+  <input type="hidden" name="type" id="referenceType" value="{{.Template.Type}}" />
+  </form>
 
 <script>
 
@@ -105,6 +112,12 @@ Edit Template
       });
     });
 
-
+    var generateBtn = document.querySelector('#generateBtn');
+    generateBtn.addEventListener('click', function() {
+      confirmFes(function() {
+        var form = document.querySelector('#referenceForm');
+        form.submit();
+      });
+    });
 </script>
 {{ end }}
