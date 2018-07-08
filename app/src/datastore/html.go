@@ -235,6 +235,7 @@ func createHTMLData(w io.Writer, r *http.Request, page *Page,mng bool) (error) {
 		"convertDate": api.ConvertDate,
 		"list":        p.list,
 		"mark":     p.mark,
+		"templateContent" : p.ConvertTemplate,
 	}
 
 	//適用する
@@ -279,4 +280,30 @@ func (p Public) mark() template.HTML {
 		src = `<img src="/images/private.png" class="private-mark" />`
 	}
 	return template.HTML(src)
+}
+
+//Contentの変換時にテンプレートを実現する
+func (p Public)ConvertTemplate(data string) template.HTML {
+
+	tmpl,err := template.New("").Parse(data)
+	if err != nil {
+		return template.HTML(fmt.Sprintf("Template Parse Error[%s]",err))
+	}
+
+	dto := struct {
+		Dir string
+		Top string
+	} {"/page/","/"}
+	if p.manage {
+		dto.Dir = "/manage/page/view/"
+		dto.Top = "/manage/page/view/"
+	}
+
+	buf := bytes.NewBuffer(make([]byte,0,len(data) + 30))
+	err = tmpl.Execute(buf,dto)
+	if err != nil {
+		return template.HTML(fmt.Sprintf("Template Execute Error[%s]",err))
+	}
+
+	return template.HTML(buf.String())
 }
