@@ -22,8 +22,9 @@ img.fill {
   position: absolute;
   display: block;
   right: 0;
-  margin-right: 40px;
-  color:#aaaaaa;
+  margin-right: 20px;
+  color:#bbbbbb;
+    font-size: 10px;
 }
 
 .playbutton {
