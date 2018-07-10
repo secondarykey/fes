@@ -54,6 +54,11 @@ img.fill {
   display:flex;
   align-items:flex-end;
 }
+
+.mdl-grid {
+  padding:0px;
+}
+
 .imageTitle {
   font-size:24px;
   text-shadow:0px -1px #aaa, 1px 0px #555, 0px 1px #aaa, -1px 1px #555;
