@@ -219,10 +219,9 @@ img.fill {
 
 .slogan-section {
   position: relative;
-  height: 500px;
+  height: 350px;
   width: auto;
   background-color: #f3f3f3;
-  background: url('../file/top.jpg') center 30% no-repeat;
   background-size: cover;
 }
 
@@ -236,7 +235,7 @@ img.fill {
 .slogan {
   color : #ffffff;
   font-size: 60px;
-  padding-top: 160px;
+  padding-top: 90px;
 }
 
 .sub-slogan {
@@ -351,7 +350,6 @@ img.fill {
 
 .access-section {
   position: relative;
-  background: url('/file/gate.jpg') center top no-repeat;
   background-size: cover;
   height: 500px;
 }
@@ -545,7 +543,7 @@ img.fill {
   }
 
   .slogan-section {
-    height: 250px;
+    height: 200px;
   }
 
   .slogan {

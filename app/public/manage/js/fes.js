@@ -40,28 +40,10 @@ function editTextArea(textArea) {
     dialog.showModal();
 }
 
-var singletonConfirm = true;
 function confirmFes(func) {
-
-    var dialog = document.querySelector('#confirm');
-    if ( !dialog.showModal ) {
-        dialogPolyfill.registerDialog(dialog);
-    }
-
-    if ( singletonConfirm ) {
-      var close = dialog.querySelector('.close');
-      var agree = dialog.querySelector('.agree');
-
-      close.addEventListener('click', function() {
-          dialog.close();
-      });
-      agree.addEventListener('click', function() {
-          dialog.close();
+    if ( confirm("Realy?") ) {
           func();
-      });
-      singletonConfirm = false;
     }
-    dialog.showModal();
 }
 
 function alertFes(txt) {
