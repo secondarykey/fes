@@ -88,10 +88,10 @@ Size:{{ convertSize .File.Size }}
         canvas.removeEventListener ("mousemove", onMouseMove, false);
 
         var form = document.forms.convertForm;
-        form.left = rectangle.startX;
-        form.top  = rectangle.startY;
-        form.width = (rectangle.endX + rectangle.startX);
-        form.height =  (rectangle.endY + rectangle.startY);
+        form.left.value = rectangle.startX;
+        form.top.value  = rectangle.startY;
+        form.width.value = (rectangle.endX + rectangle.startX);
+        form.height.value =  (rectangle.endY + rectangle.startY);
     };
 
     function draw() {

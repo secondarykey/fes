@@ -61,7 +61,7 @@ func SelectChildPages(r *http.Request, id string,limit int,mng bool) ([]Page, er
 	c := appengine.NewContext(r)
 	var pages []Page
 
-	q := datastore.NewQuery(KIND_PAGE).Filter("Parent=", id).Order("Seq").Order("CreatedAt")
+	q := datastore.NewQuery(KIND_PAGE).Filter("Parent=", id).Order("Seq").Order("- CreatedAt")
 	if !mng {
 		q = q.Filter("Deleted=",false)
 	}

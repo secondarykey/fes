@@ -266,8 +266,8 @@ func createHTMLData(w io.Writer, r *http.Request, page *Page,mng bool) (error) {
 	return nil
 }
 
-func (p Public) list(id string) []Page {
-	pages, err := SelectChildPages(p.request, id,10,p.manage)
+func (p Public) list(id string,num int) []Page {
+	pages, err := SelectChildPages(p.request, id,num,p.manage)
 	if err != nil {
 		return make([]Page, 0)
 	}

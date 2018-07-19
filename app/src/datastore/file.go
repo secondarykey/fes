@@ -183,6 +183,22 @@ func SaveFile(r *http.Request, id string,t int) error {
 
 	return err
 }
+
+func PutFileData(r *http.Request,id string,data []byte,mime string) error {
+
+	c := appengine.NewContext(r)
+	fileData := &FileData{
+		Content: data,
+		Mime:    mime,
+	}
+	fileData.SetKey(createFileDataKey(r, id))
+	err := ds.Put(c, fileData)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func ExistFile(r *http.Request, id string) bool {
 
 	c := appengine.NewContext(r)

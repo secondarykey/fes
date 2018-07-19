@@ -12,6 +12,7 @@ import (
 	"image"
 	"log"
 	"bytes"
+	"io"
 )
 
 //URL = /manage/file/
@@ -72,6 +73,17 @@ func (h Handler) DeleteFile(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/manage/file/", 302)
 }
 
+type Resize struct {
+	id string
+	left string
+	top string
+	width string
+	height string
+	per string
+	function string
+	quality string
+}
+
 func (h Handler) ResizeFile(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
@@ -88,28 +100,66 @@ func (h Handler) ResizeFile(w http.ResponseWriter, r *http.Request) {
 	h.parse(w, TEMPLATE_DIR + "file/resize.tmpl", dto)
 }
 
+func (h Handler) ResizeCommitFile(w http.ResponseWriter, r *http.Request) {
+
+	resize := Resize{
+		id:       r.FormValue("key"),
+		left:     r.FormValue("left"),
+		top:      r.FormValue("top"),
+		width:    r.FormValue("width"),
+		height:   r.FormValue("height"),
+		per:      r.FormValue("per"),
+		function: r.FormValue("function"),
+		quality:  r.FormValue("quality"),
+	}
+
+	writer := bytes.NewBuffer([]byte(""))
+	err := h.WriteResize(writer,r,resize)
+	if err != nil {
+		h.errorPage(w,"Resize Error",err.Error(),500)
+	}
+
+	err = datastore.PutFileData(r,resize.id,writer.Bytes(),"image/jpeg")
+	if err != nil {
+		h.errorPage(w,"Datastore FileData Put Error",err.Error(),500)
+	}
+
+	http.Redirect(w, r, "/manage/file/resize/" + resize.id, 302)
+}
+
 func (h Handler) ResizeFileView(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
-	id := vars["key"]
-
-	fileData, err := datastore.SelectFileData(r, id)
-	if err != nil {
-		h.errorPage(w, "Datastore:FileData Search Error", err.Error(), 500)
-		return
-	}
-
-	if fileData == nil {
-		h.errorPage(w, "Datastore:Not Found FileData Error", id, 404)
-		return
-	}
 
 	q := r.URL.Query()
 
-	leftBuf := q.Get("left")
-	topBuf := q.Get("top")
-	widthBuf := q.Get("width")
-	heightBuf := q.Get("height")
+	resize := Resize{
+		id : vars["key"],
+		left : q.Get("left"),
+		top : q.Get("top"),
+		width : q.Get("width"),
+		height : q.Get("height"),
+		per : q.Get("per"),
+		function :q.Get("function"),
+		quality : q.Get("quality"),
+	}
+
+	err := h.WriteResize(w,r,resize)
+	if err != nil {
+		h.errorPage(w,"Resize Error",err.Error(),500)
+	}
+}
+
+func (h Handler) WriteResize(w io.Writer,r *http.Request,re Resize) error {
+
+	fileData, err := datastore.SelectFileData(r, re.id)
+	if err != nil {
+		return err
+	}
+
+	if fileData == nil {
+		return err
+	}
 
 	var img image.Image
 
@@ -117,17 +167,17 @@ func (h Handler) ResizeFileView(w http.ResponseWriter, r *http.Request) {
 	//元データのポインタを作成
 	img, _, err = image.Decode(buff)
 	if err != nil {
-		return
+		return err
 	}
 
 	//すべてが０だった場合、やらなくていい
-	if !zero(widthBuf) && !zero(heightBuf) {
+	if !zero(re.width) && !zero(re.height) {
 
 		//新しいサイズを作成
-		left,_ := strconv.ParseInt(leftBuf,10,64)
-		top,_ := strconv.ParseInt(topBuf,10,64)
-		width,_ := strconv.ParseInt(widthBuf,10,64)
-		height,_ := strconv.ParseInt(heightBuf,10,64)
+		left,_ := strconv.ParseInt(re.left,10,64)
+		top,_ := strconv.ParseInt(re.top,10,64)
+		width,_ := strconv.ParseInt(re.width,10,64)
+		height,_ := strconv.ParseInt(re.height,10,64)
 
 		img = cut(img,int(left),int(top),int(width),int(height))
 	}
@@ -135,30 +185,31 @@ func (h Handler) ResizeFileView(w http.ResponseWriter, r *http.Request) {
 	width := img.Bounds().Dx()
 	height := img.Bounds().Dy()
 
-	perBuf := q.Get("per")
-	per, err := strconv.ParseInt(perBuf, 10, 64)
+	per, err := strconv.ParseInt(re.per, 10, 64)
 	if err != nil {
-		return
+		return err
 	}
 
 	//方法を変換
-	function := getJPEGFunction(q.Get("function"))
+	function := getJPEGFunction(re.function)
 	//TODO perが100の場合やらなくていいってわけでもないかな？
 	newWidth :=  float64(width) * float64(per) / 100
 	newHeight := float64(height) * float64(per) / 100
 	newImg := resize.Resize(uint(newWidth), uint(newHeight), img, function)
 
-	quaBuf := q.Get("quality")
-	qua,err := strconv.ParseInt(quaBuf,10,64)
+	qua,err := strconv.ParseInt(re.quality,10,64)
 	if err != nil {
-		return
+		return err
 	}
 
-	w.Header().Set("Content-Type", fileData.Mime)
+	if res,ok := w.(http.ResponseWriter); ok {
+		res.Header().Set("Content-Type", fileData.Mime)
+	}
 	err = jpeg.Encode(w,newImg,&jpeg.Options{Quality:int(qua)})
 	if err != nil {
-		return
+		return err
 	}
+	return nil
 }
 
 func cut(org image.Image,l,t,w,h int) image.Image {
