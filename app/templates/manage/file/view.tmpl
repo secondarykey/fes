@@ -18,7 +18,7 @@ File[<a href="/manage/file/type/2">PageFile</a> <a href="/manage/file/type/all">
 {{ range .Files}}
     <tr>
       <td class="mdl-data-table__cell--non-numeric"><a href="/file/{{ .Key.StringID}}" target="_blank">{{ .Key.StringID }}</a></td>
-      <td>{{convertSize .Size}}</td>
+      <td><a href="/manage/file/resize/{{.Key.StringID}}">{{convertSize .Size}}</a></td>
       <td>{{convertDate .CreatedAt}}</td>
       <td>{{convertDate .UpdatedAt}}</td>
       <td>

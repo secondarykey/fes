@@ -186,16 +186,39 @@ func SaveFile(r *http.Request, id string,t int) error {
 
 func PutFileData(r *http.Request,id string,data []byte,mime string) error {
 
+	option := &datastore.TransactionOptions{XG: true}
 	c := appengine.NewContext(r)
-	fileData := &FileData{
-		Content: data,
-		Mime:    mime,
-	}
-	fileData.SetKey(createFileDataKey(r, id))
-	err := ds.Put(c, fileData)
-	if err != nil {
-		return err
-	}
+	return datastore.RunInTransaction(c, func(ctx context.Context) error {
+
+		fileKey := createFileKey(r, id)
+
+		file := File{}
+		err := ds.Get(c,fileKey,&file)
+		if err != nil {
+			if verr.Root(err) != datastore.ErrNoSuchEntity {
+				return err
+			}
+
+			file.Key = fileKey
+		}
+
+		file.Size= int64(len(data))
+		err = ds.Put(ctx, &file)
+		if err != nil {
+			return err
+		}
+
+		fileData := &FileData{
+			Content: data,
+			Mime:    mime,
+		}
+		fileData.SetKey(createFileDataKey(r, id))
+		err = ds.Put(c, fileData)
+		if err != nil {
+			return err
+		}
+		return nil
+	},option)
 	return nil
 }
 
