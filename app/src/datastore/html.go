@@ -229,17 +229,8 @@ func createHTMLData(w io.Writer, r *http.Request, page *Page,mng bool) (error) {
 	siteTmpData = "{{define \"" + api.SITE_TEMPLATE + "\"}}" + "\n" + siteTmpData + "\n" + "{{end}}"
 	pageTmpData = "{{define \"" + api.PAGE_TEMPLATE + "\"}}" + "\n" + pageTmpData + "\n" + "{{end}}"
 
-	funcMap := template.FuncMap{
-		"html":        api.ConvertHTML,
-		"plane":       api.ConvertString,
-		"convertDate": api.ConvertDate,
-		"list":        p.list,
-		"mark":     p.mark,
-		"templateContent" : p.ConvertTemplate,
-	}
-
 	//適用する
-	tmpl, err := template.New(api.SITE_TEMPLATE).Funcs(funcMap).Parse(siteTmpData)
+	tmpl, err := template.New(api.SITE_TEMPLATE).Funcs(p.funcMap()).Parse(siteTmpData)
 	if err != nil {
 		return err
 	}
@@ -282,10 +273,21 @@ func (p Public) mark() template.HTML {
 	return template.HTML(src)
 }
 
+func (p Public) funcMap() template.FuncMap {
+	return template.FuncMap{
+		"html":        api.ConvertHTML,
+		"plane":       api.ConvertString,
+		"convertDate": api.ConvertDate,
+		"list":        p.list,
+		"mark":     p.mark,
+		"templateContent" : p.ConvertTemplate,
+	}
+}
+
 //Contentの変換時にテンプレートを実現する
 func (p Public)ConvertTemplate(data string) template.HTML {
 
-	tmpl,err := template.New("").Parse(data)
+	tmpl,err := template.New("").Funcs(p.funcMap()).Parse(data)
 	if err != nil {
 		return template.HTML(fmt.Sprintf("Template Parse Error[%s]",err))
 	}
