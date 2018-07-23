@@ -123,6 +123,7 @@ func (h Handler) ReferenceTemplate(w http.ResponseWriter, r *http.Request) {
 	t := r.FormValue("type")
 	//参照しているページを取得
 	pages,err := datastore.SelectReferencePages(r,id,t)
+
 	if err != nil {
 		h.errorPage(w,"Reference template pages Error",err.Error(),500)
 		return

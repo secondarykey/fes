@@ -152,15 +152,15 @@ func PutHTMLs(r *http.Request,pages []Page) error {
 		}
 	}
 
-	for idx,elm := range htmls {
+	for idx,_ := range htmls {
 		if err != nil {
 			multi := err.(appengine.MultiError)
 			if m := multi[idx] ; m != nil && m != datastore.ErrNoSuchEntity {
 				return err
 			}
 		}
-		elm.SetKey(keys[idx])
-		elm.Content = htmlData[idx]
+		htmls[idx].SetKey(keys[idx])
+		htmls[idx].Content = htmlData[idx]
 	}
 
 	return ds.PutMulti(c,keys,htmls)
