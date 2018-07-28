@@ -16,6 +16,7 @@ import (
 	"api"
 	"time"
 	"strings"
+	"strconv"
 )
 
 const KIND_PAGE = "Page"
@@ -234,14 +235,24 @@ func RemovePage(r *http.Request, id string) error {
 	}, option)
 }
 
-func PutPageSequence(r *http.Request, ids string) (error) {
+func PutPageSequence(r *http.Request, ids string,enables string) (error) {
 
 	idArray := strings.Split(ids,",")
+	enableArray := strings.Split(enables,",")
 
 	keys := make([]*datastore.Key,len(idArray))
+	deleteds := make([]bool,len(enableArray))
+
 	for idx,id := range idArray {
 		key := CreatePageKey(r,id)
 		keys[idx] = key
+
+		flagBuf := enableArray[idx]
+		flag,err := strconv.ParseBool(flagBuf)
+		if err != nil {
+			return err
+		}
+		deleteds[idx] = !flag
 	}
 
 	c := appengine.NewContext(r)
@@ -253,6 +264,7 @@ func PutPageSequence(r *http.Request, ids string) (error) {
 	}
 	for idx,page := range pages {
 		page.Seq = idx + 1
+		page.Deleted = deleteds[idx]
 	}
 
 	return ds.PutMulti(c,keys,pages)

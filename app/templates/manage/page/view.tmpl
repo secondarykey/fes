@@ -11,6 +11,7 @@ Children Page Tool[<a href="/manage/page/{{ .Parent }}">Parent</a>]
     <tr>
       <th> </th>
       <th class="mdl-data-table__cell--non-numeric">Name</th>
+      <th class="mdl-data-table__cell--non-numeric">Enabled</th>
       <th>Create</th>
       <th>Update</th>
       <th> </th>
@@ -26,6 +27,13 @@ Children Page Tool[<a href="/manage/page/{{ .Parent }}">Parent</a>]
       </td>
 
       <td class="mdl-data-table__cell--non-numeric"><a href="/manage/page/{{ .Key.StringID}}" target="_page_editor" {{if .Deleted}}style="color:red;"{{end}}>{{ .Name }}</a></td>
+
+      <td class="mdl-data-table__cell--non-numeric">
+        <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect">
+          <input type="checkbox" id="{{.Key.StringID}}" class="mdl-switch__input" {{if not .Deleted}}checked{{end}}>
+        </label>
+      </td>
+
       <td>{{convertDate .CreatedAt}}</td>
       <td>{{convertDate .UpdatedAt}}</td>
 
@@ -40,6 +48,7 @@ Children Page Tool[<a href="/manage/page/{{ .Parent }}">Parent</a>]
   <form id="sequenceForm" name="sequenceForm" method="post" action="/manage/page/tool/sequence">
   <input type="hidden" name="id" value="{{.Parent}}" />
   <input type="hidden" name="ids" id="ids" value="" />
+  <input type="hidden" name="enables" id="enables" value="" />
   </form>
 </table>
 
@@ -121,17 +130,28 @@ Children Page Tool[<a href="/manage/page/{{ .Parent }}">Parent</a>]
       confirmFes(function() {
         var seqRows = document.querySelectorAll('tr.seqRow');
         var ids = "";
+        var enables = "";
+
         for (var i=0; i< seqRows.length; i++) {
           var seqElm = seqRows[i];
           var id = seqElm.getAttribute("data-id");
+          var enableForm = document.querySelector('#' + CSS.escape(id));
+
           if ( ids != "" ) {
             ids += ",";
+            enables += ",";
           }
+
+          var flag = enableForm.checked;
+
           ids += id;
+          enables += flag;
         }
 
         var idsForm = document.querySelector('#ids');
+        var enablesForm = document.querySelector('#enables');
         idsForm.value = ids;
+        enablesForm.value = enables;
 
         var seqForm = document.querySelector('#sequenceForm');
         seqForm.submit();

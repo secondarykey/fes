@@ -206,8 +206,9 @@ func (h Handler) SequencePage(w http.ResponseWriter, r *http.Request) {
 
 	id := r.FormValue("id")
 	idCsv := r.FormValue("ids")
+	enablesCsv := r.FormValue("enables")
 
-	err := datastore.PutPageSequence(r,idCsv)
+	err := datastore.PutPageSequence(r,idCsv,enablesCsv)
 	if err != nil {
 		h.errorPage(w, "Error Page sequence update", err.Error(),500)
 		return
