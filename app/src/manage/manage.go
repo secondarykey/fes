@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"strconv"
 )
 
 const TEMPLATE_DIR = "./templates/manage/"
@@ -25,12 +26,7 @@ func (h Handler) TopHandler(w http.ResponseWriter, r *http.Request) {
 		h.errorPage(w,"Not Found","Root page not found",404)
 		return
 	}
-
-	_,err := datastore.GenerateHTML(w,r,site.Root,true)
-	if err != nil {
-		h.errorPage(w,"ERROR:Generate HTML",err.Error(),500)
-		return
-	}
+	h.pageView(w,r,site.Root)
 }
 
 func (h Handler) PageHandler(w http.ResponseWriter, r *http.Request) {
@@ -38,12 +34,29 @@ func (h Handler) PageHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["key"]
 
-	_,err := datastore.GenerateHTML(w,r,id,true)
+	h.pageView(w,r,id)
+}
+
+func (h Handler) pageView(w http.ResponseWriter, r *http.Request,id string) {
+
+	page := 1
+	val := r.URL.Query()
+	pageVal := val.Get("page")
+	if pageVal != "" {
+		p,err := strconv.Atoi(pageVal)
+		if err == nil {
+			page = p
+		}
+	}
+
+	//管理用の書き出し
+	err := datastore.WriteManageHTML(w,r,id,page)
 	if err != nil {
 		h.errorPage(w,"ERROR:Generate HTML",err.Error(),500)
 		return
 	}
 }
+
 func (h Handler) parse(w http.ResponseWriter, tName string, obj interface{}) {
 
 	funcMap := template.FuncMap{

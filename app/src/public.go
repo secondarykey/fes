@@ -21,6 +21,14 @@ func (p Public) pageHandler(w http.ResponseWriter, r *http.Request) {
 
 func (p Public) pageView(w http.ResponseWriter, r *http.Request,id string) {
 
+	//ページを取得してIDを作成
+	val := r.URL.Query()
+	page := val.Get("page")
+	if page != "" {
+		id += "?page=" + page
+	}
+
+
 	html,err := datastore.GetHTML(r,id)
 	if err != nil {
 		p.errorPage(w,"error get html",err.Error(),500)

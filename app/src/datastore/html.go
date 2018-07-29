@@ -2,11 +2,8 @@ package datastore
 
 import (
 	"api"
-
 	"fmt"
 	"time"
-	"io"
-	"html/template"
 	"net/http"
 	"bytes"
 
@@ -15,11 +12,13 @@ import (
 	kerr "github.com/knightso/base/errors"
 	"google.golang.org/appengine"
 	"google.golang.org/appengine/datastore"
-
+	"html/template"
+	"strconv"
 )
 
 type HTML struct {
-	Content []byte
+	Content  []byte
+	Children int
 	ds.Meta
 }
 
@@ -50,34 +49,60 @@ func GetHTML(r *http.Request,id string) (*HTML,error) {
 
 func PutHTML(r *http.Request,id string) error {
 
-	html,err:= GetHTML(r,id)
+	page, err := SelectPage(r, id)
 	if err != nil {
 		return err
 	}
 
-	if html == nil {
-		key := createHTMLKey(r,id)
-		html = &HTML{}
-		html.SetKey(key)
-	}
-
-	var buf []byte
-	w := bytes.NewBuffer(buf)
-	page,err := GenerateHTML(w,r,id,false)
+	dtos,err := NewDtos(r,page,1,false)
 	if err != nil {
 		return err
 	}
 
-	html.Content = w.Bytes()
+	tmpl,err := createTemplate(r,page,false)
+	if err != nil {
+		return err
+	}
 
-	c := appengine.NewContext(r)
-	option := &datastore.TransactionOptions{XG: true}
-	return datastore.RunInTransaction(c, func(ctx context.Context) error {
-		err = ds.Put(c, html)
+	htmls := make([]*HTML,len(dtos))
+	keys := make([]*datastore.Key,len(dtos))
+	for idx,dto := range dtos {
+		var buf []byte
+		w := bytes.NewBuffer(buf)
+		//TODO CHILDREN 一回だけ検索
+		err = tmpl.Execute(w,dto)
 		if err != nil {
 			return err
 		}
 
+		realId := id
+		if idx > 0 {
+			realId = fmt.Sprintf("%s?page=%d",id,idx + 1)
+		}
+
+		html,err:= GetHTML(r,realId)
+		if err != nil {
+			return err
+		}
+		if html == nil {
+			key := createHTMLKey(r,realId)
+			html = &HTML{}
+			html.SetKey(key)
+		}
+		html.Content = w.Bytes()
+		html.Children = len(dtos)
+		htmls[idx] = html
+		keys[idx] = html.GetKey()
+	}
+
+	c := appengine.NewContext(r)
+	option := &datastore.TransactionOptions{XG: true}
+	return datastore.RunInTransaction(c, func(ctx context.Context) error {
+
+		err = ds.PutMulti(c, keys, htmls)
+		if err != nil {
+			return err
+		}
 		page.Publish = time.Now()
 		err = ds.Put(c,page)
 		if err != nil {
@@ -97,6 +122,8 @@ func RemoveHTML(r *http.Request,id string) error {
 	if page == nil {
 		return fmt.Errorf("page not found[%s]",id)
 	}
+
+	//TODO ページ数個削除
 
 	option := &datastore.TransactionOptions{XG: true}
 	return datastore.RunInTransaction(c, func(ctx context.Context) error {
@@ -123,15 +150,30 @@ func PutHTMLs(r *http.Request,pages []Page) error {
 	htmlData := make([][]byte,0)
 	keys     := make([]*datastore.Key,0)
 	for _,elm := range pages {
+
 		if elm.Deleted {
 			continue
 		}
+
 		var buf []byte
 		w := bytes.NewBuffer(buf)
-		err := createHTMLData(w,r,&elm,false)
+
+		//TODO 固定はまずいけど、Referenceの場所なので
+		//TODO ページングがいらない可能性が高い
+		dtos,err := NewDtos(r,&elm,0,false)
 		if err != nil {
 			return err
 		}
+
+		tmpl,err := createTemplate(r,&elm,false)
+		if err != nil {
+			return err
+		}
+		err = tmpl.Execute(w,dtos[0])
+		if err != nil {
+			return err
+		}
+
 		htmlData = append(htmlData,w.Bytes())
 		keys = append(keys,createHTMLKey(r,elm.Key.StringID()))
 	}
@@ -166,99 +208,196 @@ func PutHTMLs(r *http.Request,pages []Page) error {
 	return ds.PutMulti(c,keys,htmls)
 }
 
-type Public struct {
-	request *http.Request
-	manage  bool
+
+//TOOL
+
+type HTMLDto struct {
+	Site     *Site
+	Page     *Page
+	PageData *PageData
+	Content  string
+	Children []Page
+	Top      string
+	Dir      string
+	Prev      string
+	Next      string
 }
 
-func GenerateHTML(w io.Writer, r *http.Request, id string,mng bool) (*Page,error) {
+func WriteManageHTML(w http.ResponseWriter, r *http.Request,id string,p int) (error) {
+
 	var err error
 	page, err := SelectPage(r, id)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	if page == nil {
-		return nil, fmt.Errorf("Page not found[%s]", id)
+		return fmt.Errorf("Page not found[%s]", id)
 	}
-	err = createHTMLData(w,r,page,mng)
-	return page,err
+	//テンプレートの作成
+	tmpl,err := createTemplate(r,page,true)
+	if err != nil {
+		return err
+	}
+	//DTOの作成
+	dtos,err := NewDtos(r,page,p,true)
+	if err != nil {
+		return err
+	}
+
+	//書き込み
+	err = tmpl.Execute(w, dtos[0])
+	if err != nil {
+		return err
+	}
+	return err
 }
 
-func createHTMLData(w io.Writer, r *http.Request, page *Page,mng bool) (error) {
+func NewDtos(r *http.Request, page *Page,pageNum int,mng bool) ([]*HTMLDto,error) {
 
-	p := Public {
-		request:r,
-		manage:mng,
+	id := page.Key.StringID()
+	site := GetSite(r)
+	pData, err := SelectPageData(r, id)
+
+	if err != nil {
+		return nil,err
+	}
+
+    content := string(pData.Content)
+	dto := HTMLDto {
+		Site     : site,
+		Page     : page,
+		PageData : pData,
+		Content  : content,
 	}
 
 	dir := "/manage/page/view/"
 	top := "/manage/page/view/"
-
-	id := page.Key.StringID()
-
 	if !mng {
 		if page.Deleted {
-			return fmt.Errorf("Page is private[%s]",id)
+			return nil,fmt.Errorf("Page is private[%s]",id)
 		}
 		dir = "/page/"
 		top = "/"
 	}
 
-	site := GetSite(r)
+	childNum := 0
+	//本番時には複数件取得して展開
+	if mng && page.Paging > 0 {
+		childNum = page.Paging
+	}
+
+	children, err := SelectChildPages(r,id,pageNum,childNum,mng)
+	if err != nil {
+		return nil,err
+	}
+
+	leng := len(children)
+	last := 1
+	dtoNum := 1
+
+	if page.Paging > 0 {
+		last = leng / page.Paging + 1
+		mod := leng % page.Paging
+
+		if mod == 0 {
+			last -= 1
+		}
+
+		if !mng {
+			dtoNum = last
+		}
+	}
+
+	dtos := make([]*HTMLDto,dtoNum)
+
+	for idx := 0 ; idx < dtoNum; idx++ {
+
+		cp := dto
+		prevId := ""
+		nextId := ""
+		pNum := idx + 1
+
+		if mng {
+			pNum = pageNum
+		}
+
+		if last != pNum || mng {
+			nextId = id + "?page=" + strconv.Itoa(pNum+1)
+		}
+
+		if pNum > 1 {
+			prevId = id
+			if pNum > 2 {
+				prevId += "?page=" + strconv.Itoa(pNum-1)
+			}
+		}
+
+		start := 0
+		end := len(children)
+		if !mng && page.Paging > 0 {
+			start = idx * page.Paging
+
+			end = start + page.Paging
+			if end > leng {
+				end = leng
+			}
+		}
+
+		cpChildren := children[start:end]
+
+		cp.Top = top
+		cp.Dir = dir
+		cp.Children = cpChildren
+		cp.Prev = prevId
+		cp.Next = nextId
+
+		dtos[idx] = &cp
+	}
+
+	return dtos,nil
+}
+
+func createTemplate(r *http.Request,page *Page,mng bool) (*template.Template,error){
 	//テンプレートを取得
 	siteTmp, err := SelectTemplateData(r, page.SiteTemplate)
 	if err != nil {
-		return err
+		return nil,err
 	}
 	pageTmp, err := SelectTemplateData(r, page.PageTemplate)
 	if err != nil {
-		return err
+		return nil,err
 	}
-
-	pData, err := SelectPageData(r, id)
-	if err != nil {
-		return err
-	}
-	children, err := SelectChildPages(r,id,0,mng)
-	if err != nil {
-		return err
-	}
-
 	siteTmpData := string(siteTmp.Content)
 	pageTmpData := string(pageTmp.Content)
 	siteTmpData = "{{define \"" + api.SITE_TEMPLATE + "\"}}" + "\n" + siteTmpData + "\n" + "{{end}}"
 	pageTmpData = "{{define \"" + api.PAGE_TEMPLATE + "\"}}" + "\n" + pageTmpData + "\n" + "{{end}}"
 
+	pub := Public {
+		request:r,
+		manage:mng,
+	}
 	//適用する
-	tmpl, err := template.New(api.SITE_TEMPLATE).Funcs(p.funcMap()).Parse(siteTmpData)
+	tmpl, err := template.New(api.SITE_TEMPLATE).Funcs(pub.funcMap()).Parse(siteTmpData)
 	if err != nil {
-		return err
+		return nil,err
 	}
 	tmpl, err = tmpl.Parse(pageTmpData)
 	if err != nil {
-		return err
+		return nil,err
 	}
+	return tmpl,nil
+}
 
-	dto := struct {
-		Site     *Site
-		Page     *Page
-		PageData *PageData
-		Content  string
-		Children []Page
-		Top      string
-		Dir      string
-	}{site, page, pData,string(pData.Content), children,top,dir}
 
-	err = tmpl.Execute(w, dto)
-	if err != nil {
-		return err
-	}
-
-	return nil
+//Public template object
+type Public struct {
+	request *http.Request
+	manage  bool
 }
 
 func (p Public) list(id string,num int) []Page {
-	pages, err := SelectChildPages(p.request, id,num,p.manage)
+	//1ページ目固定
+	pages, err := SelectChildPages(p.request,id,0,num,p.manage)
 	if err != nil {
 		return make([]Page, 0)
 	}
@@ -279,11 +418,10 @@ func (p Public) funcMap() template.FuncMap {
 		"plane":       api.ConvertString,
 		"convertDate": api.ConvertDate,
 		"list":        p.list,
-		"mark":     p.mark,
+		"mark":        p.mark,
 		"templateContent" : p.ConvertTemplate,
 	}
 }
-
 //Contentの変換時にテンプレートを実現する
 func (p Public)ConvertTemplate(data string) template.HTML {
 
@@ -309,3 +447,5 @@ func (p Public)ConvertTemplate(data string) template.HTML {
 
 	return template.HTML(buf.String())
 }
+
+

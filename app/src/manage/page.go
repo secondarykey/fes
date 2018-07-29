@@ -92,7 +92,8 @@ func (h Handler) view(w http.ResponseWriter, r *http.Request, id string, parent 
 			return
 		}
 
-		children, err = datastore.SelectChildPages(r, page.Key.StringID(),0,true)
+		//全件でOK
+		children, err = datastore.SelectChildPages(r, page.Key.StringID(),0,0,true)
 		if err != nil {
 			h.errorPage(w, "Error Select Children page", err.Error(),500)
 			return
@@ -189,7 +190,7 @@ func (h Handler) ToolPage(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["key"]
 
-	children, err := datastore.SelectChildPages(r, id,0,true)
+	children, err := datastore.SelectChildPages(r, id,0,0,true)
 	if err != nil {
 		h.errorPage(w, "Error Select Children page", err.Error(),500)
 		return

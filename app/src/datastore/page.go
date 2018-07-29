@@ -2,6 +2,12 @@ package datastore
 
 import (
 	"net/http"
+	"fmt"
+	"api"
+	"time"
+	"strings"
+	"strconv"
+	"errors"
 
 	"github.com/gorilla/mux"
 
@@ -9,14 +15,10 @@ import (
 	"github.com/knightso/base/gae/ds"
 	"golang.org/x/net/context"
 
-	"errors"
 	"google.golang.org/appengine"
 	"google.golang.org/appengine/datastore"
-	"fmt"
-	"api"
-	"time"
-	"strings"
-	"strconv"
+	"google.golang.org/appengine/memcache"
+	"log"
 )
 
 const KIND_PAGE = "Page"
@@ -28,6 +30,7 @@ type Page struct {
 	Parent      string
 	Publish     time.Time
 
+	Paging       int
 	SiteTemplate string
 	PageTemplate string
 	ds.Meta
@@ -58,7 +61,8 @@ func SelectPages(r *http.Request) ([]Page, error) {
 	return pages, nil
 }
 
-func SelectChildPages(r *http.Request, id string,limit int,mng bool) ([]Page, error) {
+func SelectChildPages(r *http.Request, id string,page int,limit int,mng bool) ([]Page, error) {
+
 	c := appengine.NewContext(r)
 	var pages []Page
 
@@ -67,8 +71,25 @@ func SelectChildPages(r *http.Request, id string,limit int,mng bool) ([]Page, er
 		q = q.Filter("Deleted=",false)
 	}
 
+	//取得件数
 	if limit > 0 {
+		//カーソルを作成
 		q = q.Limit(limit)
+	}
+
+	//ページ数
+	if page > 1 {
+		curKey := getChildrenCursorKey(id,page)
+		item, err := memcache.Get(c, getChildrenCursorKey(id,page))
+		if err == nil {
+			cursor := string(item.Value)
+			log.Printf("Key:%s, Get Cursor:%s",curKey,item.Value)
+
+			cur,err := datastore.DecodeCursor(cursor)
+			if err == nil {
+				q = q.Start(cur)
+			}
+		}
 	}
 
 	t := q.Run(c)
@@ -85,7 +106,29 @@ func SelectChildPages(r *http.Request, id string,limit int,mng bool) ([]Page, er
 		page.SetKey(key)
 		pages = append(pages, page)
 	}
+
+	n := page + 1
+
+	if n > 1 {
+		cur, err := t.Cursor()
+		if err != nil {
+			return pages, nil
+		}
+
+		curKey := getChildrenCursorKey(id,n)
+		log.Printf("Key:%s, Set Cursor:%s",curKey,cur.String())
+
+		err = memcache.Set(c, &memcache.Item{
+			Key:   curKey,
+			Value: []byte(cur.String()),
+		})
+	}
+
 	return pages, nil
+}
+
+func getChildrenCursorKey(id string,p int) string {
+	return fmt.Sprintf("children_%s_%d_cursor",id,p)
 }
 
 func SelectRootPage(r *http.Request) (*Page, error) {
@@ -151,6 +194,12 @@ func PutPage(r *http.Request) error {
 		Content: []byte(r.FormValue("pageContent")),
 	}
 
+	paging,err := strconv.Atoi(r.FormValue("paging"))
+	//TODO err?
+	if err == nil {
+		page.Paging = paging
+	}
+
 	option := &datastore.TransactionOptions{XG: true}
 	return datastore.RunInTransaction(c, func(ctx context.Context) error {
 		page.SetKey(CreatePageKey(r, id))
@@ -207,7 +256,7 @@ func RemovePage(r *http.Request, id string) error {
 	var err error
 	c := appengine.NewContext(r)
 
-	children,err := SelectChildPages(r,id,1,false)
+	children,err := SelectChildPages(r,id,0,0,false)
 	if  err != nil {
 		return fmt.Errorf("Datastore Error SelectChildPages child page[%v]",err)
 	}
