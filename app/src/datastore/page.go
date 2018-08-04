@@ -19,6 +19,7 @@ import (
 	"google.golang.org/appengine/datastore"
 	"google.golang.org/appengine/memcache"
 	"log"
+	"sort"
 )
 
 const KIND_PAGE = "Page"
@@ -382,4 +383,71 @@ func SelectPageData(r *http.Request, id string) (*PageData, error) {
 	return &page, nil
 }
 
+type Tree struct {
+	Page     *Page
+	Children []*Tree
+	Indent   int
+}
 
+func PageTree(r *http.Request) (*Tree,error) {
+
+	c := appengine.NewContext(r)
+	var pages []*Page
+	q := datastore.NewQuery(KIND_PAGE)
+
+	keys,err := q.GetAll(c,&pages)
+	if err != nil {
+		return nil,err
+	}
+
+	parentMap := make(map[string][]*Page)
+
+	//キーマップの作成
+	for idx,elm := range pages {
+		key := keys[idx]
+		elm.SetKey(key)
+		children,ok := parentMap[elm.Parent]
+		if !ok {
+			children = make([]*Page,0)
+		}
+		children = append(children,elm)
+		parentMap[elm.Parent] = children
+	}
+
+	//全データのソート
+	for _,slice := range parentMap {
+		sort.Slice(slice,func(i,j int) bool {
+			pageI := slice[i]
+			pageJ := slice[j]
+			if pageI.Seq < pageJ.Seq {
+				return true
+			} else	if pageI.Seq > pageJ.Seq {
+				return false
+			}
+			return pageI.CreatedAt.Unix() > pageJ.CreatedAt.Unix()
+		})
+	}
+
+	roots := parentMap[""]
+	tree := createTree(1,roots[0],roots[0].Key.StringID(),parentMap)
+
+	return tree,nil
+}
+
+func createTree(indent int,page *Page,key string,parentMap map[string][]*Page) (*Tree) {
+
+	tree := Tree{
+		Page:page,
+		Children:make([]*Tree,0),
+		Indent:indent,
+	}
+
+	children,ok := parentMap[key]
+	if ok {
+		for _,child := range children {
+			childTree := createTree(indent + 1,child,child.Key.StringID(),parentMap)
+			tree.Children = append(tree.Children,childTree)
+		}
+	}
+	return &tree
+}

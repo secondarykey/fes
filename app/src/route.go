@@ -22,7 +22,9 @@ func init() {
 	r.HandleFunc("/manage/page/private/{key}", h.PrivatePage).Methods("GET")
 	r.HandleFunc("/manage/page/tool/{key}", h.ToolPage).Methods("GET")
 	r.HandleFunc("/manage/page/tool/sequence", h.SequencePage).Methods("POST")
+	r.HandleFunc("/manage/page/tree/", h.TreePage).Methods("GET")
 
+	//ページ表示
 	r.HandleFunc("/manage/page/view/{key}", h.PageHandler).Methods("GET")
 	r.HandleFunc("/manage/page/view/", h.TopHandler).Methods("GET")
 
@@ -51,6 +53,7 @@ func init() {
 	pub := Public{}
 	r.HandleFunc("/page/{key}", pub.pageHandler).Methods("GET")
 	r.HandleFunc("/file/{key}", pub.fileHandler).Methods("GET")
+	r.HandleFunc("/file_cache/{key}", pub.fileCacheHandler).Methods("GET")
 	r.HandleFunc("/", pub.topHandler).Methods("GET")
 
 	http.Handle("/", r)

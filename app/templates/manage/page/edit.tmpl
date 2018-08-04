@@ -3,11 +3,7 @@ Edit Page[
 {{ range .Breadcrumbs}}
 &gt; <a href="/manage/page/{{ .Key.StringID }}">{{ .Name }}</a>
 {{ end }}
-] &lt;
-{{ if ne .Page.Name "" }}
-<a href="/manage/page/tool/{{ .Page.Key.StringID }}">Tool</a>
-{{ end }}
-
+]
 
 {{ if .Publish }}
         <button type="button" id="generateBtn" class="mdl-button mdl-js-button mdl-button--raised mdl-button--primary">
@@ -88,6 +84,32 @@ Edit Page[
     </tr>
 
 {{ if ne .Page.Name "" }}
+
+
+    <tr>
+      <td class="mdl-data-table__cell--non-numeric">
+        <div id="children" class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label mdl-select">
+        <input class="mdl-textfield__input" type="text" id="childrenPage" value="Edit..." readonly/>
+        <label class="mdl-textfield__label" for="childrenPage">Children Page</label>
+        <ul class="mdl-menu mdl-menu--bottom-left mdl-js-menu mdl-js-ripple-effect" for="childrenPage">
+          <li class="mdl-menu__item" data-id=""><i class="material-icons">add</i>Add...</li>
+{{range .Children}}
+          <li class="mdl-menu__item" data-id="{{ .Key.StringID }}" {{if .Deleted}}style="color:red;"{{end}}>{{ .Name }}</li>
+{{end}}
+        </ul>
+        </div>
+
+        <br>
+
+        <a href="/manage/page/tool/{{ .Page.Key.StringID }}">
+        <button type="button" id="toolBtn" class="mdl-button mdl-js-button mdl-button--raised">
+          Tool
+        </button>
+        </a>
+
+      </td>
+    </tr>
+
     <tr>
       <td class="mdl-data-table__cell--non-numeric">
         <div id="pagingNum" class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label mdl-select">
@@ -105,21 +127,6 @@ Edit Page[
           <li class="mdl-menu__item">8</li>
           <li class="mdl-menu__item">9</li>
           <li class="mdl-menu__item">10</li>
-        </ul>
-        </div>
-      </td>
-    </tr>
-    <tr>
-      <td class="mdl-data-table__cell--non-numeric">
-        <div id="children" class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label mdl-select">
-        <input class="mdl-textfield__input" type="text" id="childrenPage" value="Edit..." readonly/>
-        <label class="mdl-textfield__label" for="childrenPage">Children Page</label>
-        <ul class="mdl-menu mdl-menu--bottom-left mdl-js-menu mdl-js-ripple-effect" for="childrenPage">
-          <li class="mdl-menu__item" data-id=""><i class="material-icons">add</i>Add...</li>
-
-{{range .Children}}
-          <li class="mdl-menu__item" data-id="{{ .Key.StringID }}" {{if .Deleted}}style="color:red;"{{end}}>{{ .Name }}</li>
-{{end}}
         </ul>
         </div>
       </td>

@@ -217,3 +217,24 @@ func (h Handler) SequencePage(w http.ResponseWriter, r *http.Request) {
 
 	http.Redirect(w, r, "/manage/page/tool/" + id, 302)
 }
+
+type Tree struct {
+	Page     *datastore.Page
+	Children []*datastore.Tree
+}
+
+func (h Handler) TreePage(w http.ResponseWriter, r *http.Request) {
+
+	tree,err := datastore.PageTree(r)
+	if err != nil {
+		h.errorPage(w, "Error Page Tree", err.Error(), 500)
+		return
+	}
+
+	dto := struct {
+		Tree *datastore.Tree
+	} {tree}
+
+	h.parse(w, TEMPLATE_DIR+"page/tree.tmpl", dto)
+}
+

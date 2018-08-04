@@ -83,6 +83,12 @@ func (p Public) fileHandler(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
+func (p Public) fileCacheHandler(w http.ResponseWriter, r *http.Request) {
+	// 60 * 60 * 3 = 10800
+	w.Header().Set("Cache-Control", "max-age=10800, public")
+	p.fileHandler(w,r)
+}
+
 func (p Public) errorPage(w http.ResponseWriter, t string, msg string, num int) {
 
 	dto := struct {
