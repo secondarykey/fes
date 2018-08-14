@@ -14,8 +14,8 @@ func init() {
 
 	r.HandleFunc("/manage/", h.View).Methods("GET")
 	//Page
-	r.HandleFunc("/manage/page/", h.ViewPage).Methods("GET")
-	r.HandleFunc("/manage/page/{key}", h.EditPage)
+	r.HandleFunc("/manage/page/", h.ViewRootPage).Methods("GET")
+	r.HandleFunc("/manage/page/{key}", h.ViewPage)
 	r.HandleFunc("/manage/page/add/{key}", h.AddPage).Methods("GET")
 	r.HandleFunc("/manage/page/delete/{key}", h.DeletePage).Methods("GET")
 	r.HandleFunc("/manage/page/public/{key}", h.PublicPage).Methods("GET")
@@ -43,6 +43,11 @@ func init() {
 	r.HandleFunc("/manage/template/edit/{key}", h.EditTemplate)
 	r.HandleFunc("/manage/template/delete/{key}", h.DeleteTemplate)
 	r.HandleFunc("/manage/template/reference/{key}", h.ReferenceTemplate)
+
+	//table
+	r.HandleFunc("/manage/table/view", h.TableView)
+
+
 
 	//Site
 	r.HandleFunc("/manage/site/", h.ViewSetting).Methods("GET")

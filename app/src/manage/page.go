@@ -9,17 +9,44 @@ import (
 	"github.com/satori/go.uuid"
 )
 
-func (h Handler) ViewPage(w http.ResponseWriter, r *http.Request) {
-	h.view(w, r, "", "")
+func (h Handler) ViewRootPage(w http.ResponseWriter, r *http.Request) {
+
+	page, err := datastore.SelectRootPage(r)
+	if err != nil {
+		if err == datastore.SiteNotFoundError {
+			http.Redirect(w, r, "/manage/site/", 302)
+		} else {
+			h.errorPage(w, "Select Root Page error",err.Error() ,500)
+		}
+		return
+	}
+	h.view(w, r, page)
 }
 
 func (h Handler) AddPage(w http.ResponseWriter, r *http.Request) {
+
 	vars := mux.Vars(r)
 	parent := vars["key"]
-	h.view(w, r, "", parent)
+
+	//新規ページなので
+	page := &datastore.Page{
+		Parent: parent,
+	}
+	page.Deleted = true
+
+	uid, err := uuid.NewV4()
+	if err != nil {
+		h.errorPage(w, "Generate uuid ",err.Error() ,500)
+		return
+	}
+
+	id := uid.String()
+	page.SetKey(datastore.CreatePageKey(r, id))
+
+	h.view(w, r, page)
 }
 
-func (h Handler) EditPage(w http.ResponseWriter, r *http.Request) {
+func (h Handler) ViewPage(w http.ResponseWriter, r *http.Request) {
 
 	if POST(r) {
 		err := datastore.PutPage(r)
@@ -31,32 +58,27 @@ func (h Handler) EditPage(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 	id := vars["key"]
-	h.view(w, r, id, "")
+	//ページ検索
+	page, err := datastore.SelectPage(r, id)
+	if err != nil {
+		h.errorPage(w, "Error Select Page",err.Error() ,500)
+		return
+	}
+
+	h.view(w, r, page)
 }
 
-func (h Handler) view(w http.ResponseWriter, r *http.Request, id string, parent string) {
+func (h Handler) view(w http.ResponseWriter, r *http.Request,page *datastore.Page) {
 
 	var err error
-	var page *datastore.Page
 	var pageData *datastore.PageData
 
 	publish := false
 
+	//全件検索
 	templates, err := datastore.SelectTemplates(r,-1)
 	if err != nil {
 		h.errorPage(w, "Error Select Template",err.Error(), 500)
-		return
-	}
-
-	if id == "" && parent == "" {
-		//親が空で検索
-		page, err = datastore.SelectRootPage(r)
-	} else if id != "" {
-		page, err = datastore.SelectPage(r, id)
-	}
-
-	if err != nil {
-		h.errorPage(w, "Error Select Page",err.Error() ,500)
 		return
 	}
 
@@ -64,60 +86,50 @@ func (h Handler) view(w http.ResponseWriter, r *http.Request, id string, parent 
 	siteTemplateName := "Select Site Template..."
 	pageTemplateName := "Select Page Template..."
 
-	if page == nil {
+	id := page.Key.StringID()
 
-		//新規ページなので
-		page = &datastore.Page{
-			Parent: parent,
-		}
-		page.Deleted = true
+	pageData, err = datastore.SelectPageData(r, id)
+	if err != nil {
+		h.errorPage(w, "Error Select PageData", err.Error(),500)
+		return
+	}
+
+	if pageData == nil {
 		pageData = &datastore.PageData{}
-
-		uid, err := uuid.NewV4()
-		if err != nil {
-			h.errorPage(w, "Generate uuid ",err.Error() ,500)
-			return
-		}
-
-		id = uid.String()
-		page.SetKey(datastore.CreatePageKey(r, id))
 		pageData.SetKey(datastore.CreatePageDataKey(r, id))
+	}
 
+	//全件でOK
+	children, err = datastore.SelectChildPages(r, id,0,0,true)
+	if err != nil {
+		h.errorPage(w, "Error Select Children page", err.Error(),500)
+		return
+	}
+
+	if children == nil {
 		children = make([]datastore.Page, 0)
+	}
 
-	} else {
-		pageData, err = datastore.SelectPageData(r, page.Key.StringID())
-		if err != nil {
-			h.errorPage(w, "Error Select PageData", err.Error(),500)
-			return
+
+	if !page.Deleted {
+		if page.UpdatedAt.Unix() > page.Publish.Unix() + 5 {
+			publish = true
 		}
+	}
 
-		//全件でOK
-		children, err = datastore.SelectChildPages(r, page.Key.StringID(),0,0,true)
-		if err != nil {
-			h.errorPage(w, "Error Select Children page", err.Error(),500)
-			return
+	for _, elm := range templates {
+		if elm.Key.StringID() == page.SiteTemplate {
+			siteTemplateName = elm.Name
 		}
-
-		if !page.Deleted {
-			if page.UpdatedAt.Unix() > page.Publish.Unix() + 5 {
-				publish = true
-			}
-		}
-
-		for _, elm := range templates {
-			if elm.Key.StringID() == page.SiteTemplate {
-				siteTemplateName = elm.Name
-			}
-			if elm.Key.StringID() == page.PageTemplate {
-				pageTemplateName = elm.Name
-			}
+		if elm.Key.StringID() == page.PageTemplate {
+			pageTemplateName = elm.Name
 		}
 	}
 
 	wk := make([]datastore.Page, 0)
 	wk = append(wk, *page)
-	parent = page.Parent
+
+	parent := page.Parent
 
 	for {
 		if parent == "" {

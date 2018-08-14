@@ -20,9 +20,12 @@ func (h Handler) View(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h Handler) TopHandler(w http.ResponseWriter, r *http.Request) {
-
-	site := datastore.GetSite(r)
-	if site.Root == "" {
+	site,err := datastore.SelectSite(r)
+	if err != nil {
+		if err == datastore.SiteNotFoundError {
+			h.ViewSetting(w,r)
+			return
+		}
 		h.errorPage(w,"Not Found","Root page not found",404)
 		return
 	}

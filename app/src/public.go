@@ -48,11 +48,14 @@ func (p Public) pageView(w http.ResponseWriter, r *http.Request,id string) {
 }
 
 func (p Public) topHandler(w http.ResponseWriter, r *http.Request) {
-	site := datastore.GetSite(r)
-	if site.Root == "" {
+
+	//TODO 検索なしでトップを設定する
+	site,err := datastore.SelectSite(r)
+	if err != nil {
 		p.errorPage(w,"Not Found","Root page not found",404)
 		return
 	}
+
 	p.pageView(w,r,site.Root)
 }
 

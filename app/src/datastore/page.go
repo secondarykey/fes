@@ -22,6 +22,10 @@ import (
 	"sort"
 )
 
+var (
+	RootPageNotFoundError = fmt.Errorf("site root not set")
+)
+
 const KIND_PAGE = "Page"
 
 type Page struct {
@@ -133,9 +137,9 @@ func getChildrenCursorKey(id string,p int) string {
 }
 
 func SelectRootPage(r *http.Request) (*Page, error) {
-	site := GetSite(r)
-	if site.Root == "" {
-		return nil, nil
+	site,err := SelectSite(r)
+	if err != nil {
+		return nil,err
 	}
 	return SelectPage(r, site.Root)
 }
@@ -152,6 +156,7 @@ func SelectPage(r *http.Request, id string) (*Page, error) {
 			return nil, nil
 		}
 	}
+	page.SetKey(key)
 	return &page, nil
 }
 
@@ -221,14 +226,6 @@ func PutPage(r *http.Request) error {
 
 		//TODO Deletedにされている場合、HTMLを検索して削除
 
-		//一番親ページの場合
-		if page.Parent == "" {
-			//SiteのページKeyを変更する
-			err = SetRoot(r, page.Key.StringID())
-			if err != nil {
-				return err
-			}
-		}
 		return nil
 	}, option)
 }

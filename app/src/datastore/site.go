@@ -2,15 +2,23 @@ package datastore
 
 import (
 	"net/http"
+	"strconv"
+	"fmt"
 
+	"golang.org/x/net/context"
 	"github.com/knightso/base/gae/ds"
+	kerr "github.com/knightso/base/errors"
+	"github.com/satori/go.uuid"
+
 	"google.golang.org/appengine"
 	"google.golang.org/appengine/datastore"
-	"log"
-	"strconv"
 )
 
 const KIND_SITE = "Site"
+
+var (
+	SiteNotFoundError = fmt.Errorf("site not found")
+)
 
 type Site struct {
 	Name        string
@@ -28,98 +36,99 @@ func createSiteKey(r *http.Request) *datastore.Key {
 	return datastore.NewKey(c, KIND_SITE, "fixing", 0, nil)
 }
 
-func SetRoot(r *http.Request, id string) error {
-	c := appengine.NewContext(r)
-
-	site := GetSite(r)
-	site.Root = id
-	err := ds.Put(c, site)
-	if err != nil {
-		return err
-	}
-	gSite = site
-	return nil
-}
-
-var gSite *Site
-
 func PutSite(r *http.Request) error {
 
-	gSite = GetSite(r)
+	site,foundErr := SelectSite(r)
+	if foundErr != nil {
+		if foundErr != SiteNotFoundError {
+			return foundErr
+		}
+		site = &Site{}
+	}
 
-	gSite.Name = r.FormValue("name")
-	gSite.Description = r.FormValue("description")
-	gSite.Root = r.FormValue("rootPage")
+	site.Name = r.FormValue("name")
+	site.Description = r.FormValue("description")
+	site.Root = r.FormValue("rootPage")
 
 	if cache := r.FormValue("htmlCache") ; cache != "" {
 		if val,err := strconv.ParseBool(cache) ; err == nil {
-			gSite.HTMLCache = val
+			site.HTMLCache = val
 		}
 	}
 	if cache := r.FormValue("templateCache") ; cache != "" {
 		if val,err := strconv.ParseBool(cache) ; err == nil {
-			gSite.TemplateCache = val
+			site.TemplateCache = val
 		}
 	}
 	if cache := r.FormValue("pageCache") ; cache != "" {
 		if val,err := strconv.ParseBool(cache) ; err == nil {
-			gSite.PageCache = val
+			site.PageCache = val
 		}
 	}
 	if cache := r.FormValue("fileCache") ; cache != "" {
 		if val,err := strconv.ParseBool(cache) ; err == nil {
-			gSite.FileCache = val
+			site.FileCache = val
 		}
 	}
 
-	c := appengine.NewContext(r)
-	key := createSiteKey(r)
-	gSite.SetKey(key)
-	err := ds.Put(c, gSite)
-	if err != nil {
-		return err
+	var page *Page
+	if foundErr != nil {
+		page = &Page{
+			Name : "最初のページ",
+			Parent: "",
+		}
+		page.Deleted = true
+		uid, err := uuid.NewV4()
+		if err != nil {
+			return err
+		}
+		page.SetKey(CreatePageKey(r,uid.String()))
 	}
 
-	return nil
+	c := appengine.NewContext(r)
+	option := &datastore.TransactionOptions{XG: true}
+	return datastore.RunInTransaction(c, func(ctx context.Context) error {
+
+		if page != nil {
+			err := ds.Put(c, page)
+			if err != nil {
+				return err
+			}
+			site.Root = page.Key.StringID()
+		}
+
+		key := createSiteKey(r)
+		site.SetKey(key)
+		err := ds.Put(c, site)
+		if err != nil {
+			return err
+		}
+		cacheSite = site
+
+		return nil
+	}, option)
 }
 
-func GetSite(r *http.Request) *Site {
+var cacheSite *Site
+func SelectSite(r *http.Request) (*Site,error) {
 
-	if gSite != nil {
-		return gSite
-	}
-
-	site := Site{
-		Name:        "サイト名",
-		Description: "サイトの説明",
-		TemplateCache:true,
-		PageCache:true,
-		FileCache:true,
+	if cacheSite != nil {
+		return cacheSite,nil
 	}
 
 	c := appengine.NewContext(r)
 	key := createSiteKey(r)
+
+	var site Site
 	err := ds.Get(c, key, &site)
 	if err != nil {
-		log.Println("サイトデータ取得失敗")
-	}
-
-	//キャッシュ設定
-	ds.CacheKinds[KIND_TEMPLATE] = site.TemplateCache
-	ds.CacheKinds[KIND_TEMPLATEDATA] = site.TemplateCache
-	ds.CacheKinds[KIND_PAGE] = site.PageCache
-	ds.CacheKinds[KIND_PAGEDATA] = site.PageCache
-	ds.CacheKinds[KIND_FILE] = site.FileCache
-	ds.CacheKinds[KIND_FILEDATA] = site.FileCache
-
-	if site.Key == nil {
-		site.SetKey(key)
-		err = ds.Put(c, &site)
-		if err != nil {
-			log.Println("サイトデータPut失敗")
+		if kerr.Root(err) == datastore.ErrNoSuchEntity {
+			return nil,SiteNotFoundError
+		} else {
+			return nil, err
 		}
 	}
-
-	gSite = &site
-	return gSite
+	cacheSite = &site
+	return &site,nil
 }
+

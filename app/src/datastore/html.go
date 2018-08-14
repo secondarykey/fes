@@ -255,9 +255,12 @@ func WriteManageHTML(w http.ResponseWriter, r *http.Request,id string,p int) (er
 func NewDtos(r *http.Request, page *Page,pageNum int,mng bool) ([]*HTMLDto,error) {
 
 	id := page.Key.StringID()
-	site := GetSite(r)
-	pData, err := SelectPageData(r, id)
+	site,err := SelectSite(r)
+	if err != nil {
+		return nil,err
+	}
 
+	pData, err := SelectPageData(r, id)
 	if err != nil {
 		return nil,err
 	}
@@ -423,7 +426,7 @@ func (p Public) funcMap() template.FuncMap {
 	}
 }
 //Contentの変換時にテンプレートを実現する
-func (p Public)ConvertTemplate(data string) template.HTML {
+func (p Public) ConvertTemplate(data string) template.HTML {
 
 	tmpl,err := template.New("").Funcs(p.funcMap()).Parse(data)
 	if err != nil {

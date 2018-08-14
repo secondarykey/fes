@@ -265,3 +265,64 @@ _:-ms-input-placeholder, :root .demo-graph {
       -ms-flex-align: center;
           align-items: center;
 }
+
+tt-table {
+    border:0px #999999 solid;
+    border-spacing:0px;
+    border-collapse:collapse;
+}
+
+tr.tt-row {
+   min-height :10px;
+   max-height :10px;
+   height :10px;
+
+   padding:0px;
+}
+
+tt-table tbody tr td {
+    border:0px #999999 solid;
+    padding:0px;
+    margin: 0px;
+}
+
+tt-table tbody tr td:empty {
+    border:0px #999999 solid;
+    margin: 0px;
+}
+
+td.tt-hour {
+    border-top:1px #999999 solid;
+}
+
+td.tt-half {
+    border-top:1px #999999 dotted;
+}
+
+td.tt-time {
+    font-size:10px;
+    min-height :10px;
+    max-height :10px;
+    height :10px;
+
+    max-width:25px;
+    min-width:25px;
+    width:25px;
+
+    padding:0px;
+    text-align:right;
+}
+
+td.tt-artist-name {
+    border:0px;
+    padding-left:5px;
+}
+
+td.tt-artist {
+    min-height :10px;
+    max-height :10px;
+    height :10px;
+
+    padding:0px;
+    border-left:1px #999999 solid;
+}
