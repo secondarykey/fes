@@ -12,6 +12,9 @@ import (
 
 	"google.golang.org/appengine"
 	"google.golang.org/appengine/datastore"
+	"io"
+	"html/template"
+	"time"
 )
 
 const KIND_SITE = "Site"
@@ -132,3 +135,51 @@ func SelectSite(r *http.Request) (*Site,error) {
 	return &site,nil
 }
 
+type URL struct {
+	URL string
+	LastModified string
+	Priority string
+	Change string
+	Image string
+	Caption string
+}
+
+func GenerateSitemap(w io.Writer,r *http.Request,root string) error {
+
+	//Page全体でアクセス
+	pages,err := SelectPages(r)
+	if err != nil {
+		return err
+	}
+	urls := make([]URL,len(pages))
+	//Page数回繰り返す
+	for idx,page := range pages {
+
+		url := URL{}
+		url.URL = root + "page/" + page.Key.StringID()
+		url.LastModified = page.UpdatedAt.Format(time.RFC3339)
+		url.Change = "weekly"
+		url.Priority = "0.8"
+		url.Image = root + "file/" + page.Key.StringID()
+		url.Caption = page.Description
+
+		urls[idx] = url
+	}
+
+	dto := struct {
+		Header template.HTML
+		Pages []URL
+	}{template.HTML(`<?xml version="1.0" encoding="UTF-8"?>`),urls}
+
+	//Topと同じだった場合
+	tmpl, err := template.ParseFiles("templates/map.tmpl")
+	if err != nil {
+		return err
+	}
+
+	err = tmpl.Execute(w, dto)
+	if err != nil {
+		return err
+	}
+	return nil
+}

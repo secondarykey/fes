@@ -59,6 +59,7 @@ func init() {
 	r.HandleFunc("/page/{key}", pub.pageHandler).Methods("GET")
 	r.HandleFunc("/file/{key}", pub.fileHandler).Methods("GET")
 	r.HandleFunc("/file_cache/{key}", pub.fileCacheHandler).Methods("GET")
+	r.HandleFunc("/sitemap/", pub.sitemap).Methods("GET")
 	r.HandleFunc("/", pub.topHandler).Methods("GET")
 
 	http.Handle("/", r)

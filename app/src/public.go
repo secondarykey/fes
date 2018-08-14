@@ -92,6 +92,18 @@ func (p Public) fileCacheHandler(w http.ResponseWriter, r *http.Request) {
 	p.fileHandler(w,r)
 }
 
+func (p Public) sitemap(w http.ResponseWriter,r *http.Request) {
+	// 60 * 60 * 24
+	w.Header().Set("Cache-Control", "max-age=86400, public")
+	w.Header().Set("Content-Type","text/xml")
+	root := "https://www.hagoromo-shizuoka.com/"
+
+	err := datastore.GenerateSitemap(w,r,root)
+	if err != nil {
+		p.errorPage(w,"Generate sitemap error",err.Error(),500)
+	}
+}
+
 func (p Public) errorPage(w http.ResponseWriter, t string, msg string, num int) {
 
 	dto := struct {
