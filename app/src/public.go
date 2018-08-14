@@ -87,8 +87,11 @@ func (p Public) fileHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (p Public) fileCacheHandler(w http.ResponseWriter, r *http.Request) {
-	// 60 * 60 * 3 = 10800
-	w.Header().Set("Cache-Control", "max-age=10800, public")
+	// 60 * 60 * 3  = 10800
+	// 60 * 60 * 6  = 21600
+	// 60 * 60 * 12 = 43200
+	// 60 * 60 * 24 = 86400
+	w.Header().Set("Cache-Control", "max-age=21600, public")
 	p.fileHandler(w,r)
 }
 
