@@ -1,5 +1,5 @@
 {{define "title"}}
-File[<a href="/manage/file/type/2">PageFile</a> <a href="/manage/file/type/all">ALL</a>]
+File[<a href="/manage/file/type/1">File</a>|<a href="/manage/file/type/2">Page</a>|<a href="/manage/file/type/all">ALL</a>]
 {{end}}
 
 {{define "page_template"}}
@@ -7,11 +7,26 @@ File[<a href="/manage/file/type/2">PageFile</a> <a href="/manage/file/type/all">
 <table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
   <thead>
     <tr>
+      <th class="mdl-data-table__cell--non-numeric">
+{{if ne .Prev 0}}
+        <a href="?page={{.Prev}}" class="demo-nav__button" title="Older">
+          <button class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon">
+             <i class="material-icons">arrow_back</i>
+          </button>
+        </a>
+{{end}}
+      </th>
       <th class="mdl-data-table__cell--non-numeric">Name</th>
       <th>Size(byte)</th>
       <th>Create</th>
       <th>Update</th>
-      <th> </th>
+      <th>
+        <a href="?page={{.Next}}" class="demo-nav__button" title="Newer">
+          <button class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon">
+            <i class="material-icons" role="presentation">arrow_forward</i>
+          </button>
+        </a>
+      </th>
     </tr>
   </thead>
   <tbody>
@@ -21,7 +36,7 @@ File[<a href="/manage/file/type/2">PageFile</a> <a href="/manage/file/type/all">
       <td><a href="/manage/file/resize/{{.Key.StringID}}">{{convertSize .Size}}</a></td>
       <td>{{convertDate .CreatedAt}}</td>
       <td>{{convertDate .UpdatedAt}}</td>
-      <td>
+      <td colspan="2">
       <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent removeBtn" data-id="{{ .Key.StringID }}">
         Remove
       </button>
@@ -31,7 +46,7 @@ File[<a href="/manage/file/type/2">PageFile</a> <a href="/manage/file/type/all">
     <tr>
       <td class="mdl-data-table__cell--non-numeric">
 {{if ne .Prev 0}}
-        <a href="/manage/file/?page={{.Prev}}" class="demo-nav__button" title="Older">
+        <a href="?page={{.Prev}}" class="demo-nav__button" title="Older">
           <button class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon">
              <i class="material-icons">arrow_back</i>
           </button>
@@ -41,8 +56,9 @@ File[<a href="/manage/file/type/2">PageFile</a> <a href="/manage/file/type/all">
       <td></td>
       <td></td>
       <td></td>
+      <td></td>
       <td>
-        <a href="/manage/file/?page={{.Next}}" class="demo-nav__button" title="Newer">
+        <a href="?page={{.Next}}" class="demo-nav__button" title="Newer">
           <button class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon">
             <i class="material-icons" role="presentation">arrow_forward</i>
           </button>

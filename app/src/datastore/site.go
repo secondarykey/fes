@@ -17,7 +17,7 @@ import (
 	"time"
 )
 
-const KIND_SITE = "Site"
+const KindSiteName = "Site"
 
 var (
 	SiteNotFoundError = fmt.Errorf("site not found")
@@ -36,7 +36,7 @@ type Site struct {
 
 func createSiteKey(r *http.Request) *datastore.Key {
 	c := appengine.NewContext(r)
-	return datastore.NewKey(c, KIND_SITE, "fixing", 0, nil)
+	return datastore.NewKey(c, KindSiteName, "fixing", 0, nil)
 }
 
 func PutSite(r *http.Request) error {
@@ -107,6 +107,7 @@ func PutSite(r *http.Request) error {
 			return err
 		}
 		cacheSite = site
+		setDatastoreCache(cacheSite)
 
 		return nil
 	}, option)
@@ -132,7 +133,19 @@ func SelectSite(r *http.Request) (*Site,error) {
 		}
 	}
 	cacheSite = &site
+	setDatastoreCache(cacheSite)
 	return &site,nil
+}
+
+func setDatastoreCache(site *Site) {
+	ds.CacheKinds[KindHTMLName] = site.HTMLCache
+	ds.CacheKinds[KindTemplateName] = site.TemplateCache
+	ds.CacheKinds[KindTemplateDataName] = site.TemplateCache
+	ds.CacheKinds[KindFileName] = site.FileCache
+	ds.CacheKinds[KindFileDataName] = site.FileCache
+	ds.CacheKinds[KindPageName] = site.PageCache
+	ds.CacheKinds[KindPageDataName] = site.PageCache
+	return
 }
 
 type URL struct {

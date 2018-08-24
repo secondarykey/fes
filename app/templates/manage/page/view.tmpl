@@ -10,16 +10,24 @@ Children Page Tool[<a href="/manage/page/{{ .Parent }}">Parent</a>]
   <thead>
     <tr>
       <th> </th>
+      <th> </th>
       <th class="mdl-data-table__cell--non-numeric">Name</th>
       <th class="mdl-data-table__cell--non-numeric">Enabled</th>
       <th>Create</th>
       <th>Update</th>
+      <th> </th>
       <th> </th>
     </tr>
   </thead>
   <tbody id="seqBody">
 {{ range $i, $v := .Pages}}
     <tr class="seqRow" data-index="{{$i}}" data-id="{{.Key.StringID}}">
+      <td>
+        <button class="mdl-button mdl-js-button mdl-button--icon mostUpBtn">
+            <i class="material-icons">arrow_drop_up</i>
+        </button>
+      </td>
+
       <td>
         <button class="mdl-button mdl-js-button mdl-button--icon upBtn">
             <i class="material-icons">arrow_upward</i>
@@ -41,6 +49,11 @@ Children Page Tool[<a href="/manage/page/{{ .Parent }}">Parent</a>]
         <button class="mdl-button mdl-js-button mdl-button--icon downBtn">
             <i class="material-icons">arrow_downward</i>
         </button>
+      </td>
+      <td>
+          <button class="mdl-button mdl-js-button mdl-button--icon mostDownBtn">
+              <i class="material-icons">arrow_drop_down</i>
+          </button>
       </td>
     </tr>
 {{ end }}
@@ -89,6 +102,64 @@ Children Page Tool[<a href="/manage/page/{{ .Parent }}">Parent</a>]
           var index = tr.getAttribute("data-index");
           moveRow(index,parseInt(index)+1);
         });
+    }
+
+    var upList = document.querySelectorAll('button.mostUpBtn');
+    for (var i=0; i< upList.length; i++) {
+        upList[i].addEventListener('click', function(e) {
+          var tr = e.target;
+          while ( tr.getAttribute("data-index") == null ) {
+             tr = tr.parentNode;
+          }
+          if ( confirm("realy?") ) {
+            mostMoveRow(tr,true);
+          }
+        });
+    }
+
+    var downList = document.querySelectorAll('button.mostDownBtn');
+    for (var i=0; i< downList.length; i++) {
+        downList[i].addEventListener('click', function(e) {
+          var tr = e.target;
+          while ( tr.getAttribute("data-index") == null ) {
+             tr = tr.parentNode;
+          }
+          if ( confirm("realy?") ) {
+            mostMoveRow(tr,false);
+          }
+        });
+    }
+
+    function mostMoveRow(target,flag) {
+
+        var seqRows = document.querySelectorAll('tr.seqRow');
+        var elm = document.querySelector('#seqBody');
+        //空にする
+        while (elm.firstChild) elm.removeChild(elm.firstChild);
+
+        var newIdx = 0;
+        var index = target.getAttribute("data-index");
+
+        if ( flag )  {
+          target.setAttribute("data-index",0);
+          elm.appendChild(target);
+          ++newIdx;
+        }
+
+        for (var i=0; i< seqRows.length; i++) {
+          var addElm = seqRows[i];
+          if ( addElm == target ) {
+              continue;
+          }
+          addElm.setAttribute("data-index",newIdx);
+          elm.appendChild(addElm);
+          newIdx++;
+        }
+
+        if ( !flag )  {
+          target.setAttribute("data-index",newIdx);
+          elm.appendChild(target);
+        }
     }
 
     function moveRow(src,target) {

@@ -26,7 +26,7 @@ var (
 	RootPageNotFoundError = fmt.Errorf("site root not set")
 )
 
-const KIND_PAGE = "Page"
+const KindPageName = "Page"
 
 type Page struct {
 	Name        string
@@ -43,13 +43,13 @@ type Page struct {
 
 func CreatePageKey(r *http.Request, id string) *datastore.Key {
 	c := appengine.NewContext(r)
-	return datastore.NewKey(c, KIND_PAGE, id, 0, nil)
+	return datastore.NewKey(c, KindPageName, id, 0, nil)
 }
 
 func SelectPages(r *http.Request) ([]Page, error) {
 	c := appengine.NewContext(r)
 	var pages []Page
-	q := datastore.NewQuery(KIND_PAGE).Filter("Deleted=",false)
+	q := datastore.NewQuery(KindPageName).Filter("Deleted=",false)
 	t := q.Run(c)
 	for {
 		var page Page
@@ -71,7 +71,7 @@ func SelectChildPages(r *http.Request, id string,page int,limit int,mng bool) ([
 	c := appengine.NewContext(r)
 	var pages []Page
 
-	q := datastore.NewQuery(KIND_PAGE).Filter("Parent=", id).Order("Seq").Order("- CreatedAt")
+	q := datastore.NewQuery(KindPageName).Filter("Parent=", id).Order("Seq").Order("- CreatedAt")
 	if !mng {
 		q = q.Filter("Deleted=",false)
 	}
@@ -121,8 +121,6 @@ func SelectChildPages(r *http.Request, id string,page int,limit int,mng bool) ([
 		}
 
 		curKey := getChildrenCursorKey(id,n)
-		log.Printf("Key:%s, Set Cursor:%s",curKey,cur.String())
-
 		err = memcache.Set(c, &memcache.Item{
 			Key:   curKey,
 			Value: []byte(cur.String()),
@@ -147,7 +145,7 @@ func SelectRootPage(r *http.Request) (*Page, error) {
 func SelectPage(r *http.Request, id string) (*Page, error) {
 	page := Page{}
 	c := appengine.NewContext(r)
-	key := datastore.NewKey(c, KIND_PAGE, id, 0, nil)
+	key := datastore.NewKey(c, KindPageName, id, 0, nil)
 	err := ds.Get(c, key, &page)
 	if err != nil {
 		if kerr.Root(err) != datastore.ErrNoSuchEntity {
@@ -219,7 +217,7 @@ func PutPage(r *http.Request) error {
 			return err
 		}
 
-		err = SaveFile(r, id,api.PAGE_IMAGE)
+		err = SaveFile(r, id,api.FileTypePageImage)
 		if err != nil {
 			//ファイル指定なしの場合の動作
 		}
@@ -234,12 +232,12 @@ func UsingTemplate(r *http.Request, id string) bool {
 
 	var err error
 	c := appengine.NewContext(r)
-	siteQ := datastore.NewQuery(KIND_PAGE).Filter("SiteTemplate=", id).Limit(1)
+	siteQ := datastore.NewQuery(KindPageName).Filter("SiteTemplate=", id).Limit(1)
 	siteT := siteQ.Run(c)
 	var page Page
 	_, err = siteT.Next(&page)
 	if err == datastore.Done {
-		pageQ := datastore.NewQuery(KIND_PAGE).Filter("PageTemplate=", id).Limit(1)
+		pageQ := datastore.NewQuery(KindPageName).Filter("PageTemplate=", id).Limit(1)
 		pageT := pageQ.Run(c)
 		_, err = pageT.Next(&page)
 		if err == datastore.Done {
@@ -326,7 +324,7 @@ func SelectReferencePages(r *http.Request,id string,typ string) ([]Page,error){
 		filter = "PageTemplate="
 	}
 
-	q := datastore.NewQuery(KIND_PAGE).Filter(filter,id)
+	q := datastore.NewQuery(KindPageName).Filter(filter,id)
 	t := q.Run(c)
 	for {
 		var page Page
@@ -344,7 +342,7 @@ func SelectReferencePages(r *http.Request,id string,typ string) ([]Page,error){
 	return pages,nil
 }
 
-const KIND_PAGEDATA = "PageData"
+const KindPageDataName = "PageData"
 
 type PageData struct {
 	key     *datastore.Key
@@ -361,14 +359,14 @@ func (d *PageData) SetKey(k *datastore.Key) {
 
 func CreatePageDataKey(r *http.Request, id string) *datastore.Key {
 	c := appengine.NewContext(r)
-	return datastore.NewKey(c, KIND_PAGEDATA, id, 0, nil)
+	return datastore.NewKey(c, KindPageDataName, id, 0, nil)
 }
 
 func SelectPageData(r *http.Request, id string) (*PageData, error) {
 
 	page := PageData{}
 	c := appengine.NewContext(r)
-	key := datastore.NewKey(c, KIND_PAGEDATA, id, 0, nil)
+	key := datastore.NewKey(c, KindPageDataName, id, 0, nil)
 	err := ds.Get(c, key, &page)
 	if err != nil {
 		if kerr.Root(err) != datastore.ErrNoSuchEntity {
@@ -390,7 +388,7 @@ func PageTree(r *http.Request) (*Tree,error) {
 
 	c := appengine.NewContext(r)
 	var pages []*Page
-	q := datastore.NewQuery(KIND_PAGE)
+	q := datastore.NewQuery(KindPageName)
 
 	keys,err := q.GetAll(c,&pages)
 	if err != nil {

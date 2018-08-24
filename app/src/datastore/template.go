@@ -23,8 +23,8 @@ func PutTemplate(r *http.Request) error {
 	id := vars["key"]
 
 	c := appengine.NewContext(r)
-	tmpKey := datastore.NewKey(c, KIND_TEMPLATE, id, 0, nil)
-	tmpDataKey := datastore.NewKey(c, KIND_TEMPLATEDATA, id, 0, nil)
+	tmpKey := datastore.NewKey(c, KindTemplateName, id, 0, nil)
+	tmpDataKey := datastore.NewKey(c, KindTemplateDataName, id, 0, nil)
 
 	template := Template{}
 	templateData := TemplateData{}
@@ -61,7 +61,7 @@ func PutTemplate(r *http.Request) error {
 	}, option)
 }
 
-const KIND_TEMPLATE = "Template"
+const KindTemplateName = "Template"
 
 type Template struct {
 	Name string
@@ -74,14 +74,14 @@ func CreateTemplateKey(r *http.Request) *datastore.Key {
 	id, err := uuid.NewV4()
 	if err != nil {
 	}
-	return datastore.NewKey(c, KIND_TEMPLATE, id.String(), 0, nil)
+	return datastore.NewKey(c, KindTemplateName, id.String(), 0, nil)
 }
 
 func SelectTemplate(r *http.Request, id string) (*Template, error) {
 	temp := Template{}
 	c := appengine.NewContext(r)
 	//Method
-	key := datastore.NewKey(c, KIND_TEMPLATE, id, 0, nil)
+	key := datastore.NewKey(c, KindTemplateName, id, 0, nil)
 	err := ds.Get(c, key, &temp)
 	if err != nil {
 		if kerr.Root(err) != datastore.ErrNoSuchEntity {
@@ -104,7 +104,7 @@ func SelectTemplates(r *http.Request,p int) ([]Template, error) {
 	c := appengine.NewContext(r)
 	cursor := ""
 
-	q := datastore.NewQuery(KIND_TEMPLATE).Order("- UpdatedAt")
+	q := datastore.NewQuery(KindTemplateName).Order("- UpdatedAt")
 	//負の場合は全権
 	if  p > 0 {
 		item, err := memcache.Get(c, getTemplateCursor(p))
@@ -155,7 +155,7 @@ func SelectTemplates(r *http.Request,p int) ([]Template, error) {
 	return rtn, nil
 }
 
-const KIND_TEMPLATEDATA = "TemplateData"
+const KindTemplateDataName = "TemplateData"
 
 type TemplateData struct {
 	key     *datastore.Key
@@ -174,7 +174,7 @@ func SelectTemplateData(r *http.Request, id string) (*TemplateData, error) {
 	temp := TemplateData{}
 	c := appengine.NewContext(r)
 	//Method
-	key := datastore.NewKey(c, KIND_TEMPLATEDATA, id, 0, nil)
+	key := datastore.NewKey(c, KindTemplateDataName, id, 0, nil)
 	err := ds.Get(c, key, &temp)
 	if err != nil {
 		return nil, err
@@ -189,13 +189,13 @@ func RemoveTemplate(r *http.Request, id string) error {
 
 	option := &datastore.TransactionOptions{XG: true}
 	return datastore.RunInTransaction(c, func(ctx context.Context) error {
-		key := datastore.NewKey(c, KIND_TEMPLATE, id, 0, nil)
+		key := datastore.NewKey(c, KindTemplateName, id, 0, nil)
 		err = ds.Delete(c, key)
 		if err != nil {
 			return err
 		}
 
-		dataKey := datastore.NewKey(c, KIND_TEMPLATEDATA, id, 0, nil)
+		dataKey := datastore.NewKey(c, KindTemplateDataName, id, 0, nil)
 		err = ds.Delete(c, dataKey)
 		if err != nil {
 			return err

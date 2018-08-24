@@ -69,7 +69,7 @@ func (h Handler) parse(w http.ResponseWriter, tName string, obj interface{}) {
 		"convertSize":         api.ConvertSize,
 		"convertTemplateType": convertTemplateType,
 	}
-	tmpl, err := template.New(api.SITE_TEMPLATE).Funcs(funcMap).ParseFiles(TEMPLATE_DIR+"layout.tmpl", tName)
+	tmpl, err := template.New(api.SiteTemplateName).Funcs(funcMap).ParseFiles(TEMPLATE_DIR+"layout.tmpl", tName)
 	if err != nil {
 		h.errorPage(w, "Template Parse Error", err.Error(), 500)
 		return

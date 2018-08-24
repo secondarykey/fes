@@ -23,7 +23,7 @@ import (
 	"google.golang.org/appengine/memcache"
 )
 
-const KIND_FILE = "File"
+const KindFileName = "File"
 
 type File struct {
 	Size int64
@@ -33,7 +33,7 @@ type File struct {
 
 func createFileKey(r *http.Request, name string) *datastore.Key {
 	c := appengine.NewContext(r)
-	return datastore.NewKey(c, KIND_FILE, name, 0, nil)
+	return datastore.NewKey(c, KindFileName, name, 0, nil)
 }
 
 func getFileCursor(p int) string {
@@ -52,10 +52,10 @@ func SelectFiles(r *http.Request,tBuf string,p int) ([]File, error) {
 	c := appengine.NewContext(r)
 	cursor := ""
 
-	//q := datastore.NewQuery(KIND_FILE).Order("- UpdatedAt")
-	q := datastore.NewQuery(KIND_FILE).Order("- UpdatedAt")
+	//q := datastore.NewQuery(KindFileName).Order("- UpdatedAt")
+	q := datastore.NewQuery(KindFileName).Order("- UpdatedAt")
 
-	if typ == api.DATA_FILE || typ == api.PAGE_IMAGE {
+	if typ == api.FileTypeData || typ == api.FileTypePageImage {
 		q = q.Filter("Type=",typ)
 	}
 
@@ -254,7 +254,7 @@ func RemoveFile(r *http.Request, id string) error {
 	return err
 }
 
-const KIND_FILEDATA = "FileData"
+const KindFileDataName = "FileData"
 
 type FileData struct {
 	key     *datastore.Key
@@ -272,7 +272,7 @@ func (d *FileData) SetKey(k *datastore.Key) {
 
 func createFileDataKey(r *http.Request, name string) *datastore.Key {
 	c := appengine.NewContext(r)
-	return datastore.NewKey(c, KIND_FILEDATA, name, 0, nil)
+	return datastore.NewKey(c, KindFileDataName, name, 0, nil)
 }
 
 func convertImage(r io.Reader) ([]byte, bool, error) {

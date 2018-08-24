@@ -85,19 +85,25 @@ func (p Public) fileHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	return
 }
+func (p Public) fileDateCacheHandler(w http.ResponseWriter, r *http.Request) {
+	// 60 * 60 * 24 = 86400
+	// * 10 = 864000
+	w.Header().Set("Cache-Control", "public, max-age=864000")
+	p.fileHandler(w,r)
+}
 
 func (p Public) fileCacheHandler(w http.ResponseWriter, r *http.Request) {
 	// 60 * 60 * 3  = 10800
 	// 60 * 60 * 6  = 21600
 	// 60 * 60 * 12 = 43200
 	// 60 * 60 * 24 = 86400
-	w.Header().Set("Cache-Control", "max-age=21600, public")
+	w.Header().Set("Cache-Control", "public, max-age=21600")
 	p.fileHandler(w,r)
 }
 
 func (p Public) sitemap(w http.ResponseWriter,r *http.Request) {
 	// 60 * 60 * 24
-	w.Header().Set("Cache-Control", "max-age=86400, public")
+	w.Header().Set("Cache-Control", "public, max-age=86400")
 	w.Header().Set("Content-Type","text/xml")
 	root := "https://www.hagoromo-shizuoka.com/"
 

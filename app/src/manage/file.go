@@ -52,7 +52,7 @@ func (h Handler) ViewFile(w http.ResponseWriter, r *http.Request) {
 //URL = /manage/file/add
 func (h Handler) AddFile(w http.ResponseWriter, r *http.Request) {
 
-	err := datastore.SaveFile(r,"",api.DATA_FILE)
+	err := datastore.SaveFile(r,"",api.FileTypeData)
 	if err != nil {
 		h.errorPage(w,"Error Add File",err.Error(),500)
 		return

@@ -372,15 +372,15 @@ func createTemplate(r *http.Request,page *Page,mng bool) (*template.Template,err
 	}
 	siteTmpData := string(siteTmp.Content)
 	pageTmpData := string(pageTmp.Content)
-	siteTmpData = "{{define \"" + api.SITE_TEMPLATE + "\"}}" + "\n" + siteTmpData + "\n" + "{{end}}"
-	pageTmpData = "{{define \"" + api.PAGE_TEMPLATE + "\"}}" + "\n" + pageTmpData + "\n" + "{{end}}"
+	siteTmpData = "{{define \"" + api.SiteTemplateName + "\"}}" + "\n" + siteTmpData + "\n" + "{{end}}"
+	pageTmpData = "{{define \"" + api.PageTemplateName + "\"}}" + "\n" + pageTmpData + "\n" + "{{end}}"
 
 	pub := Public {
 		request:r,
 		manage:mng,
 	}
 	//適用する
-	tmpl, err := template.New(api.SITE_TEMPLATE).Funcs(pub.funcMap()).Parse(siteTmpData)
+	tmpl, err := template.New(api.SiteTemplateName).Funcs(pub.funcMap()).Parse(siteTmpData)
 	if err != nil {
 		return nil,err
 	}
