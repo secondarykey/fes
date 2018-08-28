@@ -59,7 +59,7 @@ func (h Handler) ViewPage(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["key"]
 	//ページ検索
-	page, err := datastore.SelectPage(r, id)
+	page, err := datastore.SelectPage(r, id,-1)
 	if err != nil {
 		h.errorPage(w, "Error Select Page",err.Error() ,500)
 		return
@@ -135,7 +135,7 @@ func (h Handler) view(w http.ResponseWriter, r *http.Request,page *datastore.Pag
 		if parent == "" {
 			break
 		}
-		parentPage, err := datastore.SelectPage(r, parent)
+		parentPage, err := datastore.SelectPage(r, parent,-1)
 		if err != nil {
 			break
 		}
@@ -178,6 +178,7 @@ func (h Handler) DeletePage(w http.ResponseWriter, r *http.Request) {
 func (h Handler) PublicPage(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["key"]
+
 	err := datastore.PutHTML(r,id)
 	if err != nil {
 		h.errorPage(w, "Error Private HTML", err.Error(), 500)
@@ -212,7 +213,7 @@ func (h Handler) ToolPage(w http.ResponseWriter, r *http.Request) {
 		Parent string
 		Pages []datastore.Page
 	} {id,children}
-	h.parse(w, TEMPLATE_DIR+"page/view.tmpl", dto)
+	h.parse(w, TEMPLATE_DIR+"page/tool.tmpl", dto)
 }
 
 func (h Handler) SequencePage(w http.ResponseWriter, r *http.Request) {
@@ -220,8 +221,9 @@ func (h Handler) SequencePage(w http.ResponseWriter, r *http.Request) {
 	id := r.FormValue("id")
 	idCsv := r.FormValue("ids")
 	enablesCsv := r.FormValue("enables")
+	versionsCsv := r.FormValue("versions")
 
-	err := datastore.PutPageSequence(r,idCsv,enablesCsv)
+	err := datastore.PutPageSequence(r,idCsv,enablesCsv,versionsCsv)
 	if err != nil {
 		h.errorPage(w, "Error Page sequence update", err.Error(),500)
 		return

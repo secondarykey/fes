@@ -77,9 +77,11 @@ Edit Page[
         </button>
         <a href="/file/{{ .Page.Key.StringID }}" target="_blank">Page Image</a>
         <input type="file" name="file" id="file" value="" style="display:none;"/>
+
         <input type="hidden" name="parentID" id="parentID" value="{{ .Page.Parent }}" />
         <input type="hidden" name="siteTemplateID" id="siteTemplateID" value="{{ .Page.SiteTemplate }}" />
         <input type="hidden" name="pageTemplateID" id="pageTemplateID" value="{{ .Page.PageTemplate }}" />
+        <input type="hidden" name="version" id="version" value="{{ .Page.Version }}" />
       </td>
     </tr>
 

@@ -9,7 +9,7 @@ import(
 
 //setting画面
 func (h Handler) ViewSetting(w http.ResponseWriter, r *http.Request) {
-	site,err := datastore.SelectSite(r)
+	site,err := datastore.SelectSite(r,-1)
 	if err != nil {
 		if err == datastore.SiteNotFoundError {
 			site = &datastore.Site {

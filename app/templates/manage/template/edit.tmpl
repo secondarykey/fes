@@ -6,54 +6,58 @@ Edit Template
 {{end}}
 
 {{define "page_template"}}
+
+<input type="hidden" id="version" name="version" value="{{ .Template.Version }}">
+
 <table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp" width="100%">
   <tbody>
-  <tr>
-  <td class="mdl-data-table__cell--non-numeric">
-  <div class="mdl-textfield mdl-js-textfield">
-    <input class="mdl-textfield__input" type="text" id="templateName" value="{{ .Template.Name }}">
-    <label class="mdl-textfield__label" for="templateName">Name...</label>
-  </div>
-  </td>
-  </tr>
+    <tr>
+      <td class="mdl-data-table__cell--non-numeric">
+        <div class="mdl-textfield mdl-js-textfield">
+          <input class="mdl-textfield__input" type="text" id="templateName" value="{{ .Template.Name }}">
+          <label class="mdl-textfield__label" for="templateName">Name...</label>
+        </div>
+      </td>
+    </tr>
 
-  <tr>
-  <td class="mdl-data-table__cell--non-numeric">
-  <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label mdl-select">
-    <input class="mdl-textfield__input" type="text" id="templateType" value="{{ convertTemplateType .Template.Type }}" readonly/>
-    <label class="mdl-textfield__label" for="templateType">Template Type</label>
-    <ul class="mdl-menu mdl-menu--bottom-left mdl-js-menu mdl-js-ripple-effect" for="templateType">
-        <li class="mdl-menu__item">Page</li>
-        <li class="mdl-menu__item">Site</li>
-    </ul>
-  </div>
-  </td>
-  </tr>
+    <tr>
+      <td class="mdl-data-table__cell--non-numeric">
+        <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label mdl-select">
+          <input class="mdl-textfield__input" type="text" id="templateType" value="{{ convertTemplateType .Template.Type }}" readonly/>
+          <label class="mdl-textfield__label" for="templateType">Template Type</label>
+          <ul class="mdl-menu mdl-menu--bottom-left mdl-js-menu mdl-js-ripple-effect" for="templateType">
+            <li class="mdl-menu__item">Page</li>
+            <li class="mdl-menu__item">Site</li>
+          </ul>
+        </div>
+      </td>
+    </tr>
 
-  <tr>
-    <td class="mdl-data-table__cell--non-numeric">
-      <button type="button" id="templateTxt" class="mdl-button mdl-js-button mdl-button--raised">EditTool</button>
-      <br>
-      <div class="mdl-textfield mdl-js-textfield">
-        <textarea class="mdl-textfield__input" type="text" id="templateData" rows="10">{{ plane .TemplateData.Content }}</textarea>
-        <label class="mdl-textfield__label" for="pageContent">Template Data...</label>
-      </div>
-    </td>
-  </tr>
+    <tr>
+      <td class="mdl-data-table__cell--non-numeric">
+        <button type="button" id="templateTxt" class="mdl-button mdl-js-button mdl-button--raised">EditTool</button>
+        <br>
+        <div class="mdl-textfield mdl-js-textfield">
+          <textarea class="mdl-textfield__input" type="text" id="templateData" rows="10">{{ plane .TemplateData.Content }}</textarea>
+          <label class="mdl-textfield__label" for="pageContent">Template Data...</label>
+        </div>
+      </td>
+    </tr>
 
-  <tr>
-  <td>
-  <button id="updateBtn" class="mdl-button mdl-js-button mdl-button--raised mdl-button--primary">
-    Update
-  </button>
-  </td>
-  </tr>
+    <tr>
+      <td>
+        <button id="updateBtn" class="mdl-button mdl-js-button mdl-button--raised mdl-button--primary">
+          Update
+        </button>
+      </td>
+    </tr>
   </tbody>
 </table>
 
-  <form id="referenceForm" name="referenceForm" method="post" action="/manage/template/reference/{{.Template.Key.StringID}}">
+<!-- Reference -->
+<form id="referenceForm" name="referenceForm" method="post" action="/manage/template/reference/{{.Template.Key.StringID}}">
   <input type="hidden" name="type" id="referenceType" value="{{.Template.Type}}" />
-  </form>
+</form>
 
 <script>
 
@@ -86,6 +90,7 @@ Edit Template
 
         var typeTag = document.querySelector('#templateType');
         var templateTag = document.querySelector('#templateData');
+        var versionTag = document.querySelector('#version');
 
         var typeName = typeTag.value;
         var type = 1;
@@ -96,6 +101,7 @@ Edit Template
         var data = {
             name : nameTag.value,
             type : type,
+            version : version,
             template : templateTag.value
         };
 

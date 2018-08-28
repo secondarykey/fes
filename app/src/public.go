@@ -50,7 +50,7 @@ func (p Public) pageView(w http.ResponseWriter, r *http.Request,id string) {
 func (p Public) topHandler(w http.ResponseWriter, r *http.Request) {
 
 	//TODO 検索なしでトップを設定する
-	site,err := datastore.SelectSite(r)
+	site,err := datastore.SelectSite(r,-1)
 	if err != nil {
 		p.errorPage(w,"Not Found","Root page not found",404)
 		return

@@ -20,7 +20,7 @@ func (h Handler) View(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h Handler) TopHandler(w http.ResponseWriter, r *http.Request) {
-	site,err := datastore.SelectSite(r)
+	site,err := datastore.SelectSite(r,-1)
 	if err != nil {
 		if err == datastore.SiteNotFoundError {
 			h.ViewSetting(w,r)

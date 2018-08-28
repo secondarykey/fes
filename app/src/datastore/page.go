@@ -135,18 +135,24 @@ func getChildrenCursorKey(id string,p int) string {
 }
 
 func SelectRootPage(r *http.Request) (*Page, error) {
-	site,err := SelectSite(r)
+	site,err := SelectSite(r,-1)
 	if err != nil {
 		return nil,err
 	}
-	return SelectPage(r, site.Root)
+	return SelectPage(r, site.Root,-1)
 }
 
-func SelectPage(r *http.Request, id string) (*Page, error) {
+func SelectPage(r *http.Request, id string,version int) (*Page, error) {
 	page := Page{}
 	c := appengine.NewContext(r)
 	key := datastore.NewKey(c, KindPageName, id, 0, nil)
-	err := ds.Get(c, key, &page)
+	var err error
+	if version >= 0 {
+		err = ds.GetWithVersion(c,key,version,&page)
+	} else {
+		err = ds.Get(c, key, &page)
+	}
+
 	if err != nil {
 		if kerr.Root(err) != datastore.ErrNoSuchEntity {
 			return nil, err
@@ -166,7 +172,13 @@ func PutPage(r *http.Request) error {
 	id := vars["key"]
 
 	c := appengine.NewContext(r)
-	page, err := SelectPage(r, id)
+	ver := r.FormValue("version")
+	version,err := strconv.Atoi(ver)
+	if err != nil {
+		return err
+	}
+
+	page, err := SelectPage(r, id , version)
 	if err != nil {
 		return err
 	}
@@ -280,13 +292,15 @@ func RemovePage(r *http.Request, id string) error {
 	}, option)
 }
 
-func PutPageSequence(r *http.Request, ids string,enables string) (error) {
+func PutPageSequence(r *http.Request, ids string,enables string,verCsv string) (error) {
 
 	idArray := strings.Split(ids,",")
 	enableArray := strings.Split(enables,",")
+	versionsArray := strings.Split(verCsv,",")
 
 	keys := make([]*datastore.Key,len(idArray))
 	deleteds := make([]bool,len(enableArray))
+	versions := make([]int,len(versionsArray))
 
 	for idx,id := range idArray {
 		key := CreatePageKey(r,id)
@@ -298,20 +312,27 @@ func PutPageSequence(r *http.Request, ids string,enables string) (error) {
 			return err
 		}
 		deleteds[idx] = !flag
+
+		verBuf := versionsArray[idx]
+		version,err := strconv.Atoi(verBuf)
+		if err != nil {
+			return err
+		}
+		versions[idx] = version
 	}
 
 	c := appengine.NewContext(r)
 
 	pages := make([]*Page,len(keys))
-	err := ds.GetMulti(c,keys,pages)
+	err := ds.GetMultiWithVersion(c,keys,versions,pages)
 	if err != nil {
 		return err
 	}
+
 	for idx,page := range pages {
 		page.Seq = idx + 1
 		page.Deleted = deleteds[idx]
 	}
-
 	return ds.PutMulti(c,keys,pages)
 }
 

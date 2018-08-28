@@ -49,7 +49,14 @@ func GetHTML(r *http.Request,id string) (*HTML,error) {
 
 func PutHTML(r *http.Request,id string) error {
 
-	page, err := SelectPage(r, id)
+	var err error
+	ver := r.FormValue("version")
+	version,err := strconv.Atoi(ver)
+	if err != nil {
+		return err
+	}
+
+	page, err := SelectPage(r, id, version)
 	if err != nil {
 		return err
 	}
@@ -115,7 +122,7 @@ func PutHTML(r *http.Request,id string) error {
 func RemoveHTML(r *http.Request,id string) error {
 
 	c := appengine.NewContext(r)
-	page,err := SelectPage(r,id)
+	page,err := SelectPage(r,id,-1)
 	if err != nil {
 		return err
 	}
@@ -226,7 +233,7 @@ type HTMLDto struct {
 func WriteManageHTML(w http.ResponseWriter, r *http.Request,id string,p int) (error) {
 
 	var err error
-	page, err := SelectPage(r, id)
+	page, err := SelectPage(r, id,-1)
 	if err != nil {
 		return err
 	}
@@ -255,7 +262,7 @@ func WriteManageHTML(w http.ResponseWriter, r *http.Request,id string,p int) (er
 func NewDtos(r *http.Request, page *Page,pageNum int,mng bool) ([]*HTMLDto,error) {
 
 	id := page.Key.StringID()
-	site,err := SelectSite(r)
+	site,err := SelectSite(r,-1)
 	if err != nil {
 		return nil,err
 	}

@@ -29,7 +29,13 @@ func PutTemplate(r *http.Request) error {
 	template := Template{}
 	templateData := TemplateData{}
 
-	err = ds.Get(c,tmpKey, &template)
+	ver := r.FormValue("version")
+	version,err := strconv.Atoi(ver)
+	if err != nil {
+		return err
+	}
+
+	err = ds.GetWithVersion(c,tmpKey, version,&template)
 	if err != nil {
 		if kerr.Root(err) != datastore.ErrNoSuchEntity {
 			return  err

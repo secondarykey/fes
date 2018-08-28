@@ -41,7 +41,13 @@ func createSiteKey(r *http.Request) *datastore.Key {
 
 func PutSite(r *http.Request) error {
 
-	site,foundErr := SelectSite(r)
+    ver := r.FormValue("version")
+    version,err := strconv.Atoi(ver)
+    if err != nil {
+    	return err
+	}
+
+	site,foundErr := SelectSite(r,version)
 	if foundErr != nil {
 		if foundErr != SiteNotFoundError {
 			return foundErr
@@ -114,17 +120,26 @@ func PutSite(r *http.Request) error {
 }
 
 var cacheSite *Site
-func SelectSite(r *http.Request) (*Site,error) {
+func SelectSite(r *http.Request,version int) (*Site,error) {
 
-	if cacheSite != nil {
-		return cacheSite,nil
+	//バージョン指定がない場合
+	if version < 0 {
+		if cacheSite != nil {
+			return cacheSite,nil
+		}
 	}
 
 	c := appengine.NewContext(r)
 	key := createSiteKey(r)
 
 	var site Site
-	err := ds.Get(c, key, &site)
+	var err error
+	if version >= 0 {
+		err = ds.GetWithVersion(c, key, version,&site)
+	} else {
+		err = ds.Get(c, key,&site)
+	}
+
 	if err != nil {
 		if kerr.Root(err) == datastore.ErrNoSuchEntity {
 			return nil,SiteNotFoundError
