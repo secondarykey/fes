@@ -50,3 +50,15 @@ function alertFes(txt) {
     alert(txt);
 }
 
+
+(function() {
+    var a, acc, i, len;
+    acc = document.getElementsByClassName('accordion');
+    for (i = 0, len = acc.length; i < len; i++) {
+        a = acc[i];
+        a.onclick = function() {
+            this.classList.toggle('active');
+            return this.nextElementSibling.classList.toggle('show');
+        };
+    }
+}).call(this);

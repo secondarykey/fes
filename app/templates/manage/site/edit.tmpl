@@ -26,72 +26,67 @@ Setting
       </td>
     </tr>
 
-    <tr>
-      <td class="mdl-data-table__cell--non-numeric">
-         HTML Cache
-         <label class = "mdl-switch mdl-js-switch mdl-js-ripple-effect" for = "htmlCache">
-            <input type="checkbox" id="htmlCache" name="htmlCache" class="mdl-switch__input" {{if .Site.HTMLCache }} checked {{end}}>
-         </label>
-      </td>
-    </tr>
-
-    <tr>
-      <td class="mdl-data-table__cell--non-numeric">
-         Template Cache
-         <label class = "mdl-switch mdl-js-switch mdl-js-ripple-effect" for = "templateCache">
-            <input type = "checkbox" id = "templateCache" name="templateCache" class = "mdl-switch__input" {{if .Site.TemplateCache }} checked {{end}}>
-         </label>
-      </td>
-    </tr>
-
-    <tr>
-      <td class="mdl-data-table__cell--non-numeric">
-         Page Cache
-         <label class = "mdl-switch mdl-js-switch mdl-js-ripple-effect" for = "pageCache">
-            <input type = "checkbox" id = "pageCache" name="pageCache" class = "mdl-switch__input" {{if .Site.PageCache }} checked {{end}}>
-         </label>
-      </td>
-    </tr>
-
-    <tr>
-      <td class="mdl-data-table__cell--non-numeric">
-         File Cache
-         <label class = "mdl-switch mdl-js-switch mdl-js-ripple-effect" for = "fileCache">
-            <input type = "checkbox" id = "fileCache" name="fileCache" class = "mdl-switch__input" {{if .Site.FileCache }} checked {{end}}>
-         </label>
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-      <form method="post" action="/manage/datastore/backup">
-        <button type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-button--primary">
-          Backup
-        </button>
-      </form>
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-      <form method="post" action="/manage/datastore/restore" enctype="multipart/form-data">
-        <input type="file" name="restoreFile" value=""/>
-        <button type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-button--primary">
-          Restore
-        </button>
-      </form>
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        <button id="updateBtn" type="button" class="mdl-button mdl-js-button mdl-button--raised mdl-button--primary">
-          Update
-        </button>
-      </td>
-    </tr>
   </tbody>
+
 </table>
+
+
+<div class="space"></div>
+<div class="mdl-list">
+  <div class="mdl-list__item mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect accordion">
+    	Advanced<i class="material-icons">settings_applications</i>
+  </div>
+  <div class="panel">
+    <ul class="demo-list-item mdl-list">
+      <li class="mdl-list__item">
+           HTML Cache
+           <label class = "mdl-switch mdl-js-switch mdl-js-ripple-effect" for = "htmlCache">
+              <input type="checkbox" id="htmlCache" name="htmlCache" class="mdl-switch__input" {{if .Site.HTMLCache }} checked {{end}}>
+           </label>
+      </li>
+      <li class="mdl-list__item">
+           Template Cache
+           <label class = "mdl-switch mdl-js-switch mdl-js-ripple-effect" for = "templateCache">
+              <input type = "checkbox" id = "templateCache" name="templateCache" class = "mdl-switch__input" {{if .Site.TemplateCache }} checked {{end}}>
+           </label>
+      </li>
+      <li class="mdl-list__item">
+           Page Cache
+           <label class = "mdl-switch mdl-js-switch mdl-js-ripple-effect" for = "pageCache">
+              <input type = "checkbox" id = "pageCache" name="pageCache" class = "mdl-switch__input" {{if .Site.PageCache }} checked {{end}}>
+           </label>
+      </li>
+      <li class="mdl-list__item">
+          File Cache
+          <label class = "mdl-switch mdl-js-switch mdl-js-ripple-effect" for = "fileCache">
+             <input type = "checkbox" id = "fileCache" name="fileCache" class = "mdl-switch__input" {{if .Site.FileCache }} checked {{end}}>
+          </label>
+      </li>
+
+      <li class="mdl-list__item">
+         <form method="post" action="/manage/datastore/backup">
+           <button type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-button--primary">
+            Backup
+           </button>
+         </form>
+      </li>
+      <li class="mdl-list__item">
+        <form method="post" action="/manage/datastore/restore" enctype="multipart/form-data">
+          <input type="file" name="restoreFile" value=""/>
+          <button type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-button--primary">
+            Restore
+          </button>
+        </form>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<!-- Controler -->
+<button id="updateBtn" type="button" class="mdl-button mdl-js-button mdl-button--raised mdl-button--primary">
+  Update
+</button>
+
 
 <script>
 
