@@ -50,13 +50,8 @@ func GetHTML(r *http.Request,id string) (*HTML,error) {
 func PutHTML(r *http.Request,id string) error {
 
 	var err error
-	ver := r.FormValue("version")
-	version,err := strconv.Atoi(ver)
-	if err != nil {
-		return err
-	}
 
-	page, err := SelectPage(r, id, version)
+	page, err := SelectPage(r, id, -1)
 	if err != nil {
 		return err
 	}

@@ -181,7 +181,7 @@ func (h Handler) PublicPage(w http.ResponseWriter, r *http.Request) {
 
 	err := datastore.PutHTML(r,id)
 	if err != nil {
-		h.errorPage(w, "Error Private HTML", err.Error(), 500)
+		h.errorPage(w, "Error Publish HTML", err.Error(), 500)
 		return
 	}
 	http.Redirect(w, r, "/manage/page/" + id, 302)

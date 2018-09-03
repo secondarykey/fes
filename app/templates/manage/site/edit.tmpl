@@ -64,6 +64,27 @@ Setting
 
     <tr>
       <td>
+      <form method="post" action="/manage/datastore/backup">
+        <button type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-button--primary">
+          Backup
+        </button>
+      </form>
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+      <form method="post" action="/manage/datastore/restore" enctype="multipart/form-data">
+        <input type="file" name="restoreFile" value=""/>
+        <button type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-button--primary">
+          Restore
+        </button>
+      </form>
+      </td>
+    </tr>
+
+    <tr>
+      <td>
         <button id="updateBtn" type="button" class="mdl-button mdl-js-button mdl-button--raised mdl-button--primary">
           Update
         </button>

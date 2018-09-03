@@ -15,7 +15,7 @@ import (
 
 	verr "github.com/knightso/base/errors"
 	"github.com/knightso/base/gae/ds"
-	"golang.org/x/net/context"
+	"context"
 
 	"github.com/nfnt/resize"
 	"google.golang.org/appengine"

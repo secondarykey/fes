@@ -173,6 +173,7 @@ func PutPage(r *http.Request) error {
 
 	c := appengine.NewContext(r)
 	ver := r.FormValue("version")
+
 	version,err := strconv.Atoi(ver)
 	if err != nil {
 		return err

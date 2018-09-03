@@ -47,7 +47,8 @@ func init() {
 	//table
 	r.HandleFunc("/manage/table/view", h.TableView)
 
-
+	r.HandleFunc("/manage/datastore/backup", h.Backup).Methods("POST")
+	r.HandleFunc("/manage/datastore/restore", h.Restore).Methods("POST")
 
 	//Site
 	r.HandleFunc("/manage/site/", h.ViewSetting).Methods("GET")
