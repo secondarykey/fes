@@ -63,38 +63,34 @@ func (h Handler) EditTemplate(w http.ResponseWriter, r *http.Request) {
 			h.errorPage(w,"Error Put Template",err.Error() ,500)
 			return
 		}
-
-		//TODO JSON
-
-	} else {
-		vars := mux.Vars(r)
-		id := vars["key"]
-		tmp,err := datastore.SelectTemplate(r,id)
-		if err != nil {
-			h.errorPage(w,"Error SelectTemplate",err.Error(),500)
-			return
-		}
-		if tmp == nil {
-			h.errorPage(w,"NotFound Template",id ,404)
-			return
-		}
-
-		tmpData ,err := datastore.SelectTemplateData(r,id)
-		if err != nil {
-			h.errorPage(w,err.Error(),id,500)
-			return
-		}
-		if tmpData == nil {
-			h.errorPage(w,"NotFound TemplateData",id,404)
-			return
-		}
-
-		dto := struct {
-			Template *datastore.Template
-			TemplateData *datastore.TemplateData
-		} {tmp,tmpData}
-		h.parse(w, TEMPLATE_DIR + "template/edit.tmpl", dto)
 	}
+	vars := mux.Vars(r)
+	id := vars["key"]
+	tmp,err := datastore.SelectTemplate(r,id)
+	if err != nil {
+		h.errorPage(w,"Error SelectTemplate",err.Error(),500)
+		return
+	}
+	if tmp == nil {
+		h.errorPage(w,"NotFound Template",id ,404)
+		return
+	}
+
+	tmpData ,err := datastore.SelectTemplateData(r,id)
+	if err != nil {
+		h.errorPage(w,err.Error(),id,500)
+		return
+	}
+	if tmpData == nil {
+		h.errorPage(w,"NotFound TemplateData",id,404)
+		return
+	}
+
+	dto := struct {
+		Template *datastore.Template
+		TemplateData *datastore.TemplateData
+	} {tmp,tmpData}
+	h.parse(w, TEMPLATE_DIR + "template/edit.tmpl", dto)
 }
 
 func (h Handler) DeleteTemplate(w http.ResponseWriter, r *http.Request) {

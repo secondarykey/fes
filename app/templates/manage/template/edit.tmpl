@@ -6,15 +6,14 @@ Edit Template
 {{end}}
 
 {{define "page_template"}}
-
-<input type="hidden" id="version" name="version" value="{{ .Template.Version }}">
+<form method="post" action="/manage/template/edit/{{ .Template.Key.StringID }}" name="updateForm">
 
 <table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp" width="100%">
   <tbody>
     <tr>
       <td class="mdl-data-table__cell--non-numeric">
         <div class="mdl-textfield mdl-js-textfield">
-          <input class="mdl-textfield__input" type="text" id="templateName" value="{{ .Template.Name }}">
+          <input class="mdl-textfield__input" type="text" id="templateName" name="name" value="{{ .Template.Name }}">
           <label class="mdl-textfield__label" for="templateName">Name...</label>
         </div>
       </td>
@@ -23,9 +22,9 @@ Edit Template
     <tr>
       <td class="mdl-data-table__cell--non-numeric">
         <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label mdl-select">
-          <input class="mdl-textfield__input" type="text" id="templateType" value="{{ convertTemplateType .Template.Type }}" readonly/>
-          <label class="mdl-textfield__label" for="templateType">Template Type</label>
-          <ul class="mdl-menu mdl-menu--bottom-left mdl-js-menu mdl-js-ripple-effect" for="templateType">
+          <input class="mdl-textfield__input" type="text" id="templateTypeName" value="{{ convertTemplateType .Template.Type }}" readonly/>
+          <label class="mdl-textfield__label" for="templateTypeName">Template Type</label>
+          <ul class="mdl-menu mdl-menu--bottom-left mdl-js-menu mdl-js-ripple-effect" for="templateTypeName">
             <li class="mdl-menu__item">Page</li>
             <li class="mdl-menu__item">Site</li>
           </ul>
@@ -38,7 +37,7 @@ Edit Template
         <button type="button" id="templateTxt" class="mdl-button mdl-js-button mdl-button--raised">EditTool</button>
         <br>
         <div class="mdl-textfield mdl-js-textfield">
-          <textarea class="mdl-textfield__input" type="text" id="templateData" rows="10">{{ plane .TemplateData.Content }}</textarea>
+          <textarea class="mdl-textfield__input" type="text" id="templateData" name="template" rows="10">{{ plane .TemplateData.Content }}</textarea>
           <label class="mdl-textfield__label" for="pageContent">Template Data...</label>
         </div>
       </td>
@@ -46,13 +45,18 @@ Edit Template
 
     <tr>
       <td>
-        <button id="updateBtn" class="mdl-button mdl-js-button mdl-button--raised mdl-button--primary">
+        <button type="button" id="updateBtn" class="mdl-button mdl-js-button mdl-button--raised mdl-button--primary">
           Update
         </button>
       </td>
     </tr>
   </tbody>
 </table>
+
+  <input type="hidden" name="version" value="{{ .Template.Version }}">
+  <input type="hidden" name="templateType" value="{{ .Template.Type }}">
+
+</form>
 
 <!-- Reference -->
 <form id="referenceForm" name="referenceForm" method="post" action="/manage/template/reference/{{.Template.Key.StringID}}">
@@ -62,7 +66,7 @@ Edit Template
 <script>
 
     var list = document.querySelectorAll('div.mdl-select > ul > li');
-    var typeName = document.querySelector('#templateType');
+    var typeName = document.querySelector('#templateTypeName');
     for (var i=0; i< list.length; i++) {
         list[i].addEventListener('click', function(e) {
             typeName.setAttribute('value', e.target.textContent);
@@ -73,8 +77,8 @@ Edit Template
       editTextArea(document.querySelector('#templateData'));
     });
 
-    var showDialogButton = document.querySelector('#updateBtn');
-    showDialogButton.addEventListener('click', function() {
+    var updateBtn = document.querySelector('#updateBtn');
+    updateBtn.addEventListener('click', function() {
 
       var nameTag = document.querySelector('#templateName');
       if ( nameTag.value == "" ) {
@@ -83,38 +87,16 @@ Edit Template
       }
 
       confirmFes(function() {
-
-        xmlhttp.open("POST", "/manage/template/edit/{{ .Template.Key.StringID }}", true);
-        xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-        xmlhttp.setRequestHeader("Cache-Control", "no-cache");
-
-        var typeTag = document.querySelector('#templateType');
-        var templateTag = document.querySelector('#templateData');
-        var versionTag = document.querySelector('#version');
-
+        var form = document.forms.updateForm;
+        var typeTag = document.querySelector('#templateTypeName');
         var typeName = typeTag.value;
+
         var type = 1;
         if ( typeName == 'Page' ) {
           type = 2;
         }
-
-        var data = {
-            name : nameTag.value,
-            type : type,
-            version : versionTag.value,
-            template : templateTag.value
-        };
-
-        xmlhttp.onreadystatechange = function() {
-            if (xmlhttp.readyState == 4 ) {
-                if ( xmlhttp.status != 200) {
-                  //error
-                } else {
-                  //success
-                }
-            }
-        }
-        xmlhttp.send(EncodeHTMLForm(data));
+        form.templateType.value=type;
+        form.submit();
       });
     });
 

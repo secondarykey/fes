@@ -36,6 +36,7 @@ func (h Handler) EditSetting(w http.ResponseWriter, r *http.Request) {
 		h.errorPage(w,"Datastore site put Error",err.Error(),500)
 		return
 	}
+	h.ViewSetting(w,r)
 }
 
 func (h Handler) DownloadSitemap(w http.ResponseWriter, r *http.Request) {

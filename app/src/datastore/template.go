@@ -49,10 +49,11 @@ func PutTemplate(r *http.Request) error {
 	templateData.SetKey(tmpDataKey)
 
 	template.Name = r.FormValue("name")
-	template.Type, err = strconv.Atoi(r.FormValue("type"))
+	template.Type, err = strconv.Atoi(r.FormValue("templateType"))
 	if err != nil {
 		return err
 	}
+
 	templateData.Content = datastore.ByteString(r.FormValue("template"))
 
 	option := &datastore.TransactionOptions{XG: true}
