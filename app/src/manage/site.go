@@ -41,6 +41,7 @@ func (h Handler) EditSetting(w http.ResponseWriter, r *http.Request) {
 
 func (h Handler) DownloadSitemap(w http.ResponseWriter, r *http.Request) {
 
+	//TODO リクエストから作成
 	root := "https://www.hagoromo-shizuoka.com/"
 	w.Header().Set("Content-Type","text/xml")
 
