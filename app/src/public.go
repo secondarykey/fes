@@ -11,9 +11,9 @@ import (
 
 type Public struct {}
 
-
-
 func (p Public) pageHandler(w http.ResponseWriter, r *http.Request) {
+
+	w.Header().Set("Cache-Control", "public, max-age=3600")
 	vars := mux.Vars(r)
 	id := vars["key"]
 	p.pageView(w,r,id)
@@ -21,13 +21,13 @@ func (p Public) pageHandler(w http.ResponseWriter, r *http.Request) {
 
 func (p Public) pageView(w http.ResponseWriter, r *http.Request,id string) {
 
+	w.Header().Set("Cache-Control", "public, max-age=3600")
 	//ページを取得してIDを作成
 	val := r.URL.Query()
 	page := val.Get("page")
 	if page != "" {
 		id += "?page=" + page
 	}
-
 
 	html,err := datastore.GetHTML(r,id)
 	if err != nil {
@@ -48,8 +48,7 @@ func (p Public) pageView(w http.ResponseWriter, r *http.Request,id string) {
 }
 
 func (p Public) topHandler(w http.ResponseWriter, r *http.Request) {
-
-	//TODO 検索なしでトップを設定する
+	w.Header().Set("Cache-Control", "public, max-age=3600")
 	site,err := datastore.SelectSite(r,-1)
 	if err != nil {
 		p.errorPage(w,"Not Found","Root page not found",404)
@@ -61,6 +60,7 @@ func (p Public) topHandler(w http.ResponseWriter, r *http.Request) {
 
 func (p Public) fileHandler(w http.ResponseWriter, r *http.Request) {
 
+	w.Header().Set("Cache-Control", "public, max-age=3600")
 	//ファイルを検索
 	vars := mux.Vars(r)
 	id := vars["key"]
@@ -85,6 +85,7 @@ func (p Public) fileHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	return
 }
+
 func (p Public) fileDateCacheHandler(w http.ResponseWriter, r *http.Request) {
 	// 60 * 60 * 24 = 86400
 	// * 10 = 864000
@@ -104,23 +105,18 @@ func (p Public) fileCacheHandler(w http.ResponseWriter, r *http.Request) {
 func (p Public) sitemap(w http.ResponseWriter,r *http.Request) {
 	// 60 * 60 * 24
 	w.Header().Set("Cache-Control", "public, max-age=86400")
-	w.Header().Set("Content-Type","text/xml")
-	root := "https://www.hagoromo-shizuoka.com/"
-
-	err := datastore.GenerateSitemap(w,r,root)
+	err := datastore.GenerateSitemap(w,r)
 	if err != nil {
 		p.errorPage(w,"Generate sitemap error",err.Error(),500)
 	}
 }
 
 func (p Public) errorPage(w http.ResponseWriter, t string, msg string, num int) {
-
 	dto := struct {
 		Title   string
 		Message string
 		No      int
 	}{t, msg, num}
-
 	tmpl, err := template.ParseFiles("templates/error.tmpl")
 	if err != nil {
 		log.Println("Error Page Parse Error")

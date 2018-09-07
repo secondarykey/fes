@@ -12,7 +12,6 @@ import (
 
 	"google.golang.org/appengine"
 	"google.golang.org/appengine/datastore"
-	"io"
 	"html/template"
 	"time"
 )
@@ -172,23 +171,44 @@ type URL struct {
 	Caption string
 }
 
-func GenerateSitemap(w io.Writer,r *http.Request,root string) error {
+func GenerateSitemap(w http.ResponseWriter,r *http.Request) error {
+
+	w.Header().Set("Content-Type","text/xml")
+
+	scheme := r.URL.Scheme
+	if scheme == "" {
+		scheme = "https"
+	}
+	root := fmt.Sprintf("%s://%s/",scheme,r.Host)
 
 	//Page全体でアクセス
 	pages,err := SelectPages(r)
 	if err != nil {
 		return err
 	}
+	site,err := SelectSite(r,-1)
+	if err != nil {
+		return err
+	}
+
+	rootId := site.Root
+
 	urls := make([]URL,len(pages))
 	//Page数回繰り返す
 	for idx,page := range pages {
 
+		key1 := page.Key.StringID()
+		key2 := "page/" + key1
+		if key1 == rootId {
+			key2 = ""
+		}
+
 		url := URL{}
-		url.URL = root + "page/" + page.Key.StringID()
+		url.URL = root + key2
 		url.LastModified = page.UpdatedAt.Format(time.RFC3339)
 		url.Change = "weekly"
 		url.Priority = "0.8"
-		url.Image = root + "file/" + page.Key.StringID()
+		url.Image = root + "file/" + key1
 		url.Caption = page.Description
 
 		urls[idx] = url

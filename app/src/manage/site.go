@@ -41,11 +41,7 @@ func (h Handler) EditSetting(w http.ResponseWriter, r *http.Request) {
 
 func (h Handler) DownloadSitemap(w http.ResponseWriter, r *http.Request) {
 
-	//TODO リクエストから作成
-	root := "https://www.hagoromo-shizuoka.com/"
-	w.Header().Set("Content-Type","text/xml")
-
-	err := datastore.GenerateSitemap(w,r,root)
+	err := datastore.GenerateSitemap(w,r)
 	if err != nil {
 		h.errorPage(w,"sitemap Error",err.Error(),500)
 		return
