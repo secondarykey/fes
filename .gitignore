@@ -1,6 +1,7 @@
 pkg/
 .idea/
 demo/
+app/pkg
 app/public/cache
 app/public/css
 app/public/images
