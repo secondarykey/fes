@@ -1,0 +1,19 @@
+runtime: go111
+
+handlers:
+  - url: /file/.*
+    script: auto
+  - url: /file_cache/.*
+    script: auto
+  - url: /page/.*
+    script: auto
+  - url: /(.*\.(gif|png|jpg|css|js|ico|xml))$
+    static_files: public/\1
+    upload: public/.*\.(gif|png|jpg|css|js|ico|xml)$
+  - url: /manage/.*
+    script: auto
+    login: admin
+    secure: always
+  - url: /.*
+    script: auto
+

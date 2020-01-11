@@ -1,0 +1,131 @@
+{{define "title"}}
+Setting
+{{end}}
+
+{{define "page_template"}}
+
+<form method="post" action="/manage/site/edit" id="updateForm" name="updateForm">
+
+<table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp" width="100%">
+  <tbody>
+    <tr>
+      <td class="mdl-data-table__cell--non-numeric">
+        <div class="mdl-textfield mdl-js-textfield">
+          <input class="mdl-textfield__input" type="text" name="name" id="siteName" value="{{ .Site.Name }}">
+          <label class="mdl-textfield__label" for="siteName">Name...</label>
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td class="mdl-data-table__cell--non-numeric">
+        <div class="mdl-textfield mdl-js-textfield">
+          <input class="mdl-textfield__input" type="text" name="description" id="siteDescription" value="{{ .Site.Description }}">
+          <label class="mdl-textfield__label" for="siteDescription">Description...</label>
+        </div>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+  <input type="hidden" name="rootPage" id="siteRoot" value="{{ .Site.Root }}">
+  <input type="hidden" id="version" name="version" value="{{ .Site.Version }}">
+  <input type="hidden" name="htmlCache" value="{{ .Site.HTMLCache }}">
+  <input type="hidden" name="templateCache" value="{{ .Site.TemplateCache }}">
+  <input type="hidden" name="pageCache" value="{{ .Site.PageCache }}">
+  <input type="hidden" name="fileCache" value="{{ .Site.FileCache }}">
+
+</form>
+
+<!-- Advanced -->
+<div class="space"></div>
+<div class="mdl-list">
+  <div class="mdl-list__item mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect accordion">
+    	Advanced<i class="material-icons">settings_applications</i>
+  </div>
+  <div class="panel">
+    <ul class="mdl-list">
+
+      <li class="mdl-list__item">
+        <label class = "mdl-switch mdl-js-switch mdl-js-ripple-effect" for="htmlCache">
+          <input type="checkbox" id="htmlCache" name="htmlCache" class="mdl-switch__input" {{if .Site.HTMLCache }} checked {{end}}>
+          <span class="mdl-switch__label">HTML cache</span>
+        </label>
+      </li>
+
+      <li class="mdl-list__item">
+        <label class = "mdl-switch mdl-js-switch mdl-js-ripple-effect" for="templateCache">
+          <input type = "checkbox" id="templateCache" name="templateCache" class = "mdl-switch__input" {{if .Site.TemplateCache }} checked {{end}}>
+          <span class="mdl-switch__label">Template</span>
+        </label>
+      </li>
+
+      <li class="mdl-list__item">
+        <label class = "mdl-switch mdl-js-switch mdl-js-ripple-effect" for="pageCache">
+          <input type = "checkbox" id="pageCache" name="pageCache" class = "mdl-switch__input" {{if .Site.PageCache }} checked {{end}}>
+          <span class="mdl-switch__label">Page</span>
+        </label>
+      </li>
+
+      <li class="mdl-list__item">
+        <label class = "mdl-switch mdl-js-switch mdl-js-ripple-effect" for = "fileCache">
+          <input type = "checkbox" id="fileCache" name="fileCache" class="mdl-switch__input" {{if .Site.FileCache }} checked {{end}}>
+          <span class="mdl-switch__label">File</span>
+        </label>
+      </li>
+
+      <li class="mdl-list__item">
+         <form method="post" action="/manage/datastore/backup" onsubmit="return confirm('a large amount of access to Datastore occurs?');">
+           <button type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-button--primary">
+            Backup
+           </button>
+         </form>
+      </li>
+
+      <li class="mdl-list__item">
+        <form method="post" action="/manage/datastore/restore" enctype="multipart/form-data" onsubmit="return confirm('a large amount of access to Datastore occurs?');">
+          <input type="file" name="restoreFile" value=""/>
+          <button type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-button--primary">
+            Restore
+          </button>
+        </form>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<!-- Controler -->
+<button id="updateBtn" type="button" class="mdl-button mdl-js-button mdl-button--raised mdl-button--primary">
+  Update
+</button>
+
+<script>
+
+  var updateBtn = document.querySelector('#updateBtn');
+
+  updateBtn.addEventListener('click', function() {
+
+    var nameTag = document.querySelector('#siteName');
+    if ( nameTag.value == "" ) {
+      alertFes("Edit Name!");
+      return;
+    }
+
+    confirmFes(function() {
+
+      var htmlTag = document.querySelector('#htmlCache');
+      var templateTag = document.querySelector('#templateCache');
+      var pageTag = document.querySelector('#pageCache');
+      var fileTag = document.querySelector('#fileCache');
+
+      var form = document.forms.updateForm;
+      form.htmlCache.value = htmlTag.checked;
+      form.templateCache.value = templateTag.checked;
+      form.pageCache.value = pageTag.checked;
+      form.fileCache.value = fileTag.checked;
+
+      form.submit();
+
+    });
+  });
+</script>
+{{ end }}

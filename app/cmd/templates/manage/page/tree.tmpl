@@ -1,0 +1,18 @@
+{{define "title"}}
+Page Tree
+{{end}}
+
+{{define "page_template"}}
+<div style="padding-top:20px;">
+  {{template "tree_template" .Tree}}
+</div>
+{{ end }}
+
+{{define "tree_template"}}
+<div style="padding-left:20px;">
+<a href="/manage/page/{{.Page.Key.StringID}}" {{if .Page.Deleted}}style="color:red;"{{end}} target="page_edit">{{ .Page.Name }}</a>
+{{ range .Children}}
+  {{template "tree_template" .}}
+{{ end }}
+</div>
+{{ end }}

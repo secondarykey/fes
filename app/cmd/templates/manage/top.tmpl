@@ -1,0 +1,35 @@
+{{ define "title" }}
+Home
+{{ end }}
+
+{{ define "page_template" }}
+<table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
+  <tbody>
+    <tr>
+      <td class="mdl-data-table__cell--non-numeric">
+      <a href="/" target="_site">Public Page</a>
+      </td>
+    </tr>
+
+    <tr>
+      <td class="mdl-data-table__cell--non-numeric">
+      <a href="/manage/page/view/" target="_site">Private Page</a>
+      </td>
+    </tr>
+
+    <tr>
+      <td class="mdl-data-table__cell--non-numeric">
+      <a href="/manage/page/tree/">All Page Structure</a>
+      </td>
+    </tr>
+
+    <tr>
+      <td class="mdl-data-table__cell--non-numeric">
+      <a href="/manage/site/map" target="_site">Generate Sitemap</a>
+      </td>
+    </tr>
+
+   </tbody>
+ </table>
+{{ end }}
+
