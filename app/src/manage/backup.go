@@ -1,50 +1,50 @@
 package manage
 
-import "net/http"
 import (
-	"datastore"
 	"archive/zip"
-	"strings"
-	"log"
-	"time"
 	"bytes"
+	"datastore"
 	"io"
+	"log"
+	"net/http"
+	"strings"
+	"time"
 )
 
 func (h Handler) Backup(w http.ResponseWriter, r *http.Request) {
 
 	//バイナリを作成
-	data,err := datastore.GetBackupData(r)
+	data, err := datastore.GetBackupData(r)
 	if err != nil {
-		h.errorPage(w,"Create BackupDataError",err.Error(),500)
+		h.errorPage(w, "Create BackupDataError", err.Error(), 500)
 		return
 	}
 
 	//Writeでコピーする
-	w.Header().Add("Content-Type","application/zip")
+	w.Header().Add("Content-Type", "application/zip")
 	now := time.Now()
-	w.Header().Set("Content-Disposition", "attachment; filename=fes-backup-" + now.Format("20060102150405") + ".zip")
+	w.Header().Set("Content-Disposition", "attachment; filename=fes-backup-"+now.Format("20060102150405")+".zip")
 	//Zipにする
 	zipWriter := zip.NewWriter(w)
 	defer zipWriter.Close()
 
-	for kind,elm := range data {
+	for kind, elm := range data {
 
-		for key,byt := range elm {
+		for key, byt := range elm {
 
-			esp := strings.Replace(key,"?","_QUESTION_",-1)
-			esp = strings.Replace(esp,"=","_EQUAL_",-1)
+			esp := strings.Replace(key, "?", "_QUESTION_", -1)
+			esp = strings.Replace(esp, "=", "_EQUAL_", -1)
 
 			log.Println(kind + "/" + esp)
 
-			writer,err := zipWriter.Create(kind + "/" + esp)
+			writer, err := zipWriter.Create(kind + "/" + esp)
 			if err != nil {
-				h.errorPage(w,"Create Zip",err.Error(),500)
+				h.errorPage(w, "Create Zip", err.Error(), 500)
 				return
 			}
-			_,err = writer.Write(byt)
+			_, err = writer.Write(byt)
 			if err != nil {
-				h.errorPage(w,"Write Zip",err.Error(),500)
+				h.errorPage(w, "Write Zip", err.Error(), 500)
 				return
 			}
 		}
@@ -75,7 +75,7 @@ func (h Handler) Restore(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//Putする
-	err = datastore.PutBackupData(r,backup)
+	err = datastore.PutBackupData(r, backup)
 	if err != nil {
 		h.errorPage(w, "Put Error", err.Error(), 500)
 		return
@@ -84,29 +84,29 @@ func (h Handler) Restore(w http.ResponseWriter, r *http.Request) {
 	h.ViewSetting(w, r)
 }
 
-func createGob(closer *zip.Reader) (datastore.BackupData,error) {
+func createGob(closer *zip.Reader) (datastore.BackupData, error) {
 
 	rtn := make(datastore.BackupData)
-	for _,elm := range closer.File {
+	for _, elm := range closer.File {
 
 		name := elm.Name
-		fileReader,err := elm.Open()
+		fileReader, err := elm.Open()
 		if err != nil {
-			return nil,err
+			return nil, err
 		}
 
-		nameArray := strings.Split(name,"/")
+		nameArray := strings.Split(name, "/")
 		//Fileをパスにしたら駄目
 		kind := nameArray[0]
-		key  := nameArray[1]
+		key := nameArray[1]
 
 		writer := bytes.NewBuffer(nil)
-		_,err = io.Copy(writer,fileReader)
+		_, err = io.Copy(writer, fileReader)
 		if err != nil {
-			return nil,err
+			return nil, err
 		}
 
-		gob,ok := rtn[kind]
+		gob, ok := rtn[kind]
 		if !ok {
 			gob = make(datastore.GobKind)
 		}
@@ -114,5 +114,5 @@ func createGob(closer *zip.Reader) (datastore.BackupData,error) {
 
 		rtn[kind] = gob
 	}
-	return rtn,nil
+	return rtn, nil
 }

@@ -55,6 +55,7 @@ func (h Handler) AddTemplate(w http.ResponseWriter, r *http.Request) {
 
 func (h Handler) EditTemplate(w http.ResponseWriter, r *http.Request) {
 
+	w.Header().Add("X-XSS-Protection","1")
 	//POST
 	if POST(r) {
 		//更新

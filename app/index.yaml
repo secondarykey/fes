@@ -28,3 +28,9 @@ indexes:
   properties:
     - name: Type
     - name: UpdatedAt
+
+- kind: File
+  properties:
+    - name: Type
+    - name: UpdatedAt
+      direction: desc
