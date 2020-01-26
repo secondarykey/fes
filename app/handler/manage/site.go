@@ -8,6 +8,8 @@ import (
 
 //setting画面
 func (h Handler) ViewSetting(w http.ResponseWriter, r *http.Request) {
+
+	managers := ""
 	site, err := datastore.SelectSite(r, -1)
 	if err != nil {
 		if err == datastore.SiteNotFoundError {
@@ -19,11 +21,20 @@ func (h Handler) ViewSetting(w http.ResponseWriter, r *http.Request) {
 			h.errorPage(w, "Site select error", err.Error(), 500)
 			return
 		}
+	} else {
+
+		for _, mail := range site.Managers {
+			if managers != "" {
+				managers += ","
+			}
+			managers += mail
+		}
 	}
 
 	dto := struct {
-		Site *datastore.Site
-	}{site}
+		Site     *datastore.Site
+		Managers string
+	}{site, managers}
 
 	h.parse(w, TEMPLATE_DIR+"site/edit.tmpl", dto)
 }

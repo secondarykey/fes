@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	kerr "github.com/knightso/base/errors"
@@ -26,6 +27,7 @@ type Site struct {
 	Name          string
 	Description   string
 	Root          string
+	Managers      []string
 	HTMLCache     bool
 	TemplateCache bool
 	FileCache     bool
@@ -57,6 +59,7 @@ func PutSite(r *http.Request) error {
 	site.Name = r.FormValue("name")
 	site.Description = r.FormValue("description")
 	site.Root = r.FormValue("rootPage")
+	site.Managers = strings.Split(r.FormValue("manager"), ",")
 
 	if cache := r.FormValue("htmlCache"); cache != "" {
 		if val, err := strconv.ParseBool(cache); err == nil {

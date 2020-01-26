@@ -2,7 +2,9 @@ package handler
 
 import (
 	"app/datastore"
+	"app/handler/manage"
 
+	"encoding/json"
 	"html/template"
 	"log"
 	"net/http"
@@ -10,7 +12,92 @@ import (
 	"github.com/gorilla/mux"
 )
 
-type Public struct{}
+type Public struct {
+	r *mux.Router
+}
+
+func (h Public) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	h.r.ServeHTTP(w, r)
+}
+
+func (p Public) loginHandler(w http.ResponseWriter, r *http.Request) {
+
+	tmpl, err := template.ParseFiles("cmd/templates/authentication.tmpl")
+	if err != nil {
+		log.Println("Error Page Parse Error")
+		log.Println(err)
+		return
+	}
+
+	err = tmpl.Execute(w, nil)
+	if err != nil {
+		log.Println("Error Page Execute Error")
+		log.Println(err)
+		return
+	}
+
+}
+
+func (p Public) logoutHandler(w http.ResponseWriter, r *http.Request) {
+	manage.SetSession(w, r, nil)
+	http.Redirect(w, r, "/login", 301)
+}
+
+func (p Public) sessionHandler(w http.ResponseWriter, r *http.Request) {
+
+	code := 200
+	dto := struct {
+		Success bool
+	}{false}
+
+	site, err := datastore.SelectSite(r, -1)
+	if err != nil {
+		if err != datastore.SiteNotFoundError {
+			dto.Success = false
+			code = 500
+			log.Println(err)
+			w.WriteHeader(code)
+			json.NewEncoder(w).Encode(dto)
+			return
+		}
+	}
+
+	r.ParseForm()
+	email := r.FormValue("email")
+	token := r.FormValue("token")
+	flag := false
+
+	if site != nil && len(site.Managers) != 0 {
+		for _, mail := range site.Managers {
+			if email == mail {
+				flag = true
+				break
+			}
+		}
+	} else {
+		flag = true
+	}
+
+	dto.Success = flag
+
+	if !flag {
+		//403を返す
+		code = 403
+	} else {
+		//Cookieの作成
+		u := manage.NewLoginUser(email, token)
+
+		err := manage.SetSession(w, r, u)
+		if err != nil {
+			code = 500
+			dto.Success = false
+		}
+	}
+
+	w.WriteHeader(code)
+	json.NewEncoder(w).Encode(dto)
+
+}
 
 func (p Public) pageHandler(w http.ResponseWriter, r *http.Request) {
 
@@ -118,7 +205,7 @@ func (p Public) errorPage(w http.ResponseWriter, t string, msg string, num int) 
 		Message string
 		No      int
 	}{t, msg, num}
-	tmpl, err := template.ParseFiles("templates/error.tmpl")
+	tmpl, err := template.ParseFiles("cmd/templates/error.tmpl")
 	if err != nil {
 		log.Println("Error Page Parse Error")
 		log.Println(err)

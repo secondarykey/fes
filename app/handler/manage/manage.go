@@ -5,21 +5,46 @@ import (
 	"app/datastore"
 
 	"html/template"
+	"log"
 	"net/http"
 	"strconv"
 
 	"github.com/gorilla/mux"
 )
 
-const TEMPLATE_DIR = "./templates/manage/"
+const TEMPLATE_DIR = "cmd/templates/manage/"
 
-type Handler struct{}
+type Handler struct {
+	r *mux.Router
+}
+
+func NewHandler(r *mux.Router) Handler {
+	return Handler{r}
+}
+
+func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+
+	//セッションの存在を確認
+	u, err := GetSession(r)
+	if err != nil {
+		http.Redirect(w, r, "/logout", 301)
+		return
+	}
+
+	if u == nil {
+		http.Redirect(w, r, "/logout", 301)
+		return
+	}
+
+	h.r.ServeHTTP(w, r)
+}
 
 func (h Handler) View(w http.ResponseWriter, r *http.Request) {
 	h.parse(w, TEMPLATE_DIR+"top.tmpl", nil)
 }
 
 func (h Handler) TopHandler(w http.ResponseWriter, r *http.Request) {
+
 	site, err := datastore.SelectSite(r, -1)
 	if err != nil {
 		if err == datastore.SiteNotFoundError {
@@ -71,13 +96,15 @@ func (h Handler) parse(w http.ResponseWriter, tName string, obj interface{}) {
 	}
 	tmpl, err := template.New(api.SiteTemplateName).Funcs(funcMap).ParseFiles(TEMPLATE_DIR+"layout.tmpl", tName)
 	if err != nil {
-		h.errorPage(w, "Template Parse Error", err.Error(), 500)
+		log.Println(err)
+		//h.errorPage(w, "Template Parse Error", err.Error(), 500)
 		return
 	}
 
 	err = tmpl.Execute(w, obj)
 	if err != nil {
-		h.errorPage(w, "Template Execute Error", err.Error(), 500)
+		log.Println(err)
+		//h.errorPage(w, "Template Execute Error", err.Error(), 500)
 		return
 	}
 }
