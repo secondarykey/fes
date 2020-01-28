@@ -1,9 +1,10 @@
 package api
 
 import (
-	"html/template"
-	"time"
 	"fmt"
+	"html/template"
+	"strings"
+	"time"
 )
 
 func ConvertString(data []byte) string {
@@ -30,11 +31,15 @@ func ConvertSize(size int64) string {
 		unit = "G"
 	}
 
-	return fmt.Sprintf("%0.1f%s",s, unit)
+	return fmt.Sprintf("%0.1f%s", s, unit)
 }
 
 func ConvertHTML(data string) template.HTML {
 	return template.HTML(data)
+}
+
+func EraseBR(data string) string {
+	return strings.Replace(data, "<br>", " ", -1)
 }
 
 func ConvertDate(t time.Time) string {

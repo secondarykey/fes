@@ -421,6 +421,7 @@ func (p Public) mark() template.HTML {
 func (p Public) funcMap() template.FuncMap {
 	return template.FuncMap{
 		"html":            api.ConvertHTML,
+		"eraseBR":         api.EraseBR,
 		"plane":           api.ConvertString,
 		"convertDate":     api.ConvertDate,
 		"list":            p.list,
