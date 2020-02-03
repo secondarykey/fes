@@ -1,17 +1,6 @@
 runtime: go111
 main: app/cmd
 handlers:
-  - url: /file/.*
-    script: auto
-  - url: /file_cache/.*
-    script: auto
-  - url: /page/.*
-    script: auto
-  - url: /(.*\.(gif|png|jpg|css|js|ico|xml))$
-    static_files: cmd/public/\1
-    upload: cmd/public/.*\.(gif|png|jpg|css|js|ico|xml)$
-  - url: /manage/.*
-    script: auto
   - url: /.*
     script: auto
 

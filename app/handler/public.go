@@ -39,8 +39,10 @@ func (p Public) loginHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (p Public) logoutHandler(w http.ResponseWriter, r *http.Request) {
-	manage.SetSession(w, r, nil)
-	http.Redirect(w, r, "/login", 301)
+	err := manage.SetSession(w, r, nil)
+	if err != nil {
+		log.Println(err)
+	}
 }
 
 func (p Public) sessionHandler(w http.ResponseWriter, r *http.Request) {
@@ -65,6 +67,8 @@ func (p Public) sessionHandler(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	email := r.FormValue("email")
 	token := r.FormValue("token")
+
+	log.Println(email)
 	flag := false
 
 	if site != nil && len(site.Managers) != 0 {
@@ -87,10 +91,13 @@ func (p Public) sessionHandler(w http.ResponseWriter, r *http.Request) {
 		//Cookieの作成
 		u := manage.NewLoginUser(email, token)
 
+		log.Println("write")
+
 		err := manage.SetSession(w, r, u)
 		if err != nil {
 			code = 500
 			dto.Success = false
+			log.Println(err)
 		}
 	}
 

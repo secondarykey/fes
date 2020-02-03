@@ -24,14 +24,17 @@ func NewHandler(r *mux.Router) Handler {
 
 func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
+	log.Println("ServeHTTP:" + r.URL.String())
 	//セッションの存在を確認
 	u, err := GetSession(r)
 	if err != nil {
+		log.Println(err)
 		http.Redirect(w, r, "/logout", 301)
 		return
 	}
 
 	if u == nil {
+		log.Println("ユーザがいない")
 		http.Redirect(w, r, "/logout", 301)
 		return
 	}

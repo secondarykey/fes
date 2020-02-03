@@ -10,10 +10,14 @@ import (
 
 func Register() {
 
+	fs := http.FileServer(http.Dir("cmd/public"))
+	http.Handle("/manage/js/", fs)
+	http.Handle("/manage/css/", fs)
+
 	mr := mux.NewRouter()
 	h := manage.NewHandler(mr)
 
-	mr.HandleFunc("/manage/", h.View).Methods("GET")
+	mr.HandleFunc("/manage/home", h.View).Methods("GET")
 	//Page
 	mr.HandleFunc("/manage/page/", h.ViewRootPage).Methods("GET")
 	mr.HandleFunc("/manage/page/{key}", h.ViewPage)
