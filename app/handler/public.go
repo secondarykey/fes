@@ -22,6 +22,10 @@ func (h Public) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func (p Public) loginHandler(w http.ResponseWriter, r *http.Request) {
 
+	err := manage.SetSession(w, r, nil)
+	if err != nil {
+	}
+
 	tmpl, err := template.ParseFiles("cmd/templates/authentication.tmpl")
 	if err != nil {
 		log.Println("Error Page Parse Error")
@@ -36,13 +40,6 @@ func (p Public) loginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-}
-
-func (p Public) logoutHandler(w http.ResponseWriter, r *http.Request) {
-	err := manage.SetSession(w, r, nil)
-	if err != nil {
-		log.Println(err)
-	}
 }
 
 func (p Public) sessionHandler(w http.ResponseWriter, r *http.Request) {

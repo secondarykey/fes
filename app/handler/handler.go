@@ -72,7 +72,6 @@ func Register() {
 	r.HandleFunc("/file_cache/{key}", pub.fileCacheHandler).Methods("GET")
 
 	r.HandleFunc("/login", pub.loginHandler).Methods("GET")
-	r.HandleFunc("/logout", pub.logoutHandler).Methods("GET")
 	r.HandleFunc("/session", pub.sessionHandler).Methods("POST")
 	r.HandleFunc("/sitemap/", pub.sitemap).Methods("GET")
 	r.HandleFunc("/", pub.topHandler).Methods("GET")

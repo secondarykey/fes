@@ -1,10 +1,13 @@
 <html lang="en">
+
   <head>
     <meta name="google-signin-scope" content="profile email">
     <meta name="google-signin-client_id" content="1099382693490-ofpcp7hn72ttibl8ag4o9qap32tcc50u.apps.googleusercontent.com">
     <script src="https://apis.google.com/js/platform.js" async defer></script>
   </head>
+
   <body>
+
     <div class="g-signin2" data-onsuccess="onSignIn" data-theme="dark"></div>
     <script>
 
@@ -40,7 +43,6 @@
           if ( data.Success == true )  {
               location.href = "/manage/home";
           } else {
-              location.href = "/logout";
           }
         };
 
@@ -58,5 +60,6 @@
     </script>
 
     <a href="#" onclick="signOut();">Sign out</a>
+
   </body>
 </html>
