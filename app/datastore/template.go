@@ -1,19 +1,38 @@
 package datastore
 
 import (
+	"errors"
+	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 
 	"github.com/gorilla/mux"
-	kerr "github.com/knightso/base/errors"
-	"github.com/knightso/base/gae/ds"
-	"github.com/satori/go.uuid"
-	"golang.org/x/net/context"
+	uuid "github.com/satori/go.uuid"
+	"google.golang.org/api/iterator"
 
-	"google.golang.org/appengine"
-	"google.golang.org/appengine/datastore"
-	"google.golang.org/appengine/memcache"
+	"cloud.google.com/go/datastore"
+	"golang.org/x/xerrors"
 )
+
+const KindTemplateName = "Template"
+
+type Template struct {
+	Name string
+	Type int
+
+	TargetVersion string `datastore:"-"`
+	Meta
+}
+
+func (t *Template) Load(props []datastore.Property) error {
+	return datastore.LoadStruct(t, props)
+}
+
+func (t *Template) Save() ([]datastore.Property, error) {
+	t.update(t.TargetVersion)
+	return datastore.SaveStruct(t)
+}
 
 func PutTemplate(r *http.Request) error {
 
@@ -22,9 +41,9 @@ func PutTemplate(r *http.Request) error {
 	vars := mux.Vars(r)
 	id := vars["key"]
 
-	c := appengine.NewContext(r)
-	tmpKey := datastore.NewKey(c, KindTemplateName, id, 0, nil)
-	tmpDataKey := datastore.NewKey(c, KindTemplateDataName, id, 0, nil)
+	ctx := r.Context()
+	tmpKey := datastore.NameKey(KindTemplateName, id, nil)
+	tmpDataKey := datastore.NameKey(KindTemplateDataName, id, nil)
 
 	template := Template{}
 	templateData := TemplateData{}
@@ -35,18 +54,26 @@ func PutTemplate(r *http.Request) error {
 		return err
 	}
 
-	if version <= 0 {
-		err = ds.Get(c, tmpKey, &template)
-	} else {
-		err = ds.GetWithVersion(c, tmpKey, version, &template)
-	}
+	cli, err := createClient(ctx)
 	if err != nil {
-		if kerr.Root(err) != datastore.ErrNoSuchEntity {
+		return xerrors.Errorf("createClient() error: %w", err)
+	}
+
+	if version > 0 {
+		template.TargetVersion = fmt.Sprintf("%d", version)
+	}
+
+	//TODO Version
+	err = cli.Get(ctx, tmpKey, &template)
+
+	if err != nil {
+		if !errors.Is(err, datastore.ErrNoSuchEntity) {
 			return err
 		}
 	}
-	template.SetKey(tmpKey)
-	templateData.SetKey(tmpDataKey)
+
+	template.LoadKey(tmpKey)
+	templateData.LoadKey(tmpDataKey)
 
 	template.Name = r.FormValue("name")
 	template.Type, err = strconv.Atoi(r.FormValue("templateType"))
@@ -54,46 +81,47 @@ func PutTemplate(r *http.Request) error {
 		return err
 	}
 
-	templateData.Content = datastore.ByteString(r.FormValue("template"))
+	//TODO ByteStringからの変換
+	templateData.Content = []byte(r.FormValue("template"))
 
-	option := &datastore.TransactionOptions{XG: true}
-	return datastore.RunInTransaction(c, func(ctx context.Context) error {
+	_, err = cli.RunInTransaction(ctx, func(tx *datastore.Transaction) error {
 
-		err = ds.Put(c, &template)
+		_, err = tx.Put(template.GetKey(), &template)
 		if err != nil {
 			return err
 		}
 
-		err = ds.Put(c, &templateData)
+		_, err = tx.Put(templateData.GetKey(), &templateData)
 		if err != nil {
 			return err
 		}
 		return nil
-	}, option)
+	})
+
+	if err != nil {
+		return xerrors.Errorf("transaction error: %w", err)
+	}
+	return nil
 }
 
-const KindTemplateName = "Template"
-
-type Template struct {
-	Name string
-	Type int
-	ds.Meta
-}
-
-func CreateTemplateKey(r *http.Request) *datastore.Key {
-	c := appengine.NewContext(r)
+func CreateTemplateKey() *datastore.Key {
 	id := uuid.NewV4()
-	return datastore.NewKey(c, KindTemplateName, id.String(), 0, nil)
+	return datastore.NameKey(KindTemplateName, id.String(), nil)
 }
 
 func SelectTemplate(r *http.Request, id string) (*Template, error) {
 	temp := Template{}
-	c := appengine.NewContext(r)
+	ctx := r.Context()
 	//Method
-	key := datastore.NewKey(c, KindTemplateName, id, 0, nil)
-	err := ds.Get(c, key, &temp)
+	key := datastore.NameKey(KindTemplateName, id, nil)
+	cli, err := createClient(ctx)
 	if err != nil {
-		if kerr.Root(err) != datastore.ErrNoSuchEntity {
+		return nil, xerrors.Errorf("createClient() error: %w", err)
+	}
+
+	err = cli.Get(ctx, key, &temp)
+	if err != nil {
+		if errors.Is(err, datastore.ErrNoSuchEntity) {
 			return nil, err
 		} else {
 			return nil, nil
@@ -110,37 +138,32 @@ func SelectTemplates(r *http.Request, p int) ([]Template, error) {
 
 	var rtn []Template
 
-	c := appengine.NewContext(r)
+	ctx := r.Context()
 	cursor := ""
 
 	q := datastore.NewQuery(KindTemplateName).Order("- UpdatedAt")
-	//負の場合は全権
 	if p > 0 {
-		item, err := memcache.Get(c, getTemplateCursor(p))
-		if err == nil {
-			cursor = string(item.Value)
-		}
-		q = q.Limit(10)
-		if cursor != "" {
-			cur, err := datastore.DecodeCursor(cursor)
-			if err == nil {
-				q = q.Start(cur)
-			}
-		}
+		//TODO 新しい残し方
+		log.Println("cursor not implemented", cursor)
 	}
 
-	t := q.Run(c)
+	cli, err := createClient(ctx)
+	if err != nil {
+		return nil, xerrors.Errorf("createClient() error: %w", err)
+	}
+
+	t := cli.Run(ctx, q)
 	for {
 		var tmp Template
 		key, err := t.Next(&tmp)
-		if err == datastore.Done {
+		if errors.Is(err, iterator.Done) {
 			break
 		}
 
 		if err != nil {
 			return nil, err
 		}
-		tmp.SetKey(key)
+		tmp.LoadKey(key)
 		rtn = append(rtn, tmp)
 	}
 
@@ -151,14 +174,8 @@ func SelectTemplates(r *http.Request, p int) ([]Template, error) {
 			return nil, err
 		}
 
-		err = memcache.Set(c, &memcache.Item{
-			Key:   getTemplateCursor(p + 1),
-			Value: []byte(cur.String()),
-		})
+		log.Println("cursor notimplemented", cur)
 
-		if err != nil {
-			return nil, err
-		}
 	}
 
 	return rtn, nil
@@ -167,24 +184,30 @@ func SelectTemplates(r *http.Request, p int) ([]Template, error) {
 const KindTemplateDataName = "TemplateData"
 
 type TemplateData struct {
-	key     *datastore.Key
-	Content datastore.ByteString `datastore:",noindex"`
+	Key     *datastore.Key `datastore:"__key__"`
+	Content []byte
 }
 
 func (d *TemplateData) GetKey() *datastore.Key {
-	return d.key
+	return d.Key
 }
 
-func (d *TemplateData) SetKey(k *datastore.Key) {
-	d.key = k
+func (d *TemplateData) LoadKey(k *datastore.Key) error {
+	d.Key = k
+	return nil
 }
 
 func SelectTemplateData(r *http.Request, id string) (*TemplateData, error) {
 	temp := TemplateData{}
-	c := appengine.NewContext(r)
+	ctx := r.Context()
 	//Method
-	key := datastore.NewKey(c, KindTemplateDataName, id, 0, nil)
-	err := ds.Get(c, key, &temp)
+	key := datastore.NameKey(KindTemplateDataName, id, nil)
+	cli, err := createClient(ctx)
+	if err != nil {
+		return nil, xerrors.Errorf("createClient() error: %w", err)
+	}
+
+	err = cli.Get(ctx, key, &temp)
 	if err != nil {
 		return nil, err
 	}
@@ -194,21 +217,32 @@ func SelectTemplateData(r *http.Request, id string) (*TemplateData, error) {
 func RemoveTemplate(r *http.Request, id string) error {
 
 	var err error
-	c := appengine.NewContext(r)
+	ctx := r.Context()
 
-	option := &datastore.TransactionOptions{XG: true}
-	return datastore.RunInTransaction(c, func(ctx context.Context) error {
-		key := datastore.NewKey(c, KindTemplateName, id, 0, nil)
-		err = ds.Delete(c, key)
+	cli, err := createClient(ctx)
+	if err != nil {
+		return xerrors.Errorf("createClient() error: %w", err)
+	}
+
+	_, err = cli.RunInTransaction(ctx, func(tx *datastore.Transaction) error {
+
+		key := datastore.NameKey(KindTemplateName, id, nil)
+		err = tx.Delete(key)
 		if err != nil {
 			return err
 		}
 
-		dataKey := datastore.NewKey(c, KindTemplateDataName, id, 0, nil)
-		err = ds.Delete(c, dataKey)
+		dataKey := datastore.NameKey(KindTemplateDataName, id, nil)
+		err = tx.Delete(dataKey)
 		if err != nil {
 			return err
 		}
 		return nil
-	}, option)
+	})
+
+	if err != nil {
+		return xerrors.Errorf("transaction error: %w", err)
+	}
+
+	return nil
 }

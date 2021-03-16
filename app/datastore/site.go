@@ -1,6 +1,7 @@
 package datastore
 
 import (
+	"errors"
 	"fmt"
 	"html/template"
 	"net/http"
@@ -8,13 +9,10 @@ import (
 	"strings"
 	"time"
 
-	kerr "github.com/knightso/base/errors"
-	"github.com/knightso/base/gae/ds"
-	"github.com/satori/go.uuid"
-	"golang.org/x/net/context"
+	uuid "github.com/satori/go.uuid"
+	"golang.org/x/xerrors"
 
-	"google.golang.org/appengine"
-	"google.golang.org/appengine/datastore"
+	"cloud.google.com/go/datastore"
 )
 
 const KindSiteName = "Site"
@@ -32,12 +30,22 @@ type Site struct {
 	TemplateCache bool
 	FileCache     bool
 	PageCache     bool
-	ds.Meta
+
+	TargetVersion string `datastore:"-"`
+	Meta
 }
 
-func createSiteKey(r *http.Request) *datastore.Key {
-	c := appengine.NewContext(r)
-	return datastore.NewKey(c, KindSiteName, "fixing", 0, nil)
+func (s *Site) Load(props []datastore.Property) error {
+	return datastore.LoadStruct(s, props)
+}
+
+func (s *Site) Save() ([]datastore.Property, error) {
+	s.update(s.TargetVersion)
+	return datastore.SaveStruct(s)
+}
+
+func createSiteKey() *datastore.Key {
+	return datastore.NameKey(KindSiteName, "fixing", nil)
 }
 
 func PutSite(r *http.Request) error {
@@ -90,32 +98,42 @@ func PutSite(r *http.Request) error {
 		}
 		page.Deleted = true
 		uid := uuid.NewV4()
-		page.SetKey(CreatePageKey(r, uid.String()))
+		page.LoadKey(CreatePageKey(uid.String()))
 	}
 
-	c := appengine.NewContext(r)
-	option := &datastore.TransactionOptions{XG: true}
-	return datastore.RunInTransaction(c, func(ctx context.Context) error {
+	ctx := r.Context()
+	cli, err := createClient(ctx)
+	if err != nil {
+		return xerrors.Errorf("createClient() error: %w", err)
+	}
+
+	_, err = cli.RunInTransaction(ctx, func(tx *datastore.Transaction) error {
 
 		if page != nil {
-			err := ds.Put(c, page)
+			_, err := tx.Put(page.GetKey(), page)
 			if err != nil {
-				return err
+				return xerrors.Errorf("page put error: %w", err)
 			}
-			site.Root = page.Key.StringID()
+			site.Root = page.GetKey().Name
 		}
 
-		key := createSiteKey(r)
-		site.SetKey(key)
-		err := ds.Put(c, site)
+		key := createSiteKey()
+		site.LoadKey(key)
+		_, err := tx.Put(key, site)
 		if err != nil {
-			return err
+			return xerrors.Errorf("site put error: %w", err)
 		}
 		cacheSite = site
 		setDatastoreCache(cacheSite)
 
 		return nil
-	}, option)
+	})
+
+	if err != nil {
+		return xerrors.Errorf("transaction error: %w", err)
+	}
+
+	return nil
 }
 
 var cacheSite *Site
@@ -129,37 +147,36 @@ func SelectSite(r *http.Request, version int) (*Site, error) {
 		}
 	}
 
-	c := appengine.NewContext(r)
-	key := createSiteKey(r)
-
-	var site Site
-	var err error
-	if version >= 0 {
-		err = ds.GetWithVersion(c, key, version, &site)
-	} else {
-		err = ds.Get(c, key, &site)
+	ctx := r.Context()
+	cli, err := createClient(ctx)
+	if err != nil {
+		return nil, xerrors.Errorf("createClient() error: %w", err)
 	}
 
+	key := createSiteKey()
+
+	var site Site
+	err = cli.Get(ctx, key, &site)
+
 	if err != nil {
-		if kerr.Root(err) == datastore.ErrNoSuchEntity {
+		if errors.Is(err, datastore.ErrNoSuchEntity) {
 			return nil, SiteNotFoundError
 		} else {
 			return nil, err
 		}
 	}
+
+	//TODO 確認
+	if version != 0 {
+		site.TargetVersion = fmt.Sprintf("%d", version)
+	}
+
 	cacheSite = &site
 	setDatastoreCache(cacheSite)
 	return &site, nil
 }
 
 func setDatastoreCache(site *Site) {
-	ds.CacheKinds[KindHTMLName] = site.HTMLCache
-	ds.CacheKinds[KindTemplateName] = site.TemplateCache
-	ds.CacheKinds[KindTemplateDataName] = site.TemplateCache
-	ds.CacheKinds[KindFileName] = site.FileCache
-	ds.CacheKinds[KindFileDataName] = site.FileCache
-	ds.CacheKinds[KindPageName] = site.PageCache
-	ds.CacheKinds[KindPageDataName] = site.PageCache
 	return
 }
 
@@ -198,7 +215,7 @@ func GenerateSitemap(w http.ResponseWriter, r *http.Request) error {
 	//Page数回繰り返す
 	for idx, page := range pages {
 
-		key1 := page.Key.StringID()
+		key1 := page.Key.Name
 		key2 := "page/" + key1
 		if key1 == rootId {
 			key2 = ""

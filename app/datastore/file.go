@@ -4,7 +4,7 @@ import (
 	"app/api"
 
 	"bytes"
-	"context"
+	"errors"
 	"image"
 	_ "image/gif"
 	"image/jpeg"
@@ -14,13 +14,11 @@ import (
 	"net/http"
 	"strconv"
 
-	verr "github.com/knightso/base/errors"
-	"github.com/knightso/base/gae/ds"
 	"github.com/nfnt/resize"
+	"golang.org/x/xerrors"
+	"google.golang.org/api/iterator"
 
-	"google.golang.org/appengine"
-	"google.golang.org/appengine/datastore"
-	"google.golang.org/appengine/memcache"
+	"cloud.google.com/go/datastore"
 )
 
 const KindFileName = "File"
@@ -28,12 +26,22 @@ const KindFileName = "File"
 type File struct {
 	Size int64
 	Type int
-	ds.Meta
+
+	TargetVersion string `datastore:"-"`
+	Meta
 }
 
-func createFileKey(r *http.Request, name string) *datastore.Key {
-	c := appengine.NewContext(r)
-	return datastore.NewKey(c, KindFileName, name, 0, nil)
+func (f *File) Load(props []datastore.Property) error {
+	return datastore.LoadStruct(f, props)
+}
+
+func (f *File) Save() ([]datastore.Property, error) {
+	f.update(f.TargetVersion)
+	return datastore.SaveStruct(f)
+}
+
+func createFileKey(name string) *datastore.Key {
+	return datastore.NameKey(KindFileName, name, nil)
 }
 
 func getFileCursor(p int) string {
@@ -49,7 +57,12 @@ func SelectFiles(r *http.Request, tBuf string, p int) ([]File, error) {
 		typ, _ = strconv.Atoi(tBuf)
 	}
 
-	c := appengine.NewContext(r)
+	ctx := r.Context()
+
+	cli, err := createClient(ctx)
+	if err != nil {
+		return nil, xerrors.Errorf("createClient() error: %w", err)
+	}
 	cursor := ""
 
 	//q := datastore.NewQuery(KindFileName).Order("- UpdatedAt")
@@ -60,10 +73,7 @@ func SelectFiles(r *http.Request, tBuf string, p int) ([]File, error) {
 	}
 
 	if p > 0 {
-		item, err := memcache.Get(c, getFileCursor(p))
-		if err == nil {
-			cursor = string(item.Value)
-		}
+		//TODO カーソル
 		q = q.Limit(10)
 		if cursor != "" {
 			cur, err := datastore.DecodeCursor(cursor)
@@ -73,50 +83,44 @@ func SelectFiles(r *http.Request, tBuf string, p int) ([]File, error) {
 		}
 	}
 
-	t := q.Run(c)
+	t := cli.Run(ctx, q)
 	for {
 		var f File
 		key, err := t.Next(&f)
 
-		if err == datastore.Done {
+		if errors.Is(err, iterator.Done) {
 			break
 		}
 		if err != nil {
 			return nil, err
 		}
-		f.SetKey(key)
+		f.LoadKey(key)
 		s = append(s, f)
 	}
 
 	if p > 0 {
-		cur, err := t.Cursor()
-		if err != nil {
-			return nil, err
-		}
-
-		err = memcache.Set(c, &memcache.Item{
-			Key:   getFileCursor(p + 1),
-			Value: []byte(cur.String()),
-		})
-		if err != nil {
-			return nil, err
-		}
+		//TODO カーソル
 	}
 
 	return s, nil
 }
 
 func SelectFile(r *http.Request, name string) (*File, error) {
-	c := appengine.NewContext(r)
+
+	ctx := r.Context()
+	cli, err := createClient(ctx)
+	if err != nil {
+		return nil, xerrors.Errorf("createClient() error: %w", err)
+	}
 
 	rtn := File{}
-	key := createFileKey(r, name)
+	key := createFileKey(name)
 
-	err := ds.Get(c, key, &rtn)
+	err = cli.Get(ctx, key, &rtn)
 	if err != nil {
-		if verr.Root(err) != datastore.ErrNoSuchEntity {
-			return nil, verr.Root(err)
-		} else if verr.Root(err) == datastore.ErrNoSuchEntity {
+		if !errors.Is(err, datastore.ErrNoSuchEntity) {
+			return nil, xerrors.Errorf("File Get() error: %w", err)
+		} else if errors.Is(err, datastore.ErrNoSuchEntity) {
 			return nil, nil
 		}
 	}
@@ -136,20 +140,24 @@ func SaveFile(r *http.Request, id string, t int) error {
 		return err
 	}
 
-	c := appengine.NewContext(r)
 	if id == "" {
 		id = header.Filename
 	}
 
-	option := &datastore.TransactionOptions{XG: true}
-	err = datastore.RunInTransaction(c, func(ctx context.Context) error {
+	ctx := r.Context()
+	cli, err := createClient(ctx)
+	if err != nil {
+		return xerrors.Errorf("createClient() error: %w", err)
+	}
 
-		fileKey := createFileKey(r, id)
+	_, err = cli.RunInTransaction(ctx, func(tx *datastore.Transaction) error {
+
+		fileKey := createFileKey(id)
 
 		file := File{}
-		err = ds.Get(c, fileKey, &file)
+		err = tx.Get(fileKey, &file)
 		if err != nil {
-			if verr.Root(err) != datastore.ErrNoSuchEntity {
+			if !errors.Is(err, datastore.ErrNoSuchEntity) {
 				return err
 			}
 
@@ -159,7 +167,7 @@ func SaveFile(r *http.Request, id string, t int) error {
 		file.Size = int64(len(b))
 		file.Type = t
 
-		err = ds.Put(ctx, &file)
+		_, err = tx.Put(fileKey, &file)
 		if err != nil {
 			return err
 		}
@@ -173,29 +181,38 @@ func SaveFile(r *http.Request, id string, t int) error {
 			Content: b,
 			Mime:    mime,
 		}
-		fileData.SetKey(createFileDataKey(r, id))
-		err = ds.Put(ctx, fileData)
+
+		fileData.LoadKey(createFileDataKey(id))
+		_, err = tx.Put(fileData.GetKey(), fileData)
 		if err != nil {
 			return err
 		}
 		return nil
-	}, option)
+	})
+
+	if err != nil {
+		return xerrors.Errorf("transaction error: %w", err)
+	}
 
 	return err
 }
 
 func PutFileData(r *http.Request, id string, data []byte, mime string) error {
 
-	option := &datastore.TransactionOptions{XG: true}
-	c := appengine.NewContext(r)
-	return datastore.RunInTransaction(c, func(ctx context.Context) error {
+	ctx := r.Context()
+	cli, err := createClient(ctx)
+	if err != nil {
+		return xerrors.Errorf("createClient() error: %w", err)
+	}
 
-		fileKey := createFileKey(r, id)
+	_, err = cli.RunInTransaction(ctx, func(tx *datastore.Transaction) error {
+
+		fileKey := createFileKey(id)
 
 		file := File{}
-		err := ds.Get(c, fileKey, &file)
+		err := tx.Get(fileKey, &file)
 		if err != nil {
-			if verr.Root(err) != datastore.ErrNoSuchEntity {
+			if !errors.Is(err, datastore.ErrNoSuchEntity) {
 				return err
 			}
 
@@ -203,7 +220,7 @@ func PutFileData(r *http.Request, id string, data []byte, mime string) error {
 		}
 
 		file.Size = int64(len(data))
-		err = ds.Put(ctx, &file)
+		_, err = tx.Put(file.GetKey(), &file)
 		if err != nil {
 			return err
 		}
@@ -212,67 +229,89 @@ func PutFileData(r *http.Request, id string, data []byte, mime string) error {
 			Content: data,
 			Mime:    mime,
 		}
-		fileData.SetKey(createFileDataKey(r, id))
-		err = ds.Put(c, fileData)
+		fileData.LoadKey(createFileDataKey(id))
+		_, err = tx.Put(fileData.GetKey(), fileData)
 		if err != nil {
 			return err
 		}
 		return nil
-	}, option)
+	})
+	if err != nil {
+		return xerrors.Errorf("transaction error: %w", err)
+	}
 	return nil
 }
 
 func ExistFile(r *http.Request, id string) bool {
 
-	c := appengine.NewContext(r)
+	ctx := r.Context()
+
 	file := &File{}
-	file.Key = createFileKey(r, id)
-	err := ds.Get(c, file.Key, file)
+	file.Key = createFileKey(id)
+
+	cli, err := createClient(ctx)
 	if err != nil {
-		if verr.Root(err) != datastore.ErrNoSuchEntity {
+		return false
+	}
+
+	err = cli.Get(ctx, file.Key, file)
+	if err != nil {
+		if !errors.Is(err, datastore.ErrNoSuchEntity) {
 			return true
-		} else if verr.Root(err) == datastore.ErrNoSuchEntity {
+		} else if errors.Is(err, datastore.ErrNoSuchEntity) {
 			return false
 		}
+
+		//TODO log
 	}
 	return true
 }
 
 func RemoveFile(r *http.Request, id string) error {
-	c := appengine.NewContext(r)
 
-	option := &datastore.TransactionOptions{XG: true}
-	err := datastore.RunInTransaction(c, func(ctx context.Context) error {
-		fkey := createFileKey(r, id)
-		err := ds.Delete(c, fkey)
+	ctx := r.Context()
+
+	cli, err := createClient(ctx)
+	if err != nil {
+		return xerrors.Errorf("createClient() error: %w", err)
+	}
+
+	_, err = cli.RunInTransaction(ctx, func(tx *datastore.Transaction) error {
+		fkey := createFileKey(id)
+		err := tx.Delete(fkey)
 		if err != nil {
 			return err
 		}
-		fdkey := createFileDataKey(r, id)
-		return ds.Delete(c, fdkey)
-	}, option)
-	return err
+		fdkey := createFileDataKey(id)
+		return tx.Delete(fdkey)
+	})
+
+	if err != nil {
+		return xerrors.Errorf("transaction error: %w", err)
+	}
+
+	return nil
 }
 
 const KindFileDataName = "FileData"
 
 type FileData struct {
-	key     *datastore.Key
+	Key     *datastore.Key `datastore:"__key__"`
 	Mime    string
 	Content []byte
 }
 
 func (d *FileData) GetKey() *datastore.Key {
-	return d.key
+	return d.Key
 }
 
-func (d *FileData) SetKey(k *datastore.Key) {
-	d.key = k
+func (d *FileData) LoadKey(k *datastore.Key) error {
+	d.Key = k
+	return nil
 }
 
-func createFileDataKey(r *http.Request, name string) *datastore.Key {
-	c := appengine.NewContext(r)
-	return datastore.NewKey(c, KindFileDataName, name, 0, nil)
+func createFileDataKey(name string) *datastore.Key {
+	return datastore.NameKey(KindFileDataName, name, nil)
 }
 
 func convertImage(r io.Reader) ([]byte, bool, error) {
@@ -310,16 +349,21 @@ func convertImage(r io.Reader) ([]byte, bool, error) {
 }
 
 func SelectFileData(r *http.Request, name string) (*FileData, error) {
-	c := appengine.NewContext(r)
+	ctx := r.Context()
 
 	rtn := FileData{}
-	key := createFileDataKey(r, name)
+	key := createFileDataKey(name)
 
-	err := ds.Get(c, key, &rtn)
+	cli, err := createClient(ctx)
 	if err != nil {
-		if verr.Root(err) != datastore.ErrNoSuchEntity {
-			return nil, verr.Root(err)
-		} else if verr.Root(err) == datastore.ErrNoSuchEntity {
+		return nil, xerrors.Errorf("createClient error: %w", err)
+	}
+
+	err = cli.Get(ctx, key, &rtn)
+	if err != nil {
+		if !errors.Is(err, datastore.ErrNoSuchEntity) {
+			return nil, xerrors.Errorf("FileData Get() error: %w", err)
+		} else if errors.Is(err, datastore.ErrNoSuchEntity) {
 			return nil, nil
 		}
 	}

@@ -8,9 +8,9 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/knightso/base/gae/ds"
-	"google.golang.org/appengine"
-	"google.golang.org/appengine/datastore"
+	"golang.org/x/xerrors"
+
+	"cloud.google.com/go/datastore"
 )
 
 type GobKind map[string][]byte
@@ -29,151 +29,159 @@ func init() {
 func GetBackupData(r *http.Request) (BackupData, error) {
 
 	backup := make(BackupData)
-	var err error
-	backup[KindSiteName], err = createSiteGob(r)
+	ctx := r.Context()
+	cli, err := createClient(ctx)
 	if err != nil {
-		return nil, err
+		return nil, xerrors.Errorf("createClient() error: %w", err)
 	}
-	backup[KindHTMLName], err = createHTMLGob(r)
+
+	backup[KindSiteName], err = createSiteGob(ctx, cli)
 	if err != nil {
-		return nil, err
+		return nil, xerrors.Errorf("createSiteGob() error: %w", err)
 	}
-	backup[KindPageName], err = createPageGob(r)
+	backup[KindHTMLName], err = createHTMLGob(ctx, cli)
 	if err != nil {
-		return nil, err
+		return nil, xerrors.Errorf("createHTMLGob() error: %w", err)
 	}
-	backup[KindPageDataName], err = createPageDataGob(r)
+	backup[KindPageName], err = createPageGob(ctx, cli)
 	if err != nil {
-		return nil, err
+		return nil, xerrors.Errorf("createPageGob() error: %w", err)
 	}
-	backup[KindFileName], err = createFileGob(r)
+	backup[KindPageDataName], err = createPageDataGob(ctx, cli)
 	if err != nil {
-		return nil, err
+		return nil, xerrors.Errorf("createPageDataGob() error: %w", err)
 	}
-	backup[KindFileDataName], err = createFileDataGob(r)
+	backup[KindFileName], err = createFileGob(ctx, cli)
 	if err != nil {
-		return nil, err
+		return nil, xerrors.Errorf("createFileGob() error: %w", err)
 	}
-	backup[KindTemplateName], err = createTemplateGob(r)
+	backup[KindFileDataName], err = createFileDataGob(ctx, cli)
 	if err != nil {
-		return nil, err
+		return nil, xerrors.Errorf("createFileDataGob() error: %w", err)
 	}
-	backup[KindTemplateDataName], err = createTemplateDataGob(r)
+	backup[KindTemplateName], err = createTemplateGob(ctx, cli)
 	if err != nil {
-		return nil, err
+		return nil, xerrors.Errorf("createTemplateGob() error: %w", err)
+	}
+	backup[KindTemplateDataName], err = createTemplateDataGob(ctx, cli)
+	if err != nil {
+		return nil, xerrors.Errorf("createTemplateDataGob() error: %w", err)
 	}
 	return backup, nil
 }
 
-func createSiteGob(r *http.Request) (GobKind, error) {
+func createSiteGob(ctx context.Context, cli *datastore.Client) (GobKind, error) {
 	rtn := make(GobKind)
+
 	var data []*Site
-	keys, err := getAllKind(r, KindSiteName, &data)
+	keys, err := getAllKind(ctx, cli, KindSiteName, &data)
 	if err != nil {
 		return nil, err
 	}
 	for idx, data := range data {
-		rtn[keys[idx].StringID()] = convertGob(data)
+		rtn[keys[idx].Name] = convertGob(data)
 	}
 	return rtn, nil
 }
 
-func createHTMLGob(r *http.Request) (GobKind, error) {
+func createHTMLGob(ctx context.Context, cli *datastore.Client) (GobKind, error) {
 	rtn := make(GobKind)
 	var data []*HTML
-	keys, err := getAllKind(r, KindHTMLName, &data)
+	keys, err := getAllKind(ctx, cli, KindHTMLName, &data)
 	if err != nil {
 		return nil, err
 	}
 	for idx, data := range data {
-		rtn[keys[idx].StringID()] = convertGob(data)
+		rtn[keys[idx].Name] = convertGob(data)
 	}
 	return rtn, nil
 }
 
-func createPageGob(r *http.Request) (GobKind, error) {
+func createPageGob(ctx context.Context, cli *datastore.Client) (GobKind, error) {
 	rtn := make(GobKind)
 	var data []*Page
-	keys, err := getAllKind(r, KindPageName, &data)
+	keys, err := getAllKind(ctx, cli, KindPageName, &data)
 	if err != nil {
 		return nil, err
 	}
 	for idx, data := range data {
-		rtn[keys[idx].StringID()] = convertGob(data)
+		rtn[keys[idx].Name] = convertGob(data)
 	}
 	return rtn, nil
 }
 
-func createPageDataGob(r *http.Request) (GobKind, error) {
+func createPageDataGob(ctx context.Context, cli *datastore.Client) (GobKind, error) {
 	rtn := make(GobKind)
 	var data []*PageData
-	keys, err := getAllKind(r, KindPageDataName, &data)
+	keys, err := getAllKind(ctx, cli, KindPageDataName, &data)
 	if err != nil {
 		return nil, err
 	}
 	for idx, data := range data {
-		rtn[keys[idx].StringID()] = convertGob(data)
+		rtn[keys[idx].Name] = convertGob(data)
 	}
 	return rtn, nil
 }
 
-func createFileGob(r *http.Request) (GobKind, error) {
+func createFileGob(ctx context.Context, cli *datastore.Client) (GobKind, error) {
 	rtn := make(GobKind)
 	var data []*File
-	keys, err := getAllKind(r, KindFileName, &data)
+	keys, err := getAllKind(ctx, cli, KindFileName, &data)
 	if err != nil {
 		return nil, err
 	}
 	for idx, data := range data {
-		rtn[keys[idx].StringID()] = convertGob(data)
+		rtn[keys[idx].Name] = convertGob(data)
 	}
 	return rtn, nil
 }
 
-func createFileDataGob(r *http.Request) (GobKind, error) {
+func createFileDataGob(ctx context.Context, cli *datastore.Client) (GobKind, error) {
 	rtn := make(GobKind)
 	var data []*FileData
-	keys, err := getAllKind(r, KindFileDataName, &data)
+	keys, err := getAllKind(ctx, cli, KindFileDataName, &data)
 	if err != nil {
 		return nil, err
 	}
 	for idx, data := range data {
-		rtn[keys[idx].StringID()] = convertGob(data)
+		rtn[keys[idx].Name] = convertGob(data)
 	}
 	return rtn, nil
 }
 
-func createTemplateGob(r *http.Request) (GobKind, error) {
+func createTemplateGob(ctx context.Context, cli *datastore.Client) (GobKind, error) {
 	rtn := make(GobKind)
 	var data []*Template
-	keys, err := getAllKind(r, KindTemplateName, &data)
+	keys, err := getAllKind(ctx, cli, KindTemplateName, &data)
 	if err != nil {
 		return nil, err
 	}
 	for idx, data := range data {
-		rtn[keys[idx].StringID()] = convertGob(data)
+		rtn[keys[idx].Name] = convertGob(data)
 	}
 	return rtn, nil
 }
 
-func createTemplateDataGob(r *http.Request) (GobKind, error) {
+func createTemplateDataGob(ctx context.Context, cli *datastore.Client) (GobKind, error) {
 	rtn := make(GobKind)
 	var data []*TemplateData
-	keys, err := getAllKind(r, KindTemplateDataName, &data)
+	keys, err := getAllKind(ctx, cli, KindTemplateDataName, &data)
 	if err != nil {
 		return nil, err
 	}
 	for idx, data := range data {
-		rtn[keys[idx].StringID()] = convertGob(data)
+		rtn[keys[idx].Name] = convertGob(data)
 	}
 	return rtn, nil
 }
 
-func getAllKind(r *http.Request, name string, dst interface{}) ([]*datastore.Key, error) {
-	c := appengine.NewContext(r)
+func getAllKind(ctx context.Context, cli *datastore.Client, name string, dst interface{}) ([]*datastore.Key, error) {
 	q := datastore.NewQuery(name)
-	keys, err := q.GetAll(c, dst)
-	return keys, err
+	keys, err := cli.GetAll(ctx, q, dst)
+	if err != nil {
+		return nil, xerrors.Errorf("GetAll() error: %w", err)
+	}
+	return keys, nil
 }
 
 func convertGob(dst interface{}) []byte {
@@ -184,27 +192,28 @@ func convertGob(dst interface{}) []byte {
 
 func PutBackupData(r *http.Request, backup BackupData) error {
 
-	c := appengine.NewContext(r)
+	ctx := r.Context()
 
-	option := &datastore.TransactionOptions{XG: true}
-	keys, err := getAllKey(c)
+	cli, err := createClient(ctx)
 	if err != nil {
-		return err
+		return xerrors.Errorf("createClient() error: %w", err)
 	}
 
-	err = datastore.RunInTransaction(c, func(ctx context.Context) error {
-		for _, key := range keys {
-			err := ds.Delete(c, key)
-			if err != nil {
-				return err
-			}
+	keys, err := getAllKey(ctx, cli)
+	if err != nil {
+		return xerrors.Errorf("getAllKey() error: %w", err)
+	}
+
+	_, err = cli.RunInTransaction(ctx, func(tx *datastore.Transaction) error {
+		err := tx.DeleteMulti(keys)
+		if err != nil {
+			return xerrors.Errorf("backup data DeleteMulti() error: %w", err)
 		}
 
 		for kind, elm := range backup {
 			log.Println(kind)
 			for key, data := range elm {
-				log.Println(key)
-				err = putKind(c, kind, key, data)
+				err = putKind(tx, kind, key, data)
 				if err != nil {
 					return err
 				}
@@ -212,58 +221,66 @@ func PutBackupData(r *http.Request, backup BackupData) error {
 		}
 
 		return nil
-	}, option)
-	return err
+	})
+
+	if err != nil {
+		return xerrors.Errorf("transaction error: %w", err)
+	}
+	return nil
 }
 
-func getAllKindKey(c context.Context, name string) ([]*datastore.Key, error) {
+func getAllKindKey(c context.Context, cli *datastore.Client, name string) ([]*datastore.Key, error) {
 	q := datastore.NewQuery(name).KeysOnly()
-	return q.GetAll(c, nil)
+	keys, err := cli.GetAll(c, q, nil)
+	if err != nil {
+		return nil, xerrors.Errorf("GetAll() error: %w", err)
+	}
+	return keys, nil
 }
 
-func getAllKey(ctx context.Context) ([]*datastore.Key, error) {
+func getAllKey(ctx context.Context, cli *datastore.Client) ([]*datastore.Key, error) {
 
 	var rtn []*datastore.Key
 
-	keys, err := getAllKindKey(ctx, KindSiteName)
+	keys, err := getAllKindKey(ctx, cli, KindSiteName)
 	if err != nil {
 		return nil, err
 	}
 	rtn = append(rtn, keys...)
 
-	keys, err = getAllKindKey(ctx, KindHTMLName)
+	keys, err = getAllKindKey(ctx, cli, KindHTMLName)
 	if err != nil {
 		return nil, err
 	}
 	rtn = append(rtn, keys...)
 
-	keys, err = getAllKindKey(ctx, KindPageName)
+	keys, err = getAllKindKey(ctx, cli, KindPageName)
 	if err != nil {
 		return nil, err
 	}
 	rtn = append(rtn, keys...)
 
-	keys, err = getAllKindKey(ctx, KindPageDataName)
+	keys, err = getAllKindKey(ctx, cli, KindPageDataName)
 	if err != nil {
 		return nil, err
 	}
 	rtn = append(rtn, keys...)
-	keys, err = getAllKindKey(ctx, KindFileName)
+	keys, err = getAllKindKey(ctx, cli, KindFileName)
 	if err != nil {
 		return nil, err
 	}
 	rtn = append(rtn, keys...)
-	keys, err = getAllKindKey(ctx, KindFileDataName)
+	keys, err = getAllKindKey(ctx, cli, KindFileDataName)
 	if err != nil {
 		return nil, err
 	}
 	rtn = append(rtn, keys...)
-	keys, err = getAllKindKey(ctx, KindTemplateName)
+	keys, err = getAllKindKey(ctx, cli, KindTemplateName)
 	if err != nil {
 		return nil, err
 	}
 	rtn = append(rtn, keys...)
-	keys, err = getAllKindKey(ctx, KindTemplateDataName)
+	keys, err = getAllKindKey(ctx, cli, KindTemplateDataName)
 	if err != nil {
 		return nil, err
 	}
@@ -271,9 +288,9 @@ func getAllKey(ctx context.Context) ([]*datastore.Key, error) {
 	return rtn, nil
 }
 
-func putKind(ctx context.Context, kind string, id string, data []byte) error {
+func putKind(tx *datastore.Transaction, kind string, id string, data []byte) error {
 
-	key := datastore.NewKey(ctx, kind, id, 0, nil)
+	key := datastore.NameKey(kind, id, nil)
 	reader := bytes.NewBuffer(data)
 
 	var err error
@@ -284,8 +301,8 @@ func putKind(ctx context.Context, kind string, id string, data []byte) error {
 		if err != nil {
 			return err
 		}
-		dst.SetKey(key)
-		err = ds.Put(ctx, dst)
+		dst.LoadKey(key)
+		_, err = tx.Put(key, dst)
 		if err != nil {
 			return err
 		}
@@ -295,8 +312,8 @@ func putKind(ctx context.Context, kind string, id string, data []byte) error {
 		if err != nil {
 			return err
 		}
-		dst.SetKey(key)
-		err = ds.Put(ctx, dst)
+		dst.LoadKey(key)
+		_, err = tx.Put(key, dst)
 		if err != nil {
 			return err
 		}
@@ -306,8 +323,8 @@ func putKind(ctx context.Context, kind string, id string, data []byte) error {
 		if err != nil {
 			return err
 		}
-		dst.SetKey(key)
-		err = ds.Put(ctx, dst)
+		dst.LoadKey(key)
+		_, err = tx.Put(key, dst)
 		if err != nil {
 			return err
 		}
@@ -317,8 +334,8 @@ func putKind(ctx context.Context, kind string, id string, data []byte) error {
 		if err != nil {
 			return err
 		}
-		dst.SetKey(key)
-		err = ds.Put(ctx, dst)
+		dst.LoadKey(key)
+		_, err = tx.Put(key, dst)
 		if err != nil {
 			return err
 		}
@@ -328,8 +345,8 @@ func putKind(ctx context.Context, kind string, id string, data []byte) error {
 		if err != nil {
 			return err
 		}
-		dst.SetKey(key)
-		err = ds.Put(ctx, dst)
+		dst.LoadKey(key)
+		_, err = tx.Put(key, dst)
 		if err != nil {
 			return err
 		}
@@ -339,8 +356,8 @@ func putKind(ctx context.Context, kind string, id string, data []byte) error {
 		if err != nil {
 			return err
 		}
-		dst.SetKey(key)
-		err = ds.Put(ctx, dst)
+		dst.LoadKey(key)
+		_, err = tx.Put(key, dst)
 		if err != nil {
 			return err
 		}
@@ -350,8 +367,8 @@ func putKind(ctx context.Context, kind string, id string, data []byte) error {
 		if err != nil {
 			return err
 		}
-		dst.SetKey(key)
-		err = ds.Put(ctx, dst)
+		dst.LoadKey(key)
+		_, err = tx.Put(key, dst)
 		if err != nil {
 			return err
 		}
@@ -361,8 +378,8 @@ func putKind(ctx context.Context, kind string, id string, data []byte) error {
 		if err != nil {
 			return err
 		}
-		dst.SetKey(key)
-		err = ds.Put(ctx, dst)
+		dst.LoadKey(key)
+		_, err = tx.Put(key, dst)
 		if err != nil {
 			return err
 		}

@@ -2,12 +2,18 @@ package main
 
 import (
 	"app"
+	"app/config"
+	"fmt"
 	"log"
 )
 
 func main() {
-	err := app.Start()
+	err := app.Listen(
+		config.SetProjectID(),
+		config.SetDatastore())
 	if err != nil {
-		log.Println(err)
+		log.Fatalf("%+v", err)
 	}
+	fmt.Println("byt!")
+	return
 }

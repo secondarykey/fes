@@ -2,44 +2,59 @@ package datastore
 
 import (
 	"app/api"
+	"errors"
 
 	"bytes"
 	"fmt"
 	"net/http"
 	"time"
 
-	kerr "github.com/knightso/base/errors"
-	"github.com/knightso/base/gae/ds"
-	"golang.org/x/net/context"
-	"google.golang.org/appengine"
-	"google.golang.org/appengine/datastore"
 	"html/template"
 	"strconv"
-)
 
-type HTML struct {
-	Content  []byte
-	Children int
-	ds.Meta
-}
+	"golang.org/x/xerrors"
+
+	"cloud.google.com/go/datastore"
+)
 
 const KindHTMLName = "HTML"
 
-func createHTMLKey(r *http.Request, id string) *datastore.Key {
-	c := appengine.NewContext(r)
-	return datastore.NewKey(c, KindHTMLName, id, 0, nil)
+type HTML struct {
+	Content       []byte
+	Children      int
+	TargetVersion string `datastore:"-"`
+	Meta
+}
+
+func (h *HTML) Load(props []datastore.Property) error {
+	return datastore.LoadStruct(h, props)
+}
+
+func (h *HTML) Save() ([]datastore.Property, error) {
+	h.update(h.TargetVersion)
+	return datastore.SaveStruct(h)
+}
+
+func createHTMLKey(id string) *datastore.Key {
+	return datastore.NameKey(KindHTMLName, id, nil)
 }
 
 func GetHTML(r *http.Request, id string) (*HTML, error) {
 
 	var err error
-	key := createHTMLKey(r, id)
+	key := createHTMLKey(id)
 	html := HTML{}
 
-	c := appengine.NewContext(r)
-	err = ds.Get(c, key, &html)
+	ctx := r.Context()
+
+	cli, err := createClient(ctx)
 	if err != nil {
-		if kerr.Root(err) != datastore.ErrNoSuchEntity {
+		return nil, xerrors.Errorf("createClient() error: %w", err)
+	}
+
+	err = cli.Get(ctx, key, &html)
+	if err != nil {
+		if !errors.Is(err, datastore.ErrNoSuchEntity) {
 			return nil, err
 		} else {
 			return nil, nil
@@ -88,9 +103,9 @@ func PutHTML(r *http.Request, id string) error {
 			return err
 		}
 		if html == nil {
-			key := createHTMLKey(r, realId)
+			key := createHTMLKey(realId)
 			html = &HTML{}
-			html.SetKey(key)
+			html.LoadKey(key)
 		}
 		html.Content = w.Bytes()
 		html.Children = len(dtos)
@@ -98,26 +113,37 @@ func PutHTML(r *http.Request, id string) error {
 		keys[idx] = html.GetKey()
 	}
 
-	c := appengine.NewContext(r)
-	option := &datastore.TransactionOptions{XG: true}
-	return datastore.RunInTransaction(c, func(ctx context.Context) error {
+	ctx := r.Context()
 
-		err = ds.PutMulti(c, keys, htmls)
+	cli, err := createClient(ctx)
+	if err != nil {
+		return xerrors.Errorf("createClient() error: %w", err)
+	}
+
+	_, err = cli.RunInTransaction(ctx, func(tx *datastore.Transaction) error {
+
+		_, err = tx.PutMulti(keys, htmls)
 		if err != nil {
 			return err
 		}
 		page.Publish = time.Now()
-		err = ds.Put(c, page)
+		_, err = tx.Put(page.GetKey(), page)
 		if err != nil {
 			return err
 		}
 		return nil
-	}, option)
+	})
+
+	if err != nil {
+		return xerrors.Errorf("transaction error: %w", err)
+	}
+
+	return nil
 }
 
 func RemoveHTML(r *http.Request, id string) error {
 
-	c := appengine.NewContext(r)
+	ctx := r.Context()
 	page, err := SelectPage(r, id, -1)
 	if err != nil {
 		return err
@@ -127,22 +153,31 @@ func RemoveHTML(r *http.Request, id string) error {
 	}
 
 	//TODO ページ数個削除
+	cli, err := createClient(ctx)
+	if err != nil {
+		return xerrors.Errorf("createClient() error: %w", err)
+	}
 
-	option := &datastore.TransactionOptions{XG: true}
-	return datastore.RunInTransaction(c, func(ctx context.Context) error {
-		key := createHTMLKey(r, id)
-		err = ds.Delete(c, key)
+	_, err = cli.RunInTransaction(ctx, func(tx *datastore.Transaction) error {
+		key := createHTMLKey(id)
+		err = tx.Delete(key)
 		if err != nil {
 			return err
 		}
 
 		page.Publish = time.Time{}
-		err = ds.Put(c, page)
+		_, err = tx.Put(page.GetKey(), page)
 		if err != nil {
 			return err
 		}
 		return nil
-	}, option)
+	})
+
+	if err != nil {
+		return xerrors.Errorf("transaction error: %w", err)
+	}
+
+	return nil
 }
 
 func PutHTMLs(r *http.Request, pages []Page) error {
@@ -178,37 +213,34 @@ func PutHTMLs(r *http.Request, pages []Page) error {
 		}
 
 		htmlData = append(htmlData, w.Bytes())
-		keys = append(keys, createHTMLKey(r, elm.Key.StringID()))
+		keys = append(keys, createHTMLKey(elm.Key.Name))
 	}
 
-	c := appengine.NewContext(r)
 	htmls := make([]HTML, len(keys))
 
-	err = ds.GetMulti(c, keys, htmls)
+	ctx := r.Context()
+	cli, err := createClient(ctx)
 	if err != nil {
-		if berr, ok := err.(*kerr.BaseError); ok {
-			err = berr.Cause()
-			_, flag := err.(appengine.MultiError)
-			if !flag {
-				return err
-			}
-		} else {
-			return err
-		}
+		return xerrors.Errorf("createClient() error: %w", err)
+	}
+
+	err = cli.GetMulti(ctx, keys, htmls)
+	if err != nil {
+		//TODO
+		return xerrors.Errorf("GetMulti() error: %w", err)
 	}
 
 	for idx, _ := range htmls {
-		if err != nil {
-			multi := err.(appengine.MultiError)
-			if m := multi[idx]; m != nil && m != datastore.ErrNoSuchEntity {
-				return err
-			}
-		}
-		htmls[idx].SetKey(keys[idx])
+		htmls[idx].LoadKey(keys[idx])
 		htmls[idx].Content = htmlData[idx]
 	}
 
-	return ds.PutMulti(c, keys, htmls)
+	_, err = cli.PutMulti(ctx, keys, htmls)
+	if err != nil {
+		return xerrors.Errorf("htmls PutMulti() error: %w", err)
+	}
+
+	return nil
 }
 
 //TOOL
@@ -256,7 +288,7 @@ func WriteManageHTML(w http.ResponseWriter, r *http.Request, id string, p int) e
 
 func NewDtos(r *http.Request, page *Page, pageNum int, mng bool) ([]*HTMLDto, error) {
 
-	id := page.Key.StringID()
+	id := page.Key.Name
 	site, err := SelectSite(r, -1)
 	if err != nil {
 		return nil, err

@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"github.com/satori/go.uuid"
+	uuid "github.com/satori/go.uuid"
 )
 
 func (h Handler) ViewRootPage(w http.ResponseWriter, r *http.Request) {
@@ -37,7 +37,7 @@ func (h Handler) AddPage(w http.ResponseWriter, r *http.Request) {
 	uid := uuid.NewV4()
 
 	id := uid.String()
-	page.SetKey(datastore.CreatePageKey(r, id))
+	page.LoadKey(datastore.CreatePageKey(id))
 
 	h.view(w, r, page)
 }
@@ -82,7 +82,7 @@ func (h Handler) view(w http.ResponseWriter, r *http.Request, page *datastore.Pa
 	siteTemplateName := "Select Site Template..."
 	pageTemplateName := "Select Page Template..."
 
-	id := page.Key.StringID()
+	id := page.Key.Name
 
 	pageData, err = datastore.SelectPageData(r, id)
 	if err != nil {
@@ -92,7 +92,7 @@ func (h Handler) view(w http.ResponseWriter, r *http.Request, page *datastore.Pa
 
 	if pageData == nil {
 		pageData = &datastore.PageData{}
-		pageData.SetKey(datastore.CreatePageDataKey(r, id))
+		pageData.LoadKey(datastore.CreatePageDataKey(id))
 	}
 
 	//全件でOK
@@ -113,10 +113,10 @@ func (h Handler) view(w http.ResponseWriter, r *http.Request, page *datastore.Pa
 	}
 
 	for _, elm := range templates {
-		if elm.Key.StringID() == page.SiteTemplate {
+		if elm.Key.Name == page.SiteTemplate {
 			siteTemplateName = elm.Name
 		}
-		if elm.Key.StringID() == page.PageTemplate {
+		if elm.Key.Name == page.PageTemplate {
 			pageTemplateName = elm.Name
 		}
 	}

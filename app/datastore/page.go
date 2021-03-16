@@ -2,10 +2,10 @@ package datastore
 
 import (
 	"app/api"
+	"log"
 
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"sort"
 	"strconv"
@@ -13,13 +13,10 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	kerr "github.com/knightso/base/errors"
-	"github.com/knightso/base/gae/ds"
-	"golang.org/x/net/context"
+	"golang.org/x/xerrors"
+	"google.golang.org/api/iterator"
 
-	"google.golang.org/appengine"
-	"google.golang.org/appengine/datastore"
-	"google.golang.org/appengine/memcache"
+	"cloud.google.com/go/datastore"
 )
 
 var (
@@ -38,29 +35,45 @@ type Page struct {
 	Paging       int
 	SiteTemplate string
 	PageTemplate string
-	ds.Meta
+
+	TargetVersion string `datastore:"-"`
+	Meta
 }
 
-func CreatePageKey(r *http.Request, id string) *datastore.Key {
-	c := appengine.NewContext(r)
-	return datastore.NewKey(c, KindPageName, id, 0, nil)
+func (p *Page) Load(props []datastore.Property) error {
+	return datastore.LoadStruct(p, props)
+}
+
+func (p *Page) Save() ([]datastore.Property, error) {
+	p.update(p.TargetVersion)
+	return datastore.SaveStruct(p)
+}
+
+func CreatePageKey(id string) *datastore.Key {
+	return datastore.NameKey(KindPageName, id, nil)
 }
 
 func SelectPages(r *http.Request) ([]Page, error) {
-	c := appengine.NewContext(r)
+
+	ctx := r.Context()
 	var pages []Page
+
+	cli, err := createClient(ctx)
+	if err != nil {
+		return nil, xerrors.Errorf("createClient() error: %w", err)
+	}
+
 	q := datastore.NewQuery(KindPageName).Filter("Deleted=", false)
-	t := q.Run(c)
+	t := cli.Run(ctx, q)
 	for {
 		var page Page
-		key, err := t.Next(&page)
-		if err == datastore.Done {
+		_, err := t.Next(&page)
+		if errors.Is(err, iterator.Done) {
 			break
 		}
 		if err != nil {
 			return nil, err
 		}
-		page.SetKey(key)
 		pages = append(pages, page)
 	}
 	return pages, nil
@@ -68,8 +81,13 @@ func SelectPages(r *http.Request) ([]Page, error) {
 
 func SelectChildPages(r *http.Request, id string, page int, limit int, mng bool) ([]Page, error) {
 
-	c := appengine.NewContext(r)
+	ctx := r.Context()
 	var pages []Page
+
+	cli, err := createClient(ctx)
+	if err != nil {
+		return nil, xerrors.Errorf("createClient() error: %w", err)
+	}
 
 	q := datastore.NewQuery(KindPageName).Filter("Parent=", id).Order("Seq").Order("- CreatedAt")
 	if !mng {
@@ -82,49 +100,35 @@ func SelectChildPages(r *http.Request, id string, page int, limit int, mng bool)
 		q = q.Limit(limit)
 	}
 
+	//TODO Cursor
 	//ページ数
 	if page > 1 {
-		curKey := getChildrenCursorKey(id, page)
-		item, err := memcache.Get(c, getChildrenCursorKey(id, page))
-		if err == nil {
-			cursor := string(item.Value)
-			log.Printf("Key:%s, Get Cursor:%s", curKey, item.Value)
-
-			cur, err := datastore.DecodeCursor(cursor)
-			if err == nil {
-				q = q.Start(cur)
-			}
-		}
+		//curKey := getChildrenCursorKey(id, page)
 	}
 
-	t := q.Run(c)
+	t := cli.Run(ctx, q)
 	for {
 		var page Page
-		key, err := t.Next(&page)
-		if err == datastore.Done {
+		_, err := t.Next(&page)
+		if errors.Is(err, iterator.Done) {
 			break
 		}
 
 		if err != nil {
 			return nil, err
 		}
-		page.SetKey(key)
 		pages = append(pages, page)
 	}
 
 	n := page + 1
 
 	if n > 1 {
+		//TODO Cursor
 		cur, err := t.Cursor()
 		if err != nil {
 			return pages, nil
 		}
-
-		curKey := getChildrenCursorKey(id, n)
-		err = memcache.Set(c, &memcache.Item{
-			Key:   curKey,
-			Value: []byte(cur.String()),
-		})
+		log.Println("cursor set not implemented", cur)
 	}
 
 	return pages, nil
@@ -143,24 +147,29 @@ func SelectRootPage(r *http.Request) (*Page, error) {
 }
 
 func SelectPage(r *http.Request, id string, version int) (*Page, error) {
+
 	page := Page{}
-	c := appengine.NewContext(r)
-	key := datastore.NewKey(c, KindPageName, id, 0, nil)
-	var err error
-	if version >= 0 {
-		err = ds.GetWithVersion(c, key, version, &page)
-	} else {
-		err = ds.Get(c, key, &page)
+	ctx := r.Context()
+	key := CreatePageKey(id)
+
+	cli, err := createClient(ctx)
+	if err != nil {
+		return nil, xerrors.Errorf("createClient() error: %w", err)
 	}
 
+	if version >= 0 {
+		//TODO 調べる
+		page.TargetVersion = fmt.Sprintf("%d", version)
+	}
+	err = cli.Get(ctx, key, &page)
+
 	if err != nil {
-		if kerr.Root(err) != datastore.ErrNoSuchEntity {
+		if !errors.Is(err, datastore.ErrNoSuchEntity) {
 			return nil, err
 		} else {
 			return nil, nil
 		}
 	}
-	page.SetKey(key)
 	return &page, nil
 }
 
@@ -171,7 +180,7 @@ func PutPage(r *http.Request) error {
 	vars := mux.Vars(r)
 	id := vars["key"]
 
-	c := appengine.NewContext(r)
+	ctx := r.Context()
 	ver := r.FormValue("version")
 
 	version, err := strconv.Atoi(ver)
@@ -217,15 +226,19 @@ func PutPage(r *http.Request) error {
 		page.Paging = paging
 	}
 
-	option := &datastore.TransactionOptions{XG: true}
-	return datastore.RunInTransaction(c, func(ctx context.Context) error {
-		page.SetKey(CreatePageKey(r, id))
-		err = ds.Put(c, page)
+	cli, err := createClient(ctx)
+	if err != nil {
+		return xerrors.Errorf("createClient() error: %w", err)
+	}
+
+	_, err = cli.RunInTransaction(ctx, func(tx *datastore.Transaction) error {
+		page.LoadKey(CreatePageKey(id))
+		_, err = tx.Put(page.GetKey(), page)
 		if err != nil {
 			return err
 		}
-		pageData.SetKey(CreatePageDataKey(r, id))
-		err = ds.Put(c, pageData)
+		pageData.LoadKey(CreatePageDataKey(id))
+		_, err = tx.Put(pageData.GetKey(), pageData)
 		if err != nil {
 			return err
 		}
@@ -238,22 +251,35 @@ func PutPage(r *http.Request) error {
 		//TODO Deletedにされている場合、HTMLを検索して削除
 
 		return nil
-	}, option)
+	})
+	if err != nil {
+		return xerrors.Errorf("transaction error: %w", err)
+	}
+
+	return nil
 }
 
 func UsingTemplate(r *http.Request, id string) bool {
 
 	var err error
-	c := appengine.NewContext(r)
+	ctx := r.Context()
+
+	cli, err := createClient(ctx)
+	if err != nil {
+		return true
+		//return xerrors.Errorf("createClient() error: %w", err)
+	}
+
 	siteQ := datastore.NewQuery(KindPageName).Filter("SiteTemplate=", id).Limit(1)
-	siteT := siteQ.Run(c)
+	siteT := cli.Run(ctx, siteQ)
+
 	var page Page
 	_, err = siteT.Next(&page)
-	if err == datastore.Done {
+	if errors.Is(err, iterator.Done) {
 		pageQ := datastore.NewQuery(KindPageName).Filter("PageTemplate=", id).Limit(1)
-		pageT := pageQ.Run(c)
+		pageT := cli.Run(ctx, pageQ)
 		_, err = pageT.Next(&page)
-		if err == datastore.Done {
+		if errors.Is(err, iterator.Done) {
 			return false
 		}
 	}
@@ -263,7 +289,7 @@ func UsingTemplate(r *http.Request, id string) bool {
 func RemovePage(r *http.Request, id string) error {
 
 	var err error
-	c := appengine.NewContext(r)
+	ctx := r.Context()
 
 	children, err := SelectChildPages(r, id, 0, 0, false)
 	if err != nil {
@@ -274,15 +300,19 @@ func RemovePage(r *http.Request, id string) error {
 		return fmt.Errorf("Exist child page[%s]", id)
 	}
 
-	option := &datastore.TransactionOptions{XG: true}
-	return datastore.RunInTransaction(c, func(ctx context.Context) error {
-		pkey := CreatePageKey(r, id)
-		err = ds.Delete(c, pkey)
+	cli, err := createClient(ctx)
+	if err != nil {
+		return xerrors.Errorf("createClient() error: %w", err)
+	}
+
+	_, err = cli.RunInTransaction(ctx, func(tx *datastore.Transaction) error {
+		pkey := CreatePageKey(id)
+		err = tx.Delete(pkey)
 		if err != nil {
 			return err
 		}
-		pdkey := CreatePageDataKey(r, id)
-		err = ds.Delete(c, pdkey)
+		pdkey := CreatePageDataKey(id)
+		err = tx.Delete(pdkey)
 		if err != nil {
 			return err
 		}
@@ -290,7 +320,12 @@ func RemovePage(r *http.Request, id string) error {
 			return RemoveFile(r, id)
 		}
 		return nil
-	}, option)
+	})
+
+	if err != nil {
+		return xerrors.Errorf("transaction error: %w", err)
+	}
+	return nil
 }
 
 func PutPageSequence(r *http.Request, ids string, enables string, verCsv string) error {
@@ -301,10 +336,10 @@ func PutPageSequence(r *http.Request, ids string, enables string, verCsv string)
 
 	keys := make([]*datastore.Key, len(idArray))
 	deleteds := make([]bool, len(enableArray))
-	versions := make([]int, len(versionsArray))
+	versions := make([]string, len(versionsArray))
 
 	for idx, id := range idArray {
-		key := CreatePageKey(r, id)
+		key := CreatePageKey(id)
 		keys[idx] = key
 
 		flagBuf := enableArray[idx]
@@ -315,31 +350,46 @@ func PutPageSequence(r *http.Request, ids string, enables string, verCsv string)
 		deleteds[idx] = !flag
 
 		verBuf := versionsArray[idx]
-		version, err := strconv.Atoi(verBuf)
-		if err != nil {
-			return err
-		}
-		versions[idx] = version
+		versions[idx] = verBuf
 	}
 
-	c := appengine.NewContext(r)
+	ctx := r.Context()
+	cli, err := createClient(ctx)
+	if err != nil {
+		return xerrors.Errorf("createClient() error: %w", err)
+	}
 
 	pages := make([]*Page, len(keys))
-	err := ds.GetMultiWithVersion(c, keys, versions, pages)
+
+	err = cli.GetMulti(ctx, keys, pages)
 	if err != nil {
 		return err
+	}
+
+	// TODO これでいいか確認
+	for idx, page := range pages {
+		page.TargetVersion = versions[idx]
 	}
 
 	for idx, page := range pages {
 		page.Seq = idx + 1
 		page.Deleted = deleteds[idx]
 	}
-	return ds.PutMulti(c, keys, pages)
+	_, err = cli.PutMulti(ctx, keys, pages)
+	if err != nil {
+		return xerrors.Errorf("page PutMulti() error: %w", err)
+	}
+	return nil
 }
 
 func SelectReferencePages(r *http.Request, id string, typ string) ([]Page, error) {
 
-	c := appengine.NewContext(r)
+	ctx := r.Context()
+	cli, err := createClient(ctx)
+	if err != nil {
+		return nil, xerrors.Errorf("createClient() error: %w", err)
+	}
+
 	var pages []Page
 	filter := "SiteTemplate="
 	if typ == "2" {
@@ -347,18 +397,17 @@ func SelectReferencePages(r *http.Request, id string, typ string) ([]Page, error
 	}
 
 	q := datastore.NewQuery(KindPageName).Filter(filter, id)
-	t := q.Run(c)
+	t := cli.Run(ctx, q)
 	for {
 		var page Page
-		key, err := t.Next(&page)
-		if err == datastore.Done {
+		_, err := t.Next(&page)
+		if errors.Is(err, iterator.Done) {
 			break
 		}
 
 		if err != nil {
 			return nil, err
 		}
-		page.SetKey(key)
 		pages = append(pages, page)
 	}
 	return pages, nil
@@ -367,31 +416,37 @@ func SelectReferencePages(r *http.Request, id string, typ string) ([]Page, error
 const KindPageDataName = "PageData"
 
 type PageData struct {
-	key     *datastore.Key
+	Key     *datastore.Key `datastore:"__key__"`
 	Content []byte
 }
 
 func (d *PageData) GetKey() *datastore.Key {
-	return d.key
+	return d.Key
 }
 
-func (d *PageData) SetKey(k *datastore.Key) {
-	d.key = k
+func (d *PageData) LoadKey(k *datastore.Key) error {
+	d.Key = k
+	return nil
 }
 
-func CreatePageDataKey(r *http.Request, id string) *datastore.Key {
-	c := appengine.NewContext(r)
-	return datastore.NewKey(c, KindPageDataName, id, 0, nil)
+func CreatePageDataKey(id string) *datastore.Key {
+	return datastore.NameKey(KindPageDataName, id, nil)
 }
 
 func SelectPageData(r *http.Request, id string) (*PageData, error) {
 
 	page := PageData{}
-	c := appengine.NewContext(r)
-	key := datastore.NewKey(c, KindPageDataName, id, 0, nil)
-	err := ds.Get(c, key, &page)
+	ctx := r.Context()
+	key := CreatePageDataKey(id)
+
+	cli, err := createClient(ctx)
 	if err != nil {
-		if kerr.Root(err) != datastore.ErrNoSuchEntity {
+		return nil, xerrors.Errorf("createClient() error: %w", err)
+	}
+
+	err = cli.Get(ctx, key, &page)
+	if err != nil {
+		if !errors.Is(err, datastore.ErrNoSuchEntity) {
 			return nil, err
 		} else {
 			return nil, nil
@@ -408,11 +463,16 @@ type Tree struct {
 
 func PageTree(r *http.Request) (*Tree, error) {
 
-	c := appengine.NewContext(r)
+	ctx := r.Context()
+	cli, err := createClient(ctx)
+	if err != nil {
+		return nil, xerrors.Errorf("createClient() error: %w", err)
+	}
+
 	var pages []*Page
 	q := datastore.NewQuery(KindPageName)
 
-	keys, err := q.GetAll(c, &pages)
+	keys, err := cli.GetAll(ctx, q, &pages)
 	if err != nil {
 		return nil, err
 	}
@@ -422,7 +482,7 @@ func PageTree(r *http.Request) (*Tree, error) {
 	//キーマップの作成
 	for idx, elm := range pages {
 		key := keys[idx]
-		elm.SetKey(key)
+		elm.LoadKey(key)
 		children, ok := parentMap[elm.Parent]
 		if !ok {
 			children = make([]*Page, 0)
@@ -446,7 +506,7 @@ func PageTree(r *http.Request) (*Tree, error) {
 	}
 
 	roots := parentMap[""]
-	tree := createTree(1, roots[0], roots[0].Key.StringID(), parentMap)
+	tree := createTree(1, roots[0], roots[0].Key.Name, parentMap)
 
 	return tree, nil
 }
@@ -462,7 +522,7 @@ func createTree(indent int, page *Page, key string, parentMap map[string][]*Page
 	children, ok := parentMap[key]
 	if ok {
 		for _, child := range children {
-			childTree := createTree(indent+1, child, child.Key.StringID(), parentMap)
+			childTree := createTree(indent+1, child, child.Key.Name, parentMap)
 			tree.Children = append(tree.Children, childTree)
 		}
 	}

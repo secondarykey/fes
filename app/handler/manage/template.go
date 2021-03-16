@@ -44,7 +44,7 @@ func (h Handler) ViewTemplate(w http.ResponseWriter, r *http.Request) {
 func (h Handler) AddTemplate(w http.ResponseWriter, r *http.Request) {
 	tmp := &datastore.Template{}
 	tmpData := &datastore.TemplateData{}
-	tmp.SetKey(datastore.CreateTemplateKey(r))
+	tmp.LoadKey(datastore.CreateTemplateKey())
 	//新規作成用のテンプレート
 	dto := struct {
 		Template     *datastore.Template
