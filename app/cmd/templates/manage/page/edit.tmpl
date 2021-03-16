@@ -1,7 +1,7 @@
 {{define "title"}}
 Edit Page[
 {{ range .Breadcrumbs}}
-&gt; <a href="/manage/page/{{ .Key.StringID }}">{{ .Name }}</a>
+&gt; <a href="/manage/page/{{ .Key.Name }}">{{ .Name }}</a>
 {{ end }}
 ]
 
@@ -15,7 +15,7 @@ Edit Page[
 
 {{define "page_template"}}
 
-<form id="editForm" method="post" action="/manage/page/{{ .Page.Key.StringID }}" enctype="multipart/form-data">
+<form id="editForm" method="post" action="/manage/page/{{ .Page.Key.Name }}" enctype="multipart/form-data">
 <table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp" width="100%">
   <tbody>
     <tr>
@@ -44,7 +44,7 @@ Edit Page[
           <ul class="mdl-menu mdl-menu--bottom-left mdl-js-menu mdl-js-ripple-effect" for="site">
 {{ range .Templates}}
   {{ if eq .Type 1}}
-              <li class="mdl-menu__item" data-id="{{ .Key.StringID }}">{{ .Name }}</li>
+              <li class="mdl-menu__item" data-id="{{ .Key.Name }}">{{ .Name }}</li>
   {{ end }}
 {{ end }}
           </ul>
@@ -60,7 +60,7 @@ Edit Page[
           <ul class="mdl-menu mdl-menu--bottom-left mdl-js-menu mdl-js-ripple-effect" for="page">
 {{ range .Templates}}
   {{ if eq .Type 2}}
-              <li class="mdl-menu__item" data-id="{{ .Key.StringID }}">{{ .Name }}</li>
+              <li class="mdl-menu__item" data-id="{{ .Key.Name }}">{{ .Name }}</li>
   {{ end }}
 {{ end }}
           </ul>
@@ -75,7 +75,7 @@ Edit Page[
         <button type="button" id="uploadBtn" class="mdl-button mdl-js-button mdl-button--raised">
           Image
         </button>
-        <a href="/file/{{ .Page.Key.StringID }}" target="_blank">Page Image</a>
+        <a href="/file/{{ .Page.Key.Name }}" target="_blank">Page Image</a>
         <input type="file" name="file" id="file" value="" style="display:none;"/>
 
         <input type="hidden" name="parentID" id="parentID" value="{{ .Page.Parent }}" />
@@ -96,14 +96,14 @@ Edit Page[
         <ul class="mdl-menu mdl-menu--bottom-left mdl-js-menu mdl-js-ripple-effect" for="childrenPage">
           <li class="mdl-menu__item" data-id=""><i class="material-icons">add</i>Add...</li>
 {{range .Children}}
-          <li class="mdl-menu__item" data-id="{{ .Key.StringID }}" {{if .Deleted}}style="color:red;"{{end}}>{{ .Name }}</li>
+          <li class="mdl-menu__item" data-id="{{ .Key.Name }}" {{if .Deleted}}style="color:red;"{{end}}>{{ .Name }}</li>
 {{end}}
         </ul>
         </div>
 
         <br>
 
-        <a href="/manage/page/tool/{{ .Page.Key.StringID }}">
+        <a href="/manage/page/tool/{{ .Page.Key.Name }}">
         <button type="button" id="toolBtn" class="mdl-button mdl-js-button mdl-button--raised">
           Tool
         </button>
@@ -205,7 +205,7 @@ Edit Page[
         list[i].addEventListener('click', function(e) {
           var id = e.target.getAttribute("data-id");
           if ( id == "" ) {
-            window.location.href = "/manage/page/add/{{ .Page.Key.StringID }}";
+            window.location.href = "/manage/page/add/{{ .Page.Key.Name }}";
           } else {
             window.location.href = "/manage/page/" + id;
           }
@@ -238,7 +238,7 @@ Edit Page[
     generateBtn.addEventListener('click', function() {
       confirmFes(function() {
         var type = "public";
-        window.location.href = "/manage/page/" + type + "/{{ .Page.Key.StringID }}";
+        window.location.href = "/manage/page/" + type + "/{{ .Page.Key.Name }}";
       });
     });
 {{ end }}
@@ -246,7 +246,7 @@ Edit Page[
     var removeBtn = document.querySelector('#removeBtn');
     removeBtn.addEventListener('click', function() {
       confirmFes(function() {
-        window.location.href = "/manage/page/delete/{{ .Page.Key.StringID }}";
+        window.location.href = "/manage/page/delete/{{ .Page.Key.Name }}";
       });
     });
 

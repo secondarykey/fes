@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/gob"
 	"fmt"
-	"log"
 	"net/http"
 
 	"golang.org/x/xerrors"
@@ -29,6 +28,7 @@ func init() {
 func GetBackupData(r *http.Request) (BackupData, error) {
 
 	backup := make(BackupData)
+
 	ctx := r.Context()
 	cli, err := createClient(ctx)
 	if err != nil {
@@ -211,7 +211,7 @@ func PutBackupData(r *http.Request, backup BackupData) error {
 		}
 
 		for kind, elm := range backup {
-			log.Println(kind)
+			fmt.Println(kind)
 			for key, data := range elm {
 				err = putKind(tx, kind, key, data)
 				if err != nil {

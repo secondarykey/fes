@@ -298,7 +298,7 @@ const KindFileDataName = "FileData"
 type FileData struct {
 	Key     *datastore.Key `datastore:"__key__"`
 	Mime    string
-	Content []byte
+	Content []byte `datastore:",noindex"`
 }
 
 func (d *FileData) GetKey() *datastore.Key {

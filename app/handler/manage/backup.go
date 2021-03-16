@@ -2,11 +2,11 @@ package manage
 
 import (
 	"app/datastore"
+	"fmt"
 
 	"archive/zip"
 	"bytes"
 	"io"
-	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -17,7 +17,7 @@ func (h Handler) Backup(w http.ResponseWriter, r *http.Request) {
 	//バイナリを作成
 	data, err := datastore.GetBackupData(r)
 	if err != nil {
-		h.errorPage(w, "Create BackupDataError", err.Error(), 500)
+		h.errorPage(w, "Create BackupDataError", err, 500)
 		return
 	}
 
@@ -36,16 +36,16 @@ func (h Handler) Backup(w http.ResponseWriter, r *http.Request) {
 			esp := strings.Replace(key, "?", "_QUESTION_", -1)
 			esp = strings.Replace(esp, "=", "_EQUAL_", -1)
 
-			log.Println(kind + "/" + esp)
+			fmt.Println(kind + "/" + esp)
 
 			writer, err := zipWriter.Create(kind + "/" + esp)
 			if err != nil {
-				h.errorPage(w, "Create Zip", err.Error(), 500)
+				h.errorPage(w, "Create Zip", err, 500)
 				return
 			}
 			_, err = writer.Write(byt)
 			if err != nil {
-				h.errorPage(w, "Write Zip", err.Error(), 500)
+				h.errorPage(w, "Write Zip", err, 500)
 				return
 			}
 		}
@@ -57,7 +57,7 @@ func (h Handler) Restore(w http.ResponseWriter, r *http.Request) {
 
 	file, header, err := r.FormFile("restoreFile")
 	if err != nil {
-		h.errorPage(w, "Read Zip", err.Error(), 500)
+		h.errorPage(w, "Read Zip", err, 500)
 		return
 	}
 	defer file.Close()
@@ -65,20 +65,20 @@ func (h Handler) Restore(w http.ResponseWriter, r *http.Request) {
 	//ZIPを解析
 	reader, err := zip.NewReader(file, header.Size)
 	if err != nil {
-		h.errorPage(w, "Read Error", err.Error(), 500)
+		h.errorPage(w, "Read Error", err, 500)
 		return
 	}
 
 	backup, err := createGob(reader)
 	if err != nil {
-		h.errorPage(w, "CreateGob Error", err.Error(), 500)
+		h.errorPage(w, "CreateGob Error", err, 500)
 		return
 	}
 
 	//Putする
 	err = datastore.PutBackupData(r, backup)
 	if err != nil {
-		h.errorPage(w, "Put Error", err.Error(), 500)
+		h.errorPage(w, "Put Error", err, 500)
 		return
 	}
 

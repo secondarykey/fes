@@ -32,12 +32,12 @@ File[<a href="/manage/file/type/1">File</a>|<a href="/manage/file/type/2">Page</
   <tbody>
 {{ range .Files}}
     <tr>
-      <td class="mdl-data-table__cell--non-numeric"><a href="/file/{{ .Key.StringID}}" target="_blank">{{ .Key.StringID }}</a></td>
-      <td><a href="/manage/file/resize/{{.Key.StringID}}">{{convertSize .Size}}</a></td>
+      <td class="mdl-data-table__cell--non-numeric"><a href="/file/{{ .Key.Name}}" target="_blank">{{ .Key.Name }}</a></td>
+      <td><a href="/manage/file/resize/{{.Key.Name}}">{{convertSize .Size}}</a></td>
       <td>{{convertDate .CreatedAt}}</td>
       <td>{{convertDate .UpdatedAt}}</td>
       <td colspan="2">
-      <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent removeBtn" data-id="{{ .Key.StringID }}">
+      <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent removeBtn" data-id="{{ .Key.Name }}">
         Remove
       </button>
       </td>

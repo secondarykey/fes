@@ -3,6 +3,7 @@ package manage
 import (
 	"app/api"
 	"app/datastore"
+	"fmt"
 
 	"html/template"
 	"log"
@@ -81,7 +82,6 @@ func NewHandler(r *mux.Router) Handler {
 
 func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
-	log.Println("ServeHTTP:" + r.URL.String())
 	//セッションの存在を確認
 	u, err := GetSession(r)
 	if err != nil {
@@ -110,7 +110,7 @@ func (h Handler) TopHandler(w http.ResponseWriter, r *http.Request) {
 			h.ViewSetting(w, r)
 			return
 		}
-		h.errorPage(w, "Not Found", "Root page not found", 404)
+		h.errorPage(w, "Not Found", fmt.Errorf("Root page not found"), 404)
 		return
 	}
 	h.pageView(w, r, site.Root)
@@ -139,7 +139,7 @@ func (h Handler) pageView(w http.ResponseWriter, r *http.Request, id string) {
 	//管理用の書き出し
 	err := datastore.WriteManageHTML(w, r, id, page)
 	if err != nil {
-		h.errorPage(w, "ERROR:Generate HTML", err.Error(), 500)
+		h.errorPage(w, "ERROR:Generate HTML", err, 500)
 		return
 	}
 }
@@ -168,15 +168,21 @@ func (h Handler) parse(w http.ResponseWriter, tName string, obj interface{}) {
 	}
 }
 
-func (h Handler) errorPage(w http.ResponseWriter, t string, e string, num int) {
+func (h Handler) errorPage(w http.ResponseWriter, t string, e error, num int) {
+
+	desc := fmt.Sprintf("%+v", e)
+
+	log.Println(desc)
+
 	dto := struct {
 		Title       string
 		Description string
 		Number      int
-	}{t, e, num}
+	}{t, desc, num}
+
+	w.WriteHeader(num)
 
 	h.parse(w, TEMPLATE_DIR+"error.tmpl", dto)
-	w.WriteHeader(num)
 }
 
 func convertTemplateType(data int) string {

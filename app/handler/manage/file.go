@@ -3,12 +3,12 @@ package manage
 import (
 	"app/api"
 	"app/datastore"
+	"fmt"
 
 	"bytes"
 	"image"
 	"image/jpeg"
 	"io"
-	"log"
 	"net/http"
 	"strconv"
 
@@ -37,7 +37,7 @@ func (h Handler) ViewFile(w http.ResponseWriter, r *http.Request) {
 
 	files, err := datastore.SelectFiles(r, t, p)
 	if err != nil {
-		h.errorPage(w, "Error Select File", err.Error(), 500)
+		h.errorPage(w, "Error Select File", err, 500)
 		return
 	}
 
@@ -55,7 +55,7 @@ func (h Handler) AddFile(w http.ResponseWriter, r *http.Request) {
 
 	err := datastore.SaveFile(r, "", api.FileTypeData)
 	if err != nil {
-		h.errorPage(w, "Error Add File", err.Error(), 500)
+		h.errorPage(w, "Error Add File", err, 500)
 		return
 	}
 	//リダイレクト
@@ -68,7 +68,7 @@ func (h Handler) DeleteFile(w http.ResponseWriter, r *http.Request) {
 	id := r.FormValue("fileName")
 	err := datastore.RemoveFile(r, id)
 	if err != nil {
-		h.errorPage(w, err.Error(), id, 500)
+		h.errorPage(w, "RemoveFile Error", err, 500)
 		return
 	}
 	http.Redirect(w, r, "/manage/file/", 302)
@@ -91,7 +91,7 @@ func (h Handler) ResizeFile(w http.ResponseWriter, r *http.Request) {
 	id := vars["key"]
 	file, err := datastore.SelectFile(r, id)
 	if err != nil {
-		h.errorPage(w, err.Error(), id, 500)
+		h.errorPage(w, "Select File Error", err, 500)
 		return
 	}
 
@@ -117,12 +117,12 @@ func (h Handler) ResizeCommitFile(w http.ResponseWriter, r *http.Request) {
 	writer := bytes.NewBuffer([]byte(""))
 	err := h.WriteResize(writer, r, resize)
 	if err != nil {
-		h.errorPage(w, "Resize Error", err.Error(), 500)
+		h.errorPage(w, "Resize Error", err, 500)
 	}
 
 	err = datastore.PutFileData(r, resize.id, writer.Bytes(), "image/jpeg")
 	if err != nil {
-		h.errorPage(w, "Datastore FileData Put Error", err.Error(), 500)
+		h.errorPage(w, "Datastore FileData Put Error", err, 500)
 	}
 
 	http.Redirect(w, r, "/manage/file/resize/"+resize.id, 302)
@@ -147,7 +147,7 @@ func (h Handler) ResizeFileView(w http.ResponseWriter, r *http.Request) {
 
 	err := h.WriteResize(w, r, resize)
 	if err != nil {
-		h.errorPage(w, "Resize Error", err.Error(), 500)
+		h.errorPage(w, "Resize Error", err, 500)
 	}
 }
 
@@ -240,7 +240,7 @@ func zero(b string) bool {
 }
 
 func getJPEGFunction(b string) resize.InterpolationFunction {
-	log.Println(b)
+	fmt.Println(b)
 	switch b {
 	case "Bilinear":
 		return resize.Bilinear

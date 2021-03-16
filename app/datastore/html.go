@@ -20,7 +20,7 @@ import (
 const KindHTMLName = "HTML"
 
 type HTML struct {
-	Content       []byte
+	Content       []byte `datastore:",noindex"`
 	Children      int
 	TargetVersion string `datastore:"-"`
 	Meta

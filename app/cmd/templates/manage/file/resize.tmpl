@@ -7,7 +7,7 @@ File Resize
 <canvas id="imageData" width="0" height="0"></canvas>
 
 <form name="convertForm" method="post" action="/manage/file/resize/commit">
-<input type="hidden" name="key" value="{{.File.Key.StringID}}">
+<input type="hidden" name="key" value="{{.File.Key.Name}}">
 
 <input type="hidden" name="left" value="0">
 <input type="hidden" name="top" value="0">
@@ -49,7 +49,7 @@ Size:{{ convertSize .File.Size }}
         canvas.height = imageObj.height;
         draw();
     };
-    imageObj.src = '/file/{{ .File.Key.StringID}}';
+    imageObj.src = '/file/{{ .File.Key.Name}}';
 
     canvas.addEventListener("mousedown", onMouseDown, false);
     canvas.addEventListener("mouseup" , onMouseUp , false);
@@ -132,7 +132,7 @@ Size:{{ convertSize .File.Size }}
             query += "&height=" + (rectangle.endY + rectangle.startY);
         }
 
-        imageObj.src = '/manage/file/resize/view/{{ .File.Key.StringID}}' + query;
+        imageObj.src = '/manage/file/resize/view/{{ .File.Key.Name}}' + query;
 
     },false);
 

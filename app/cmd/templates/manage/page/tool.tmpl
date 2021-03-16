@@ -20,13 +20,13 @@ Children Page Tool[<a href="/manage/page/{{ .Parent }}">Parent</a>]
   </thead>
   <tbody id="seqBody">
 {{ range $i, $v := .Pages}}
-    <tr class="seqRow" data-index="{{$i}}" data-id="{{.Key.StringID}}" data-version="{{.Version}}">
+    <tr class="seqRow" data-index="{{$i}}" data-id="{{.Key.Name}}" data-version="{{.Version}}">
 
-      <td class="mdl-data-table__cell--non-numeric"><a href="/manage/page/{{ .Key.StringID}}" target="_page_editor" {{if .Deleted}}style="color:red;"{{end}}>{{ .Name }}</a></td>
+      <td class="mdl-data-table__cell--non-numeric"><a href="/manage/page/{{ .Key.Name}}" target="_page_editor" {{if .Deleted}}style="color:red;"{{end}}>{{ .Name }}</a></td>
 
       <td class="mdl-data-table__cell--non-numeric">
         <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect">
-          <input type="checkbox" id="{{.Key.StringID}}" class="mdl-switch__input" {{if not .Deleted}}checked{{end}}>
+          <input type="checkbox" id="{{.Key.Name}}" class="mdl-switch__input" {{if not .Deleted}}checked{{end}}>
         </label>
       </td>
 
@@ -46,11 +46,11 @@ Children Page Tool[<a href="/manage/page/{{ .Parent }}">Parent</a>]
 
       <td>
         <!-- Left aligned menu below button -->
-        <button id="MostButton_{{.Key.StringID}}"
+        <button id="MostButton_{{.Key.Name}}"
                 class="mdl-button mdl-js-button mdl-button--icon">
           <i class="material-icons">more_vert</i>
         </button>
-        <ul class="mdl-menu mdl-menu--bottom-left mdl-js-menu mdl-js-ripple-effect" for="MostButton_{{.Key.StringID}}">
+        <ul class="mdl-menu mdl-menu--bottom-left mdl-js-menu mdl-js-ripple-effect" for="MostButton_{{.Key.Name}}">
           <li class="mdl-menu__item">
             <button class="mdl-button mdl-js-button mdl-button--icon mostUpBtn">
               <i class="material-icons">vertical_align_top</i>

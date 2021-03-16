@@ -6,7 +6,7 @@ Edit Template
 {{end}}
 
 {{define "page_template"}}
-<form method="post" action="/manage/template/edit/{{ .Template.Key.StringID }}" name="updateForm">
+<form method="post" action="/manage/template/edit/{{ .Template.Key.Name }}" name="updateForm">
 
 <table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp" width="100%">
   <tbody>
@@ -59,7 +59,7 @@ Edit Template
 </form>
 
 <!-- Reference -->
-<form id="referenceForm" name="referenceForm" method="post" action="/manage/template/reference/{{.Template.Key.StringID}}">
+<form id="referenceForm" name="referenceForm" method="post" action="/manage/template/reference/{{.Template.Key.Name}}">
   <input type="hidden" name="type" id="referenceType" value="{{.Template.Type}}" />
 </form>
 

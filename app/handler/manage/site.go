@@ -18,7 +18,7 @@ func (h Handler) ViewSetting(w http.ResponseWriter, r *http.Request) {
 				Description: "サイトの説明",
 			}
 		} else {
-			h.errorPage(w, "Site select error", err.Error(), 500)
+			h.errorPage(w, "Site select error", err, 500)
 			return
 		}
 	} else {
@@ -43,7 +43,7 @@ func (h Handler) ViewSetting(w http.ResponseWriter, r *http.Request) {
 func (h Handler) EditSetting(w http.ResponseWriter, r *http.Request) {
 	err := datastore.PutSite(r)
 	if err != nil {
-		h.errorPage(w, "Datastore site put Error", err.Error(), 500)
+		h.errorPage(w, "Datastore site put Error", err, 500)
 		return
 	}
 	h.ViewSetting(w, r)
@@ -53,7 +53,7 @@ func (h Handler) DownloadSitemap(w http.ResponseWriter, r *http.Request) {
 
 	err := datastore.GenerateSitemap(w, r)
 	if err != nil {
-		h.errorPage(w, "sitemap Error", err.Error(), 500)
+		h.errorPage(w, "sitemap Error", err, 500)
 		return
 	}
 }

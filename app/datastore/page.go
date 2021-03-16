@@ -417,7 +417,7 @@ const KindPageDataName = "PageData"
 
 type PageData struct {
 	Key     *datastore.Key `datastore:"__key__"`
-	Content []byte
+	Content []byte         `datastore:",noindex"`
 }
 
 func (d *PageData) GetKey() *datastore.Key {

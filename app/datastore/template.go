@@ -185,7 +185,7 @@ const KindTemplateDataName = "TemplateData"
 
 type TemplateData struct {
 	Key     *datastore.Key `datastore:"__key__"`
-	Content []byte
+	Content []byte         `datastore:",noindex"`
 }
 
 func (d *TemplateData) GetKey() *datastore.Key {

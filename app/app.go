@@ -30,7 +30,7 @@ func Listen(opts ...config.Option) error {
 
 	serve := fmt.Sprintf(":%d", conf.Port)
 
-	fmt.Printf("Fes Start![%s]", serve)
+	fmt.Printf("Fes Start! Listen[%s]\n", serve)
 	err = http.ListenAndServe(serve, nil)
 	return nil
 }

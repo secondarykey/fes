@@ -2,6 +2,7 @@ package manage
 
 import (
 	"app/datastore"
+	"fmt"
 
 	"net/http"
 	"strconv"
@@ -23,7 +24,7 @@ func (h Handler) ViewTemplate(w http.ResponseWriter, r *http.Request) {
 
 	data, err := datastore.SelectTemplates(r, p)
 	if err != nil {
-		h.errorPage(w, "Error Select Template", err.Error(), 500)
+		h.errorPage(w, "Error Select Template", err, 500)
 		return
 	}
 
@@ -61,7 +62,7 @@ func (h Handler) EditTemplate(w http.ResponseWriter, r *http.Request) {
 		//更新
 		err := datastore.PutTemplate(r)
 		if err != nil {
-			h.errorPage(w, "Error Put Template", err.Error(), 500)
+			h.errorPage(w, "Error Put Template", err, 500)
 			return
 		}
 	}
@@ -69,21 +70,21 @@ func (h Handler) EditTemplate(w http.ResponseWriter, r *http.Request) {
 	id := vars["key"]
 	tmp, err := datastore.SelectTemplate(r, id)
 	if err != nil {
-		h.errorPage(w, "Error SelectTemplate", err.Error(), 500)
+		h.errorPage(w, "Error SelectTemplate", err, 500)
 		return
 	}
 	if tmp == nil {
-		h.errorPage(w, "NotFound Template", id, 404)
+		h.errorPage(w, "NotFound Template", fmt.Errorf(id), 404)
 		return
 	}
 
 	tmpData, err := datastore.SelectTemplateData(r, id)
 	if err != nil {
-		h.errorPage(w, err.Error(), id, 500)
+		h.errorPage(w, "Not Found Template Data", err, 500)
 		return
 	}
 	if tmpData == nil {
-		h.errorPage(w, "NotFound TemplateData", id, 404)
+		h.errorPage(w, "NotFound Template Data", fmt.Errorf(id), 404)
 		return
 	}
 
@@ -99,13 +100,13 @@ func (h Handler) DeleteTemplate(w http.ResponseWriter, r *http.Request) {
 	id := vars["key"]
 
 	if datastore.UsingTemplate(r, id) {
-		h.errorPage(w, "Using Template", id, 500)
+		h.errorPage(w, "Using Template", fmt.Errorf(id), 500)
 		return
 	}
 
 	err := datastore.RemoveTemplate(r, id)
 	if err != nil {
-		h.errorPage(w, err.Error(), id, 500)
+		h.errorPage(w, "Remove Template Error", err, 500)
 		return
 	}
 	//リダイレクト
@@ -122,18 +123,18 @@ func (h Handler) ReferenceTemplate(w http.ResponseWriter, r *http.Request) {
 	pages, err := datastore.SelectReferencePages(r, id, t)
 
 	if err != nil {
-		h.errorPage(w, "Reference template pages Error", err.Error(), 500)
+		h.errorPage(w, "Reference template pages Error", err, 500)
 		return
 	}
 	if pages == nil || len(pages) <= 0 {
-		h.errorPage(w, "Reference template pages NotFound", id, 404)
+		h.errorPage(w, "Reference template pages NotFound", fmt.Errorf(id), 404)
 		return
 	}
 
 	//ページからHTMLを更新
 	err = datastore.PutHTMLs(r, pages)
 	if err != nil {
-		h.errorPage(w, "Put HTML data Error", err.Error(), 500)
+		h.errorPage(w, "Put HTML data Error", err, 500)
 		return
 	}
 

@@ -1,11 +1,11 @@
-{{define "title"}}
-
-ErrorPage[{{ .Title }}]
-
-{{end}}
+{{define "title"}} ErrorPage[{{ .Title }}] {{end}}
 
 {{define "page_template"}}
 
+<div class="mdl-grid">
+<pre>
 {{ .Description }}
+</pre>
+</div>
 
 {{ end }}
