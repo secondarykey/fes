@@ -32,5 +32,8 @@ func Listen(opts ...config.Option) error {
 
 	fmt.Printf("Fes Start! Listen[%s]\n", serve)
 	err = http.ListenAndServe(serve, nil)
+	if err != nil {
+		return xerrors.Errorf("http.ListenAndServe error: %w", err)
+	}
 	return nil
 }

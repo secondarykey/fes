@@ -3,22 +3,22 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"flag"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
 	"golang.org/x/sync/errgroup"
-	"os"
-	"flag"
 )
 
 type Root struct {
-	url  string
-	urls []string
+	url    string
+	urls   []string
 	errors []error
 }
 
@@ -29,19 +29,18 @@ func init() {
 // 基準URLからサーバ用のURLを取得し、すべてリクエストする処理です
 func main() {
 
-	dur := flag.Int("d",60,"Duration time")
+	dur := flag.Int("d", 60, "Duration time")
 	flag.Parse()
 
 	args := flag.Args()
-	if len(args) < 1  {
+	if len(args) < 1 {
 		flag.Usage()
 		return
 	}
 
-
 	url := flag.Arg(0)
 	//URL解析
-	root ,err := NewRoot(url)
+	root, err := NewRoot(url)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -51,7 +50,7 @@ func main() {
 	closeFlag := make(chan bool)
 	//負荷用のループ
 	go func() {
-		ch  <- root.loop(*dur,closeFlag)
+		ch <- root.loop(*dur, closeFlag)
 		if ch != nil {
 			log.Fatal(ch)
 			closeFlag <- true
@@ -77,18 +76,18 @@ func main() {
 }
 
 //
-func NewRoot(root string) (*Root,error) {
+func NewRoot(root string) (*Root, error) {
 	var err error
-	r := &Root {
-		url : root,
+	r := &Root{
+		url: root,
 	}
 
-	r.urls,err = getUrls(root)
+	r.urls, err = getUrls(root)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
-	r.errors = make([]error,0)
-	return r,nil
+	r.errors = make([]error, 0)
+	return r, nil
 }
 
 //全URLリクエスト処理
@@ -98,13 +97,13 @@ func (r *Root) request() error {
 	for _, url := range r.urls {
 		u := url
 		eg.Go(func() error {
-			return request(u,nil)
+			return request(u, nil)
 		})
 	}
 
 	//エラー判定
 	if err := eg.Wait(); err != nil {
-		r.errors = append(r.errors,err)
+		r.errors = append(r.errors, err)
 	}
 	return nil
 }
@@ -114,14 +113,14 @@ func (r *Root) hasError() bool {
 }
 
 func (r *Root) printError() {
-	for _,err := range r.errors {
-		fmt.Printf("Error:[%v]\n",err)
+	for _, err := range r.errors {
+		fmt.Printf("Error:[%v]\n", err)
 	}
-	r.errors = make([]error,0)
+	r.errors = make([]error, 0)
 }
 
 //アクセス処理
-func (r *Root) loop(dur int,flag chan bool) error {
+func (r *Root) loop(dur int, flag chan bool) error {
 
 	log.Println("Start")
 	t := time.NewTicker(time.Duration(dur) * time.Second)
@@ -141,10 +140,10 @@ func (r *Root) loop(dur int,flag chan bool) error {
 				r.printError()
 				errCnt++
 			}
-			log.Printf(fmt.Sprintf("[%06d/%06d]", errCnt,cnt))
+			log.Printf(fmt.Sprintf("[%06d/%06d]", errCnt, cnt))
 			cnt++
-			case <-flag:
-				return nil
+		case <-flag:
+			return nil
 		}
 	}
 	return nil

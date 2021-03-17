@@ -2,6 +2,7 @@ package datastore
 
 import (
 	"app/api"
+	"context"
 
 	"bytes"
 	"errors"
@@ -46,6 +47,23 @@ func createFileKey(name string) *datastore.Key {
 
 func getFileCursor(p int) string {
 	return "file_" + strconv.Itoa(p) + "_cursor"
+}
+
+func GetAllFile(ctx context.Context) ([]*File, error) {
+
+	var dst []*File
+	q := datastore.NewQuery(KindFileName)
+
+	cli, err := createClient(ctx)
+	if err != nil {
+		return nil, xerrors.Errorf("createClient() error: %w", err)
+	}
+
+	_, err = cli.GetAll(ctx, q, &dst)
+	if err != nil {
+		return nil, xerrors.Errorf("File GetAll() error: %w", err)
+	}
+	return dst, nil
 }
 
 func SelectFiles(r *http.Request, tBuf string, p int) ([]File, error) {
@@ -348,8 +366,7 @@ func convertImage(r io.Reader) ([]byte, bool, error) {
 	return b, cnv, nil
 }
 
-func SelectFileData(r *http.Request, name string) (*FileData, error) {
-	ctx := r.Context()
+func GetFileData(ctx context.Context, name string) (*FileData, error) {
 
 	rtn := FileData{}
 	key := createFileDataKey(name)

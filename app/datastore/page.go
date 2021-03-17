@@ -2,6 +2,7 @@ package datastore
 
 import (
 	"app/api"
+	"context"
 	"log"
 
 	"errors"
@@ -461,9 +462,8 @@ type Tree struct {
 	Indent   int
 }
 
-func PageTree(r *http.Request) (*Tree, error) {
+func PageTree(ctx context.Context) (*Tree, error) {
 
-	ctx := r.Context()
 	cli, err := createClient(ctx)
 	if err != nil {
 		return nil, xerrors.Errorf("createClient() error: %w", err)

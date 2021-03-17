@@ -1,6 +1,3 @@
-runtime: go111
+runtime: go115
 main: app/cmd
-handlers:
-  - url: /.*
-    script: auto
 

@@ -204,28 +204,53 @@ func PutBackupData(r *http.Request, backup BackupData) error {
 		return xerrors.Errorf("getAllKey() error: %w", err)
 	}
 
-	_, err = cli.RunInTransaction(ctx, func(tx *datastore.Transaction) error {
-		err := tx.DeleteMulti(keys)
-		if err != nil {
-			return xerrors.Errorf("backup data DeleteMulti() error: %w", err)
+	err = cli.DeleteMulti(ctx, keys)
+	if err != nil {
+		return xerrors.Errorf("backup data DeleteMulti() error: %w", err)
+	}
+
+	for kind, elm := range backup {
+
+		var entities []HasKey
+		var keys []*datastore.Key
+		for key, data := range elm {
+			has, err := createEntity(kind, key, data)
+			if err != nil {
+				return xerrors.Errorf("createKind error: %w", err)
+			}
+			entities = append(entities, has)
+			keys = append(keys, has.GetKey())
 		}
 
-		for kind, elm := range backup {
-			fmt.Println(kind)
-			for key, data := range elm {
-				err = putKind(tx, kind, key, data)
-				if err != nil {
-					return err
+		if kind != "FileData" {
+			_, err = cli.PutMulti(ctx, keys, entities)
+			if err != nil {
+				return xerrors.Errorf("entities PutMulti() error: %w", err)
+			}
+		} else {
+			width := 10
+			flag := true
+			leng := len(keys)
+			idx := 0
+
+			for flag {
+				last := idx + width
+				if last >= leng {
+					flag = false
+					last = leng
 				}
+				wkk := keys[idx:last]
+				wke := entities[idx:last]
+
+				_, err = cli.PutMulti(ctx, wkk, wke)
+				if err != nil {
+					return xerrors.Errorf("entities PutMulti() error: %w", err)
+				}
+				idx = last
 			}
 		}
-
-		return nil
-	})
-
-	if err != nil {
-		return xerrors.Errorf("transaction error: %w", err)
 	}
+
 	return nil
 }
 
@@ -288,104 +313,39 @@ func getAllKey(ctx context.Context, cli *datastore.Client) ([]*datastore.Key, er
 	return rtn, nil
 }
 
-func putKind(tx *datastore.Transaction, kind string, id string, data []byte) error {
+func createEntity(kind string, id string, data []byte) (HasKey, error) {
 
 	key := datastore.NameKey(kind, id, nil)
 	reader := bytes.NewBuffer(data)
+	decoder := gob.NewDecoder(reader)
 
 	var err error
+	var dst HasKey
 	switch kind {
 	case KindSiteName:
-		dst := &Site{}
-		err = gob.NewDecoder(reader).Decode(dst)
-		if err != nil {
-			return err
-		}
-		dst.LoadKey(key)
-		_, err = tx.Put(key, dst)
-		if err != nil {
-			return err
-		}
+		dst = &Site{}
 	case KindHTMLName:
-		dst := &HTML{}
-		err = gob.NewDecoder(reader).Decode(dst)
-		if err != nil {
-			return err
-		}
-		dst.LoadKey(key)
-		_, err = tx.Put(key, dst)
-		if err != nil {
-			return err
-		}
+		dst = &HTML{}
 	case KindPageName:
-		dst := &Page{}
-		err = gob.NewDecoder(reader).Decode(dst)
-		if err != nil {
-			return err
-		}
-		dst.LoadKey(key)
-		_, err = tx.Put(key, dst)
-		if err != nil {
-			return err
-		}
+		dst = &Page{}
 	case KindPageDataName:
-		dst := &PageData{}
-		err = gob.NewDecoder(reader).Decode(dst)
-		if err != nil {
-			return err
-		}
-		dst.LoadKey(key)
-		_, err = tx.Put(key, dst)
-		if err != nil {
-			return err
-		}
+		dst = &PageData{}
 	case KindFileName:
-		dst := &File{}
-		err = gob.NewDecoder(reader).Decode(dst)
-		if err != nil {
-			return err
-		}
-		dst.LoadKey(key)
-		_, err = tx.Put(key, dst)
-		if err != nil {
-			return err
-		}
+		dst = &File{}
 	case KindFileDataName:
-		dst := &FileData{}
-		err = gob.NewDecoder(reader).Decode(dst)
-		if err != nil {
-			return err
-		}
-		dst.LoadKey(key)
-		_, err = tx.Put(key, dst)
-		if err != nil {
-			return err
-		}
+		dst = &FileData{}
 	case KindTemplateName:
-		dst := &Template{}
-		err = gob.NewDecoder(reader).Decode(dst)
-		if err != nil {
-			return err
-		}
-		dst.LoadKey(key)
-		_, err = tx.Put(key, dst)
-		if err != nil {
-			return err
-		}
+		dst = &Template{}
 	case KindTemplateDataName:
-		dst := &TemplateData{}
-		err = gob.NewDecoder(reader).Decode(dst)
-		if err != nil {
-			return err
-		}
-		dst.LoadKey(key)
-		_, err = tx.Put(key, dst)
-		if err != nil {
-			return err
-		}
+		dst = &TemplateData{}
 	default:
-		return fmt.Errorf("NotFound Kind[%s]", kind)
+		return nil, fmt.Errorf("NotFound Kind[%s]", kind)
 	}
 
-	return nil
+	err = decoder.Decode(dst)
+	if err != nil {
+		return nil, err
+	}
+	dst.LoadKey(key)
+	return dst, nil
 }

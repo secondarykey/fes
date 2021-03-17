@@ -153,7 +153,7 @@ func (h Handler) ResizeFileView(w http.ResponseWriter, r *http.Request) {
 
 func (h Handler) WriteResize(w io.Writer, r *http.Request, re Resize) error {
 
-	fileData, err := datastore.SelectFileData(r, re.id)
+	fileData, err := datastore.GetFileData(r.Context(), re.id)
 	if err != nil {
 		return err
 	}

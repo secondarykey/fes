@@ -2,6 +2,7 @@ package datastore
 
 import (
 	"app/api"
+	"context"
 	"errors"
 
 	"bytes"
@@ -39,13 +40,11 @@ func createHTMLKey(id string) *datastore.Key {
 	return datastore.NameKey(KindHTMLName, id, nil)
 }
 
-func GetHTML(r *http.Request, id string) (*HTML, error) {
+func GetHTML(ctx context.Context, id string) (*HTML, error) {
 
 	var err error
 	key := createHTMLKey(id)
 	html := HTML{}
-
-	ctx := r.Context()
 
 	cli, err := createClient(ctx)
 	if err != nil {
@@ -82,8 +81,11 @@ func PutHTML(r *http.Request, id string) error {
 		return err
 	}
 
+	ctx := r.Context()
+
 	htmls := make([]*HTML, len(dtos))
 	keys := make([]*datastore.Key, len(dtos))
+
 	for idx, dto := range dtos {
 		var buf []byte
 		w := bytes.NewBuffer(buf)
@@ -98,7 +100,7 @@ func PutHTML(r *http.Request, id string) error {
 			realId = fmt.Sprintf("%s?page=%d", id, idx+1)
 		}
 
-		html, err := GetHTML(r, realId)
+		html, err := GetHTML(ctx, realId)
 		if err != nil {
 			return err
 		}
@@ -112,8 +114,6 @@ func PutHTML(r *http.Request, id string) error {
 		htmls[idx] = html
 		keys[idx] = html.GetKey()
 	}
-
-	ctx := r.Context()
 
 	cli, err := createClient(ctx)
 	if err != nil {

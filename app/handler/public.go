@@ -121,7 +121,7 @@ func (p Public) pageView(w http.ResponseWriter, r *http.Request, id string) {
 		id += "?page=" + page
 	}
 
-	html, err := datastore.GetHTML(r, id)
+	html, err := datastore.GetHTML(r.Context(), id)
 	if err != nil {
 		p.errorPage(w, "error get html", err.Error(), 500)
 		return
@@ -158,7 +158,7 @@ func (p Public) fileHandler(w http.ResponseWriter, r *http.Request) {
 	id := vars["key"]
 
 	//表示
-	fileData, err := datastore.SelectFileData(r, id)
+	fileData, err := datastore.GetFileData(r.Context(), id)
 	if err != nil {
 		p.errorPage(w, "Datastore:FileData Search Error", err.Error(), 500)
 		return
@@ -209,6 +209,7 @@ func (p Public) errorPage(w http.ResponseWriter, t string, msg string, num int) 
 		Message string
 		No      int
 	}{t, msg, num}
+
 	tmpl, err := template.ParseFiles("cmd/templates/error.tmpl")
 	if err != nil {
 		log.Println("Error Page Parse Error")

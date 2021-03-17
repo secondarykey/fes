@@ -232,7 +232,7 @@ type Tree struct {
 
 func (h Handler) TreePage(w http.ResponseWriter, r *http.Request) {
 
-	tree, err := datastore.PageTree(r)
+	tree, err := datastore.PageTree(r.Context())
 	if err != nil {
 		h.errorPage(w, "Error Page Tree", err, 500)
 		return
