@@ -9,9 +9,15 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"golang.org/x/xerrors"
 )
 
 func Register() error {
+
+	err := RegisterArchive("2020")
+	if err != nil {
+		return xerrors.Errorf("RegisterArchive() error: %w", err)
+	}
 
 	//外部アクセス
 	r := mux.NewRouter()
