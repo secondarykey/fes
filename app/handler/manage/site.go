@@ -7,7 +7,7 @@ import (
 )
 
 //setting画面
-func (h Handler) ViewSetting(w http.ResponseWriter, r *http.Request) {
+func viewSiteHandler(w http.ResponseWriter, r *http.Request) {
 
 	managers := ""
 	site, err := datastore.SelectSite(r, -1)
@@ -18,7 +18,7 @@ func (h Handler) ViewSetting(w http.ResponseWriter, r *http.Request) {
 				Description: "サイトの説明",
 			}
 		} else {
-			h.errorPage(w, "Site select error", err, 500)
+			errorPage(w, "Site select error", err, 500)
 			return
 		}
 	} else {
@@ -36,24 +36,25 @@ func (h Handler) ViewSetting(w http.ResponseWriter, r *http.Request) {
 		Managers string
 	}{site, managers}
 
-	h.parse(w, TEMPLATE_DIR+"site/edit.tmpl", dto)
+	viewManage(w, "site/edit.tmpl", dto)
 }
 
 //settingの更新
-func (h Handler) EditSetting(w http.ResponseWriter, r *http.Request) {
+func editSiteHandler(w http.ResponseWriter, r *http.Request) {
 	err := datastore.PutSite(r)
 	if err != nil {
-		h.errorPage(w, "Datastore site put Error", err, 500)
+		errorPage(w, "Datastore site put Error", err, 500)
 		return
 	}
-	h.ViewSetting(w, r)
+	//TODO redirect???
+	viewSiteHandler(w, r)
 }
 
-func (h Handler) DownloadSitemap(w http.ResponseWriter, r *http.Request) {
+func downloadSitemapHandler(w http.ResponseWriter, r *http.Request) {
 
 	err := datastore.GenerateSitemap(w, r)
 	if err != nil {
-		h.errorPage(w, "sitemap Error", err, 500)
+		errorPage(w, "sitemap Error", err, 500)
 		return
 	}
 }

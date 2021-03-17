@@ -12,12 +12,12 @@ import (
 	"time"
 )
 
-func (h Handler) Backup(w http.ResponseWriter, r *http.Request) {
+func backupHandler(w http.ResponseWriter, r *http.Request) {
 
 	//バイナリを作成
 	data, err := datastore.GetBackupData(r)
 	if err != nil {
-		h.errorPage(w, "Create BackupDataError", err, 500)
+		errorPage(w, "Create BackupDataError", err, 500)
 		return
 	}
 
@@ -40,12 +40,12 @@ func (h Handler) Backup(w http.ResponseWriter, r *http.Request) {
 
 			writer, err := zipWriter.Create(kind + "/" + esp)
 			if err != nil {
-				h.errorPage(w, "Create Zip", err, 500)
+				errorPage(w, "Create Zip", err, 500)
 				return
 			}
 			_, err = writer.Write(byt)
 			if err != nil {
-				h.errorPage(w, "Write Zip", err, 500)
+				errorPage(w, "Write Zip", err, 500)
 				return
 			}
 		}
@@ -53,11 +53,11 @@ func (h Handler) Backup(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (h Handler) Restore(w http.ResponseWriter, r *http.Request) {
+func restoreHandler(w http.ResponseWriter, r *http.Request) {
 
 	file, header, err := r.FormFile("restoreFile")
 	if err != nil {
-		h.errorPage(w, "Read Zip", err, 500)
+		errorPage(w, "Read Zip", err, 500)
 		return
 	}
 	defer file.Close()
@@ -65,24 +65,25 @@ func (h Handler) Restore(w http.ResponseWriter, r *http.Request) {
 	//ZIPを解析
 	reader, err := zip.NewReader(file, header.Size)
 	if err != nil {
-		h.errorPage(w, "Read Error", err, 500)
+		errorPage(w, "Read Error", err, 500)
 		return
 	}
 
 	backup, err := createGob(reader)
 	if err != nil {
-		h.errorPage(w, "CreateGob Error", err, 500)
+		errorPage(w, "CreateGob Error", err, 500)
 		return
 	}
 
 	//Putする
 	err = datastore.PutBackupData(r, backup)
 	if err != nil {
-		h.errorPage(w, "Put Error", err, 500)
+		errorPage(w, "Put Error", err, 500)
 		return
 	}
 
-	h.ViewSetting(w, r)
+	//TODO redirect???
+	viewSiteHandler(w, r)
 }
 
 func createGob(closer *zip.Reader) (datastore.BackupData, error) {

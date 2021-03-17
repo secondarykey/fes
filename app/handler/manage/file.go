@@ -16,8 +16,7 @@ import (
 	"github.com/nfnt/resize"
 )
 
-//URL = /manage/file/
-func (h Handler) ViewFile(w http.ResponseWriter, r *http.Request) {
+func viewFileHandler(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 	t, flag := vars["type"]
@@ -37,7 +36,7 @@ func (h Handler) ViewFile(w http.ResponseWriter, r *http.Request) {
 
 	files, err := datastore.SelectFiles(r, t, p)
 	if err != nil {
-		h.errorPage(w, "Error Select File", err, 500)
+		errorPage(w, "Error Select File", err, 500)
 		return
 	}
 
@@ -47,15 +46,15 @@ func (h Handler) ViewFile(w http.ResponseWriter, r *http.Request) {
 		Prev  int
 		Next  int
 	}{files, p, p - 1, p + 1}
-	h.parse(w, TEMPLATE_DIR+"file/view.tmpl", dto)
+	viewManage(w, "file/view.tmpl", dto)
 }
 
 //URL = /manage/file/add
-func (h Handler) AddFile(w http.ResponseWriter, r *http.Request) {
+func addFileHandler(w http.ResponseWriter, r *http.Request) {
 
 	err := datastore.SaveFile(r, "", api.FileTypeData)
 	if err != nil {
-		h.errorPage(w, "Error Add File", err, 500)
+		errorPage(w, "Error Add File", err, 500)
 		return
 	}
 	//リダイレクト
@@ -63,12 +62,12 @@ func (h Handler) AddFile(w http.ResponseWriter, r *http.Request) {
 }
 
 //URL = /manage/file/delete
-func (h Handler) DeleteFile(w http.ResponseWriter, r *http.Request) {
+func deleteFileHandler(w http.ResponseWriter, r *http.Request) {
 	//リダイレクト
 	id := r.FormValue("fileName")
 	err := datastore.RemoveFile(r, id)
 	if err != nil {
-		h.errorPage(w, "RemoveFile Error", err, 500)
+		errorPage(w, "RemoveFile Error", err, 500)
 		return
 	}
 	http.Redirect(w, r, "/manage/file/", 302)
@@ -85,23 +84,23 @@ type Resize struct {
 	quality  string
 }
 
-func (h Handler) ResizeFile(w http.ResponseWriter, r *http.Request) {
+func resizeFileHandler(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 	id := vars["key"]
 	file, err := datastore.SelectFile(r, id)
 	if err != nil {
-		h.errorPage(w, "Select File Error", err, 500)
+		errorPage(w, "Select File Error", err, 500)
 		return
 	}
 
 	dto := struct {
 		File *datastore.File
 	}{file}
-	h.parse(w, TEMPLATE_DIR+"file/resize.tmpl", dto)
+	viewManage(w, "file/resize.tmpl", dto)
 }
 
-func (h Handler) ResizeCommitFile(w http.ResponseWriter, r *http.Request) {
+func resizeCommitFileHandler(w http.ResponseWriter, r *http.Request) {
 
 	resize := Resize{
 		id:       r.FormValue("key"),
@@ -115,20 +114,23 @@ func (h Handler) ResizeCommitFile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writer := bytes.NewBuffer([]byte(""))
-	err := h.WriteResize(writer, r, resize)
+
+	err := writeResize(writer, r, resize)
 	if err != nil {
-		h.errorPage(w, "Resize Error", err, 500)
+		errorPage(w, "Resize Error", err, 500)
+		return
 	}
 
 	err = datastore.PutFileData(r, resize.id, writer.Bytes(), "image/jpeg")
 	if err != nil {
-		h.errorPage(w, "Datastore FileData Put Error", err, 500)
+		errorPage(w, "Datastore FileData Put Error", err, 500)
+		return
 	}
 
 	http.Redirect(w, r, "/manage/file/resize/"+resize.id, 302)
 }
 
-func (h Handler) ResizeFileView(w http.ResponseWriter, r *http.Request) {
+func resizeFileViewHandler(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 
@@ -145,13 +147,13 @@ func (h Handler) ResizeFileView(w http.ResponseWriter, r *http.Request) {
 		quality:  q.Get("quality"),
 	}
 
-	err := h.WriteResize(w, r, resize)
+	err := writeResize(w, r, resize)
 	if err != nil {
-		h.errorPage(w, "Resize Error", err, 500)
+		errorPage(w, "Resize Error", err, 500)
 	}
 }
 
-func (h Handler) WriteResize(w io.Writer, r *http.Request, re Resize) error {
+func writeResize(w io.Writer, r *http.Request, re Resize) error {
 
 	fileData, err := datastore.GetFileData(r.Context(), re.id)
 	if err != nil {

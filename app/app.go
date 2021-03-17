@@ -17,23 +17,29 @@ func Listen(opts ...config.Option) error {
 		return xerrors.Errorf("config.Set() error: %w", err)
 	}
 
-	conf := config.Get()
+	err = registerHandler()
+	if err != nil {
+		return xerrors.Errorf("error: %w", err)
+	}
 
-	err = manage.Register()
+	conf := config.Get()
+	serve := fmt.Sprintf(":%d", conf.Port)
+	fmt.Printf("Fes Start! Listen[%s]\n", serve)
+	err = http.ListenAndServe(serve, nil)
+	if err != nil {
+		return xerrors.Errorf("http.ListenAndServe error: %w", err)
+	}
+	return nil
+}
+
+func registerHandler() error {
+	err := manage.Register()
 	if err != nil {
 		return xerrors.Errorf("manage handler register error: %w", err)
 	}
 	err = handler.Register()
 	if err != nil {
 		return xerrors.Errorf("handler register error: %w", err)
-	}
-
-	serve := fmt.Sprintf(":%d", conf.Port)
-
-	fmt.Printf("Fes Start! Listen[%s]\n", serve)
-	err = http.ListenAndServe(serve, nil)
-	if err != nil {
-		return xerrors.Errorf("http.ListenAndServe error: %w", err)
 	}
 	return nil
 }

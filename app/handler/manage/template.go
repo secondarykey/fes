@@ -10,7 +10,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func (h Handler) ViewTemplate(w http.ResponseWriter, r *http.Request) {
+func viewTemplateHandler(w http.ResponseWriter, r *http.Request) {
 
 	p := 1
 	q := r.URL.Query()
@@ -24,7 +24,7 @@ func (h Handler) ViewTemplate(w http.ResponseWriter, r *http.Request) {
 
 	data, err := datastore.SelectTemplates(r, p)
 	if err != nil {
-		h.errorPage(w, "Error Select Template", err, 500)
+		errorPage(w, "Error Select Template", err, 500)
 		return
 	}
 
@@ -39,10 +39,10 @@ func (h Handler) ViewTemplate(w http.ResponseWriter, r *http.Request) {
 		Next      int
 	}{data, p, p - 1, p + 1}
 
-	h.parse(w, TEMPLATE_DIR+"template/view.tmpl", dto)
+	viewManage(w, "template/view.tmpl", dto)
 }
 
-func (h Handler) AddTemplate(w http.ResponseWriter, r *http.Request) {
+func addTemplateHandler(w http.ResponseWriter, r *http.Request) {
 	tmp := &datastore.Template{}
 	tmpData := &datastore.TemplateData{}
 	tmp.LoadKey(datastore.CreateTemplateKey())
@@ -51,10 +51,11 @@ func (h Handler) AddTemplate(w http.ResponseWriter, r *http.Request) {
 		Template     *datastore.Template
 		TemplateData *datastore.TemplateData
 	}{tmp, tmpData}
-	h.parse(w, TEMPLATE_DIR+"template/edit.tmpl", dto)
+
+	viewManage(w, "template/edit.tmpl", dto)
 }
 
-func (h Handler) EditTemplate(w http.ResponseWriter, r *http.Request) {
+func editTemplateHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Add("X-XSS-Protection", "1")
 	//POST
@@ -62,7 +63,7 @@ func (h Handler) EditTemplate(w http.ResponseWriter, r *http.Request) {
 		//更新
 		err := datastore.PutTemplate(r)
 		if err != nil {
-			h.errorPage(w, "Error Put Template", err, 500)
+			errorPage(w, "Error Put Template", err, 500)
 			return
 		}
 	}
@@ -70,21 +71,21 @@ func (h Handler) EditTemplate(w http.ResponseWriter, r *http.Request) {
 	id := vars["key"]
 	tmp, err := datastore.SelectTemplate(r, id)
 	if err != nil {
-		h.errorPage(w, "Error SelectTemplate", err, 500)
+		errorPage(w, "Error SelectTemplate", err, 500)
 		return
 	}
 	if tmp == nil {
-		h.errorPage(w, "NotFound Template", fmt.Errorf(id), 404)
+		errorPage(w, "NotFound Template", fmt.Errorf(id), 404)
 		return
 	}
 
 	tmpData, err := datastore.SelectTemplateData(r, id)
 	if err != nil {
-		h.errorPage(w, "Not Found Template Data", err, 500)
+		errorPage(w, "Not Found Template Data", err, 500)
 		return
 	}
 	if tmpData == nil {
-		h.errorPage(w, "NotFound Template Data", fmt.Errorf(id), 404)
+		errorPage(w, "NotFound Template Data", fmt.Errorf(id), 404)
 		return
 	}
 
@@ -92,28 +93,28 @@ func (h Handler) EditTemplate(w http.ResponseWriter, r *http.Request) {
 		Template     *datastore.Template
 		TemplateData *datastore.TemplateData
 	}{tmp, tmpData}
-	h.parse(w, TEMPLATE_DIR+"template/edit.tmpl", dto)
+	viewManage(w, "template/edit.tmpl", dto)
 }
 
-func (h Handler) DeleteTemplate(w http.ResponseWriter, r *http.Request) {
+func deleteTemplateHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["key"]
 
 	if datastore.UsingTemplate(r, id) {
-		h.errorPage(w, "Using Template", fmt.Errorf(id), 500)
+		errorPage(w, "Using Template", fmt.Errorf(id), 500)
 		return
 	}
 
 	err := datastore.RemoveTemplate(r, id)
 	if err != nil {
-		h.errorPage(w, "Remove Template Error", err, 500)
+		errorPage(w, "Remove Template Error", err, 500)
 		return
 	}
 	//リダイレクト
 	http.Redirect(w, r, "/manage/template/", 302)
 }
 
-func (h Handler) ReferenceTemplate(w http.ResponseWriter, r *http.Request) {
+func referenceTemplateHandler(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 	id := vars["key"]
@@ -123,18 +124,18 @@ func (h Handler) ReferenceTemplate(w http.ResponseWriter, r *http.Request) {
 	pages, err := datastore.SelectReferencePages(r, id, t)
 
 	if err != nil {
-		h.errorPage(w, "Reference template pages Error", err, 500)
+		errorPage(w, "Reference template pages Error", err, 500)
 		return
 	}
 	if pages == nil || len(pages) <= 0 {
-		h.errorPage(w, "Reference template pages NotFound", fmt.Errorf(id), 404)
+		errorPage(w, "Reference template pages NotFound", fmt.Errorf(id), 404)
 		return
 	}
 
 	//ページからHTMLを更新
 	err = datastore.PutHTMLs(r, pages)
 	if err != nil {
-		h.errorPage(w, "Put HTML data Error", err, 500)
+		errorPage(w, "Put HTML data Error", err, 500)
 		return
 	}
 

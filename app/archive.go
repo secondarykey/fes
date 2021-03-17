@@ -20,6 +20,9 @@ func CreateStaticSite(dir string, opts ...config.Option) error {
 	if err != nil {
 		return xerrors.Errorf("logic.StaticSite() error: %w", err)
 	}
+
+	//TODO 起動するかしないかを設定
+
 	prefix := "/" + dir + "/"
 	http.Handle(prefix,
 		http.StripPrefix(prefix, http.FileServer(http.Dir(dir))))

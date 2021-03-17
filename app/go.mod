@@ -1,6 +1,6 @@
 module app
 
-go 1.12
+go 1.16
 
 require (
 	cloud.google.com/go v0.79.0
