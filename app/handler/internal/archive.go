@@ -23,7 +23,7 @@ func init() {
 func RegisterArchive(dirs ...string) error {
 
 	var archiveHandle CacheServer
-	archiveHandle.SetFS(archiveFs, 86400)
+	archiveHandle.SetFS(http.FS(archiveFs), 86400)
 
 	for _, dir := range dirs {
 		url := fmt.Sprintf("/%s/", dir)
@@ -31,3 +31,4 @@ func RegisterArchive(dirs ...string) error {
 	}
 	return nil
 }
+
