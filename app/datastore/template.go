@@ -3,7 +3,6 @@ package datastore
 import (
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 
@@ -51,7 +50,7 @@ func PutTemplate(r *http.Request) error {
 	ver := r.FormValue("version")
 	version, err := strconv.Atoi(ver)
 	if err != nil {
-		return err
+		return xerrors.Errorf("version strconv.Atoi() error: %w", err)
 	}
 
 	cli, err := createClient(ctx)
@@ -68,7 +67,7 @@ func PutTemplate(r *http.Request) error {
 
 	if err != nil {
 		if !errors.Is(err, datastore.ErrNoSuchEntity) {
-			return err
+			return xerrors.Errorf("Template Get() error: %w", err)
 		}
 	}
 
@@ -78,22 +77,21 @@ func PutTemplate(r *http.Request) error {
 	template.Name = r.FormValue("name")
 	template.Type, err = strconv.Atoi(r.FormValue("templateType"))
 	if err != nil {
-		return err
+		return xerrors.Errorf("TemplateType Atoi() error: %w", err)
 	}
 
-	//TODO ByteStringからの変換
 	templateData.Content = []byte(r.FormValue("template"))
 
 	_, err = cli.RunInTransaction(ctx, func(tx *datastore.Transaction) error {
 
 		_, err = tx.Put(template.GetKey(), &template)
 		if err != nil {
-			return err
+			return xerrors.Errorf("Template Put() error: %w", err)
 		}
 
 		_, err = tx.Put(templateData.GetKey(), &templateData)
 		if err != nil {
-			return err
+			return xerrors.Errorf("TemplateData Put() error: %w", err)
 		}
 		return nil
 	})
@@ -121,8 +119,8 @@ func SelectTemplate(r *http.Request, id string) (*Template, error) {
 
 	err = cli.Get(ctx, key, &temp)
 	if err != nil {
-		if errors.Is(err, datastore.ErrNoSuchEntity) {
-			return nil, err
+		if !errors.Is(err, datastore.ErrNoSuchEntity) {
+			return nil, xerrors.Errorf("Template Get() error: %w", err)
 		} else {
 			return nil, nil
 		}
@@ -130,26 +128,27 @@ func SelectTemplate(r *http.Request, id string) (*Template, error) {
 	return &temp, nil
 }
 
-func getTemplateCursor(p int) string {
-	return "template_" + strconv.Itoa(p) + "_cursor"
-}
-
-func SelectTemplates(r *http.Request, p int) ([]Template, error) {
+func SelectTemplates(r *http.Request, cur string) ([]Template, string, error) {
 
 	var rtn []Template
 
 	ctx := r.Context()
-	cursor := ""
 
 	q := datastore.NewQuery(KindTemplateName).Order("- UpdatedAt")
-	if p > 0 {
-		//TODO 新しい残し方
-		log.Println("cursor not implemented", cursor)
+	if cur != NoLimitCursor {
+		q = q.Limit(10)
+		if cur != "" {
+			cursor, err := datastore.DecodeCursor(cur)
+			if err != nil {
+				return nil, "", xerrors.Errorf("datastore.DecodeCursor() error: %w", err)
+			}
+			q = q.Start(cursor)
+		}
 	}
 
 	cli, err := createClient(ctx)
 	if err != nil {
-		return nil, xerrors.Errorf("createClient() error: %w", err)
+		return nil, "", xerrors.Errorf("createClient() error: %w", err)
 	}
 
 	t := cli.Run(ctx, q)
@@ -161,24 +160,18 @@ func SelectTemplates(r *http.Request, p int) ([]Template, error) {
 		}
 
 		if err != nil {
-			return nil, err
+			return nil, "", xerrors.Errorf("Template Next() error: %w", err)
 		}
 		tmp.LoadKey(key)
 		rtn = append(rtn, tmp)
 	}
 
-	if p > 0 {
-
-		cur, err := t.Cursor()
-		if err != nil {
-			return nil, err
-		}
-
-		log.Println("cursor notimplemented", cur)
-
+	cursor, err := t.Cursor()
+	if err != nil {
+		return nil, "", xerrors.Errorf("Template Cursor() error: %w", err)
 	}
 
-	return rtn, nil
+	return rtn, cursor.String(), nil
 }
 
 const KindTemplateDataName = "TemplateData"
@@ -209,7 +202,7 @@ func SelectTemplateData(r *http.Request, id string) (*TemplateData, error) {
 
 	err = cli.Get(ctx, key, &temp)
 	if err != nil {
-		return nil, err
+		return nil, xerrors.Errorf("TemplateData Get() error: %w", err)
 	}
 	return &temp, nil
 }
@@ -229,13 +222,13 @@ func RemoveTemplate(r *http.Request, id string) error {
 		key := datastore.NameKey(KindTemplateName, id, nil)
 		err = tx.Delete(key)
 		if err != nil {
-			return err
+			return xerrors.Errorf("Template Delete() error: %w", err)
 		}
 
 		dataKey := datastore.NameKey(KindTemplateDataName, id, nil)
 		err = tx.Delete(dataKey)
 		if err != nil {
-			return err
+			return xerrors.Errorf("TemplateData Delete() error: %w", err)
 		}
 		return nil
 	})

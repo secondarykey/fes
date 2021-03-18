@@ -45,10 +45,6 @@ func createFileKey(name string) *datastore.Key {
 	return datastore.NameKey(KindFileName, name, nil)
 }
 
-func getFileCursor(p int) string {
-	return "file_" + strconv.Itoa(p) + "_cursor"
-}
-
 func GetAllFile(ctx context.Context) ([]*File, error) {
 
 	var dst []*File
@@ -66,7 +62,7 @@ func GetAllFile(ctx context.Context) ([]*File, error) {
 	return dst, nil
 }
 
-func SelectFiles(r *http.Request, tBuf string, p int) ([]File, error) {
+func SelectFiles(r *http.Request, tBuf string, cur string) ([]File, string, error) {
 
 	var s []File
 
@@ -79,25 +75,23 @@ func SelectFiles(r *http.Request, tBuf string, p int) ([]File, error) {
 
 	cli, err := createClient(ctx)
 	if err != nil {
-		return nil, xerrors.Errorf("createClient() error: %w", err)
+		return nil, "", xerrors.Errorf("createClient() error: %w", err)
 	}
-	cursor := ""
 
-	//q := datastore.NewQuery(KindFileName).Order("- UpdatedAt")
 	q := datastore.NewQuery(KindFileName).Order("- UpdatedAt")
 
 	if typ == api.FileTypeData || typ == api.FileTypePageImage {
 		q = q.Filter("Type=", typ)
 	}
 
-	if p > 0 {
-		//TODO カーソル
+	if cur != NoLimitCursor {
 		q = q.Limit(10)
-		if cursor != "" {
-			cur, err := datastore.DecodeCursor(cursor)
-			if err == nil {
-				q = q.Start(cur)
+		if cur != "" {
+			cursor, err := datastore.DecodeCursor(cur)
+			if err != nil {
+				return nil, "", xerrors.Errorf("datastore.DecodeCursor() error: %w", err)
 			}
+			q = q.Start(cursor)
 		}
 	}
 
@@ -110,17 +104,18 @@ func SelectFiles(r *http.Request, tBuf string, p int) ([]File, error) {
 			break
 		}
 		if err != nil {
-			return nil, err
+			return nil, "", xerrors.Errorf("File Next() error: %w", err)
 		}
 		f.LoadKey(key)
 		s = append(s, f)
 	}
 
-	if p > 0 {
-		//TODO カーソル
+	cursor, err := t.Cursor()
+	if err != nil {
+		return nil, "", xerrors.Errorf("File Cursor() error: %w", err)
 	}
 
-	return s, nil
+	return s, cursor.String(), nil
 }
 
 func SelectFile(r *http.Request, name string) (*File, error) {

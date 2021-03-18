@@ -72,7 +72,7 @@ func view(w http.ResponseWriter, r *http.Request, page *datastore.Page) {
 	publish := false
 
 	//全件検索
-	templates, err := datastore.SelectTemplates(r, -1)
+	templates, _, err := datastore.SelectTemplates(r, datastore.NoLimitCursor)
 	if err != nil {
 		errorPage(w, "Error Select Template", err, 500)
 		return
@@ -96,7 +96,7 @@ func view(w http.ResponseWriter, r *http.Request, page *datastore.Page) {
 	}
 
 	//全件でOK
-	children, err = datastore.SelectChildPages(r, id, 0, 0, true)
+	children, _, err = datastore.SelectChildPages(r, id, datastore.NoLimitCursor, 0, true)
 	if err != nil {
 		errorPage(w, "Error Select Children page", err, 500)
 		return
@@ -197,7 +197,7 @@ func toolPageHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["key"]
 
-	children, err := datastore.SelectChildPages(r, id, 0, 0, true)
+	children, _, err := datastore.SelectChildPages(r, id, datastore.NoLimitCursor, 0, true)
 	if err != nil {
 		errorPage(w, "Error Select Children page", err, 500)
 		return

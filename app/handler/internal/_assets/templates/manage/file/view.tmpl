@@ -8,8 +8,8 @@ File[<a href="/manage/file/type/1">File</a>|<a href="/manage/file/type/2">Page</
   <thead>
     <tr>
       <th class="mdl-data-table__cell--non-numeric" style="width:20px;">
-{{if ne .Prev 0}}
-        <a href="?page={{.Prev}}" class="demo-nav__button" title="Older">
+{{if ne .Now ""}}
+        <a href="javascript:history.back();" class="demo-nav__button" title="Older">
           <button class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon">
              <i class="material-icons">arrow_back</i>
           </button>
@@ -21,7 +21,7 @@ File[<a href="/manage/file/type/1">File</a>|<a href="/manage/file/type/2">Page</
       <th>Create</th>
       <th>Update</th>
       <th>
-        <a href="?page={{.Next}}" class="demo-nav__button" title="Newer">
+        <a href="?cursor={{.Next}}" class="demo-nav__button" title="Newer">
           <button class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon">
             <i class="material-icons" role="presentation">arrow_forward</i>
           </button>
@@ -46,8 +46,8 @@ File[<a href="/manage/file/type/1">File</a>|<a href="/manage/file/type/2">Page</
 {{ end }}
     <tr>
       <td class="mdl-data-table__cell--non-numeric">
-{{if ne .Prev 0}}
-        <a href="?page={{.Prev}}" class="demo-nav__button" title="Older">
+{{if ne .Now ""}}
+        <a href="javascript:history.back();" class="demo-nav__button" title="Older">
           <button class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon">
              <i class="material-icons">arrow_back</i>
           </button>
@@ -59,7 +59,7 @@ File[<a href="/manage/file/type/1">File</a>|<a href="/manage/file/type/2">Page</
       <td></td>
       <td></td>
       <td>
-        <a href="?page={{.Next}}" class="demo-nav__button" title="Newer">
+        <a href="?cursor={{.Next}}" class="demo-nav__button" title="Newer">
           <button class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon">
             <i class="material-icons" role="presentation">arrow_forward</i>
           </button>

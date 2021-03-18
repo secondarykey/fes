@@ -24,17 +24,10 @@ func viewFileHandler(w http.ResponseWriter, r *http.Request) {
 		t = "1"
 	}
 
-	p := 1
 	q := r.URL.Query()
-	pageBuf := q.Get("page")
-	if pageBuf != "" {
-		page, err := strconv.Atoi(pageBuf)
-		if err == nil {
-			p = page
-		}
-	}
+	cursor := q.Get("cursor")
 
-	files, err := datastore.SelectFiles(r, t, p)
+	files, next, err := datastore.SelectFiles(r, t, cursor)
 	if err != nil {
 		errorPage(w, "Error Select File", err, 500)
 		return
@@ -42,10 +35,9 @@ func viewFileHandler(w http.ResponseWriter, r *http.Request) {
 
 	dto := struct {
 		Files []datastore.File
-		Page  int
-		Prev  int
-		Next  int
-	}{files, p, p - 1, p + 1}
+		Now   string
+		Next  string
+	}{files, cursor, next}
 	viewManage(w, "file/view.tmpl", dto)
 }
 

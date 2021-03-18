@@ -13,6 +13,7 @@ Template
       <th> </th>
     </tr>
   </thead>
+
   <tbody>
 {{ range .Templates}}
     <tr>
@@ -29,8 +30,8 @@ Template
 
     <tr>
       <td class="mdl-data-table__cell--non-numeric">
-{{if ne .Prev 0}}
-        <a href="/manage/template/?page={{.Prev}}" class="demo-nav__button" title="Older">
+{{if ne .Now ""}}
+        <a href="javascript:history.back();" class="demo-nav__button" title="Older">
           <button class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon">
              <i class="material-icons">arrow_back</i>
           </button>
@@ -40,7 +41,7 @@ Template
       <td></td>
       <td></td>
       <td>
-        <a href="/manage/template/?page={{.Next}}" class="demo-nav__button" title="Newer">
+        <a href="?cursor={{.Next}}" class="demo-nav__button" title="Newer">
           <button class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon">
             <i class="material-icons" role="presentation">arrow_forward</i>
           </button>

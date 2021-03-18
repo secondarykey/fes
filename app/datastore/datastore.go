@@ -8,6 +8,8 @@ import (
 	"golang.org/x/xerrors"
 )
 
+const NoLimitCursor = "NoLimit"
+
 func createClient(ctx context.Context) (*datastore.Client, error) {
 	c := config.Get()
 	cli, err := datastore.NewClient(ctx, c.ProjectID)

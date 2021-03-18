@@ -68,17 +68,17 @@ func PutHTML(r *http.Request, id string) error {
 
 	page, err := SelectPage(r, id, -1)
 	if err != nil {
-		return err
+		return xerrors.Errorf("SelectPage() error: %w", err)
 	}
 
-	dtos, err := NewDtos(r, page, 1, false)
+	dtos, _, err := NewDtos(r, page, "", false)
 	if err != nil {
-		return err
+		return xerrors.Errorf("NewDtos() error: %w", err)
 	}
 
 	tmpl, err := createTemplate(r, page, false)
 	if err != nil {
-		return err
+		return xerrors.Errorf("createTemplate() error: %w", err)
 	}
 
 	ctx := r.Context()
@@ -89,10 +89,10 @@ func PutHTML(r *http.Request, id string) error {
 	for idx, dto := range dtos {
 		var buf []byte
 		w := bytes.NewBuffer(buf)
-		//TODO CHILDREN 一回だけ検索
+
 		err = tmpl.Execute(w, dto)
 		if err != nil {
-			return err
+			return xerrors.Errorf("PageTemplate Execute() error: %w", err)
 		}
 
 		realId := id
@@ -102,7 +102,7 @@ func PutHTML(r *http.Request, id string) error {
 
 		html, err := GetHTML(ctx, realId)
 		if err != nil {
-			return err
+			return xerrors.Errorf("GetHTML() error: %w", err)
 		}
 		if html == nil {
 			key := createHTMLKey(realId)
@@ -124,12 +124,12 @@ func PutHTML(r *http.Request, id string) error {
 
 		_, err = tx.PutMulti(keys, htmls)
 		if err != nil {
-			return err
+			return xerrors.Errorf("HTML PutMulti() error: %w", err)
 		}
 		page.Publish = time.Now()
 		_, err = tx.Put(page.GetKey(), page)
 		if err != nil {
-			return err
+			return xerrors.Errorf("Page(Publish) Put() error: %w", err)
 		}
 		return nil
 	})
@@ -196,20 +196,21 @@ func PutHTMLs(r *http.Request, pages []Page) error {
 		var buf []byte
 		w := bytes.NewBuffer(buf)
 
-		//TODO 固定はまずいけど、Referenceの場所なので
-		//TODO ページングがいらない可能性が高い
-		dtos, err := NewDtos(r, &elm, 0, false)
+		//TODO Referenceなので、NextはすでにDtoに埋め込まれている
+
+		dtos, _, err := NewDtos(r, &elm, NoLimitCursor, false)
 		if err != nil {
-			return err
+			return xerrors.Errorf("Reference NewDto() error: %w", err)
 		}
 
 		tmpl, err := createTemplate(r, &elm, false)
 		if err != nil {
-			return err
+			return xerrors.Errorf("Reference createTemplate() error: %w", err)
 		}
+
 		err = tmpl.Execute(w, dtos[0])
 		if err != nil {
-			return err
+			return xerrors.Errorf("Reference createTemplate() error: %w", err)
 		}
 
 		htmlData = append(htmlData, w.Bytes())
@@ -257,6 +258,7 @@ type HTMLDto struct {
 	Next     string
 }
 
+//
 func WriteManageHTML(w http.ResponseWriter, r *http.Request, id string, p int) error {
 
 	var err error
@@ -267,13 +269,16 @@ func WriteManageHTML(w http.ResponseWriter, r *http.Request, id string, p int) e
 	if page == nil {
 		return fmt.Errorf("Page not found[%s]", id)
 	}
+
 	//テンプレートの作成
 	tmpl, err := createTemplate(r, page, true)
 	if err != nil {
 		return err
 	}
+
+	//TODO カーソルが空
 	//DTOの作成
-	dtos, err := NewDtos(r, page, p, true)
+	dtos, _, err := NewDtos(r, page, "", true)
 	if err != nil {
 		return err
 	}
@@ -286,17 +291,18 @@ func WriteManageHTML(w http.ResponseWriter, r *http.Request, id string, p int) e
 	return err
 }
 
-func NewDtos(r *http.Request, page *Page, pageNum int, mng bool) ([]*HTMLDto, error) {
+//TODO 出力時と表示時のテスト
+func NewDtos(r *http.Request, page *Page, cur string, view bool) ([]*HTMLDto, string, error) {
 
 	id := page.Key.Name
 	site, err := SelectSite(r, -1)
 	if err != nil {
-		return nil, err
+		return nil, "", xerrors.Errorf("SelectSite() error: %w", err)
 	}
 
 	pData, err := SelectPageData(r, id)
 	if err != nil {
-		return nil, err
+		return nil, "", xerrors.Errorf("SelectPageData() error: %w", err)
 	}
 
 	content := string(pData.Content)
@@ -309,9 +315,11 @@ func NewDtos(r *http.Request, page *Page, pageNum int, mng bool) ([]*HTMLDto, er
 
 	dir := "/manage/page/view/"
 	top := "/manage/page/view/"
-	if !mng {
+
+	//表示でない場合
+	if !view {
 		if page.Deleted {
-			return nil, fmt.Errorf("Page is private[%s]", id)
+			return nil, "", fmt.Errorf("Page is private or deleted[%s]", id)
 		}
 		dir = "/page/"
 		top = "/"
@@ -319,13 +327,13 @@ func NewDtos(r *http.Request, page *Page, pageNum int, mng bool) ([]*HTMLDto, er
 
 	childNum := 0
 	//本番時には複数件取得して展開
-	if mng && page.Paging > 0 {
+	if view && page.Paging > 0 {
 		childNum = page.Paging
 	}
 
-	children, err := SelectChildPages(r, id, pageNum, childNum, mng)
+	children, next, err := SelectChildPages(r, id, cur, childNum, view)
 	if err != nil {
-		return nil, err
+		return nil, "", xerrors.Errorf("SelectChildPages() error: %w", err)
 	}
 
 	leng := len(children)
@@ -340,7 +348,7 @@ func NewDtos(r *http.Request, page *Page, pageNum int, mng bool) ([]*HTMLDto, er
 			last -= 1
 		}
 
-		if !mng {
+		if !view {
 			dtoNum = last
 		}
 	}
@@ -354,11 +362,13 @@ func NewDtos(r *http.Request, page *Page, pageNum int, mng bool) ([]*HTMLDto, er
 		nextId := ""
 		pNum := idx + 1
 
-		if mng {
-			pNum = pageNum
-		}
+		/*
+			if view {
+				pNum = pageNum
+			}
+		*/
 
-		if last != pNum || mng {
+		if last != pNum || view {
 			nextId = id + "?page=" + strconv.Itoa(pNum+1)
 		}
 
@@ -371,7 +381,7 @@ func NewDtos(r *http.Request, page *Page, pageNum int, mng bool) ([]*HTMLDto, er
 
 		start := 0
 		end := len(children)
-		if !mng && page.Paging > 0 {
+		if !view && page.Paging > 0 {
 			start = idx * page.Paging
 
 			end = start + page.Paging
@@ -391,7 +401,7 @@ func NewDtos(r *http.Request, page *Page, pageNum int, mng bool) ([]*HTMLDto, er
 		dtos[idx] = &cp
 	}
 
-	return dtos, nil
+	return dtos, next, nil
 }
 
 func createTemplate(r *http.Request, page *Page, mng bool) (*template.Template, error) {
@@ -432,8 +442,8 @@ type Public struct {
 }
 
 func (p Public) list(id string, num int) []Page {
-	//1ページ目固定
-	pages, err := SelectChildPages(p.request, id, 0, num, p.manage)
+	//TODO 1ページ目固定
+	pages, _, err := SelectChildPages(p.request, id, "", num, p.manage)
 	if err != nil {
 		return make([]Page, 0)
 	}

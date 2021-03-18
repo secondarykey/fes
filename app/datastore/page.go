@@ -80,14 +80,14 @@ func SelectPages(r *http.Request) ([]Page, error) {
 	return pages, nil
 }
 
-func SelectChildPages(r *http.Request, id string, page int, limit int, mng bool) ([]Page, error) {
+func SelectChildPages(r *http.Request, id string, cur string, limit int, mng bool) ([]Page, string, error) {
 
 	ctx := r.Context()
 	var pages []Page
 
 	cli, err := createClient(ctx)
 	if err != nil {
-		return nil, xerrors.Errorf("createClient() error: %w", err)
+		return nil, "", xerrors.Errorf("createClient() error: %w", err)
 	}
 
 	q := datastore.NewQuery(KindPageName).Filter("Parent=", id).Order("Seq").Order("- CreatedAt")
@@ -101,10 +101,13 @@ func SelectChildPages(r *http.Request, id string, page int, limit int, mng bool)
 		q = q.Limit(limit)
 	}
 
-	//TODO Cursor
 	//ページ数
-	if page > 1 {
-		//curKey := getChildrenCursorKey(id, page)
+	if cur != "" && cur != NoLimitCursor {
+		cursor, err := datastore.DecodeCursor(cur)
+		if err != nil {
+			return nil, "", xerrors.Errorf("datastore.Decode() error: %w", err)
+		}
+		q = q.Start(cursor)
 	}
 
 	t := cli.Run(ctx, q)
@@ -116,33 +119,23 @@ func SelectChildPages(r *http.Request, id string, page int, limit int, mng bool)
 		}
 
 		if err != nil {
-			return nil, err
+			return nil, "", xerrors.Errorf("Page Next() error: %w", err)
 		}
 		pages = append(pages, page)
 	}
 
-	n := page + 1
-
-	if n > 1 {
-		//TODO Cursor
-		cur, err := t.Cursor()
-		if err != nil {
-			return pages, nil
-		}
-		log.Println("cursor set not implemented", cur)
+	cursor, err := t.Cursor()
+	if err != nil {
+		return nil, "", xerrors.Errorf("Page Cursor() error: %w", err)
 	}
 
-	return pages, nil
-}
-
-func getChildrenCursorKey(id string, p int) string {
-	return fmt.Sprintf("children_%s_%d_cursor", id, p)
+	return pages, cursor.String(), nil
 }
 
 func SelectRootPage(r *http.Request) (*Page, error) {
 	site, err := SelectSite(r, -1)
 	if err != nil {
-		return nil, err
+		return nil, xerrors.Errorf("SelectSite() error: %w", err)
 	}
 	return SelectPage(r, site.Root, -1)
 }
@@ -267,12 +260,14 @@ func UsingTemplate(r *http.Request, id string) bool {
 
 	cli, err := createClient(ctx)
 	if err != nil {
+		log.Printf("createClient error UsingTemplate() %+v\n", err)
 		return true
-		//return xerrors.Errorf("createClient() error: %w", err)
 	}
 
 	siteQ := datastore.NewQuery(KindPageName).Filter("SiteTemplate=", id).Limit(1)
 	siteT := cli.Run(ctx, siteQ)
+
+	//TODO なんか違う気がする
 
 	var page Page
 	_, err = siteT.Next(&page)
@@ -292,7 +287,7 @@ func RemovePage(r *http.Request, id string) error {
 	var err error
 	ctx := r.Context()
 
-	children, err := SelectChildPages(r, id, 0, 0, false)
+	children, _, err := SelectChildPages(r, id, NoLimitCursor, 0, false)
 	if err != nil {
 		return fmt.Errorf("Datastore Error SelectChildPages child page[%v]", err)
 	}
