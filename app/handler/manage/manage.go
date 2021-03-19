@@ -3,6 +3,7 @@ package manage
 import (
 	"app/datastore"
 	. "app/handler/internal"
+	"app/logic"
 
 	"fmt"
 	"log"
@@ -138,7 +139,7 @@ func pageView(w http.ResponseWriter, r *http.Request, id string) {
 	}
 
 	//管理用の書き出し
-	err := datastore.WriteManageHTML(w, r, id, page)
+	err := logic.WriteManageHTML(w, r, id, page)
 	if err != nil {
 		errorPage(w, "ERROR:Generate HTML", err, 500)
 		return

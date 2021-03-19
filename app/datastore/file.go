@@ -1,7 +1,6 @@
 package datastore
 
 import (
-	"app/api"
 	"context"
 
 	"bytes"
@@ -20,6 +19,11 @@ import (
 	"google.golang.org/api/iterator"
 
 	"cloud.google.com/go/datastore"
+)
+
+const (
+	FileTypeData      = 1
+	FileTypePageImage = 2
 )
 
 const KindFileName = "File"
@@ -80,7 +84,7 @@ func SelectFiles(r *http.Request, tBuf string, cur string) ([]File, string, erro
 
 	q := datastore.NewQuery(KindFileName).Order("- UpdatedAt")
 
-	if typ == api.FileTypeData || typ == api.FileTypePageImage {
+	if typ == FileTypeData || typ == FileTypePageImage {
 		q = q.Filter("Type=", typ)
 	}
 

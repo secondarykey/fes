@@ -2,8 +2,9 @@ package manage
 
 import (
 	"app/datastore"
-	"fmt"
+	"app/logic"
 
+	"fmt"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -124,7 +125,7 @@ func referenceTemplateHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//ページからHTMLを更新
-	err = datastore.PutHTMLs(r, pages)
+	err = logic.PutHTMLs(r, pages)
 	if err != nil {
 		errorPage(w, "Put HTML data Error", err, 500)
 		return

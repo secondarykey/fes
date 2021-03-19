@@ -18,3 +18,26 @@ func createClient(ctx context.Context) (*datastore.Client, error) {
 	}
 	return cli, nil
 }
+
+func PutMulti(tx *datastore.Transaction, dsts []HasKey) error {
+
+	keys := make([]*datastore.Key, len(dsts))
+	for idx, elm := range dsts {
+		keys[idx] = elm.GetKey()
+	}
+
+	_, err := tx.PutMulti(keys, dsts)
+	if err != nil {
+		return xerrors.Errorf("PutMulti() error: %w", err)
+	}
+
+	return nil
+}
+
+func Put(tx *datastore.Transaction, dst HasKey) error {
+	_, err := tx.Put(dst.GetKey(), dst)
+	if err != nil {
+		return xerrors.Errorf("Put() error: %w", err)
+	}
+	return nil
+}

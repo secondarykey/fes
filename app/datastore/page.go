@@ -1,7 +1,6 @@
 package datastore
 
 import (
-	"app/api"
 	"context"
 	"log"
 
@@ -237,7 +236,7 @@ func PutPage(r *http.Request) error {
 			return err
 		}
 
-		err = SaveFile(r, id, api.FileTypePageImage)
+		err = SaveFile(r, id, FileTypePageImage)
 		if err != nil {
 			//ファイル指定なしの場合の動作
 		}

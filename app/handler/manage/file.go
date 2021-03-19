@@ -1,7 +1,6 @@
 package manage
 
 import (
-	"app/api"
 	"app/datastore"
 	"fmt"
 
@@ -44,7 +43,7 @@ func viewFileHandler(w http.ResponseWriter, r *http.Request) {
 //URL = /manage/file/add
 func addFileHandler(w http.ResponseWriter, r *http.Request) {
 
-	err := datastore.SaveFile(r, "", api.FileTypeData)
+	err := datastore.SaveFile(r, "", datastore.FileTypeData)
 	if err != nil {
 		errorPage(w, "Error Add File", err, 500)
 		return

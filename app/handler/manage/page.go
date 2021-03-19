@@ -2,6 +2,7 @@ package manage
 
 import (
 	"app/datastore"
+	"app/logic"
 
 	"net/http"
 
@@ -173,7 +174,7 @@ func changePublicPageHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["key"]
 
-	err := datastore.PutHTML(r, id)
+	err := logic.PutHTML(r, id)
 	if err != nil {
 		errorPage(w, "Error Publish HTML", err, 500)
 		return
