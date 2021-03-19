@@ -2,6 +2,7 @@ package internal
 
 import (
 	"app/api"
+	"io"
 
 	"embed"
 	"html/template"
@@ -26,7 +27,7 @@ func init() {
 
 func View(w http.ResponseWriter, dto interface{}, names ...string) error {
 	tmpl := template.New(names[0])
-	return view(w, tmpl, dto, names...)
+	return writeTemplate(w, tmpl, dto, names...)
 }
 
 func ViewManage(w http.ResponseWriter, dto interface{}, name string) error {
@@ -40,10 +41,10 @@ func ViewManage(w http.ResponseWriter, dto interface{}, name string) error {
 	}
 
 	tmpl := template.New(api.SiteTemplateName).Funcs(funcMap)
-	return view(w, tmpl, dto, "manage/layout.tmpl", "manage/"+name)
+	return writeTemplate(w, tmpl, dto, "manage/layout.tmpl", "manage/"+name)
 }
 
-func view(w http.ResponseWriter, root *template.Template, dto interface{}, names ...string) error {
+func writeTemplate(w io.Writer, root *template.Template, dto interface{}, names ...string) error {
 
 	tmpl, err := root.ParseFS(tmplFs, names...)
 	if err != nil {
@@ -55,4 +56,9 @@ func view(w http.ResponseWriter, root *template.Template, dto interface{}, names
 		return xerrors.Errorf("template Execute() error: %w", err)
 	}
 	return nil
+}
+
+func WriteTemplate(w io.Writer, dto interface{}, names ...string) error {
+	root := template.New(names[0])
+	return writeTemplate(w, root, dto, names...)
 }

@@ -31,7 +31,8 @@ func sessionHandler(w http.ResponseWriter, r *http.Request) {
 		Success bool
 	}{false}
 
-	site, err := datastore.SelectSite(r, -1)
+	ctx := r.Context()
+	site, err := datastore.SelectSite(ctx, -1)
 	if err != nil {
 		if err != datastore.SiteNotFoundError {
 

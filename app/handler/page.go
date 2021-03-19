@@ -11,7 +11,8 @@ import (
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "public, max-age=3600")
-	site, err := datastore.SelectSite(r, -1)
+	ctx := r.Context()
+	site, err := datastore.SelectSite(ctx, -1)
 	if err != nil {
 		errorPage(w, "Not Found", fmt.Errorf("サイトにトップページが指定されていません。"), 404)
 		return

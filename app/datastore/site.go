@@ -1,13 +1,12 @@
 package datastore
 
 import (
+	"context"
 	"errors"
 	"fmt"
-	"html/template"
 	"net/http"
 	"strconv"
 	"strings"
-	"time"
 
 	uuid "github.com/satori/go.uuid"
 	"golang.org/x/xerrors"
@@ -56,7 +55,9 @@ func PutSite(r *http.Request) error {
 		return err
 	}
 
-	site, foundErr := SelectSite(r, version)
+	ctx := r.Context()
+
+	site, foundErr := SelectSite(ctx, version)
 	if foundErr != nil {
 		if foundErr != SiteNotFoundError {
 			return foundErr
@@ -101,7 +102,6 @@ func PutSite(r *http.Request) error {
 		page.LoadKey(CreatePageKey(uid.String()))
 	}
 
-	ctx := r.Context()
 	cli, err := createClient(ctx)
 	if err != nil {
 		return xerrors.Errorf("createClient() error: %w", err)
@@ -138,7 +138,7 @@ func PutSite(r *http.Request) error {
 
 var cacheSite *Site
 
-func SelectSite(r *http.Request, version int) (*Site, error) {
+func SelectSite(ctx context.Context, version int) (*Site, error) {
 
 	//バージョン指定がない場合
 	if version < 0 {
@@ -147,7 +147,6 @@ func SelectSite(r *http.Request, version int) (*Site, error) {
 		}
 	}
 
-	ctx := r.Context()
 	cli, err := createClient(ctx)
 	if err != nil {
 		return nil, xerrors.Errorf("createClient() error: %w", err)
@@ -178,74 +177,4 @@ func SelectSite(r *http.Request, version int) (*Site, error) {
 
 func setDatastoreCache(site *Site) {
 	return
-}
-
-type URL struct {
-	URL          string
-	LastModified string
-	Priority     string
-	Change       string
-	Image        string
-	Caption      string
-}
-
-func GenerateSitemap(w http.ResponseWriter, r *http.Request) error {
-
-	w.Header().Set("Content-Type", "text/xml")
-
-	scheme := r.URL.Scheme
-	if scheme == "" {
-		scheme = "https"
-	}
-	root := fmt.Sprintf("%s://%s/", scheme, r.Host)
-
-	//Page全体でアクセス
-	pages, err := SelectPages(r)
-	if err != nil {
-		return err
-	}
-	site, err := SelectSite(r, -1)
-	if err != nil {
-		return err
-	}
-
-	rootId := site.Root
-
-	urls := make([]URL, len(pages))
-	//Page数回繰り返す
-	for idx, page := range pages {
-
-		key1 := page.Key.Name
-		key2 := "page/" + key1
-		if key1 == rootId {
-			key2 = ""
-		}
-
-		url := URL{}
-		url.URL = root + key2
-		url.LastModified = page.UpdatedAt.Format(time.RFC3339)
-		url.Change = "weekly"
-		url.Priority = "0.8"
-		url.Image = root + "file/" + key1
-		url.Caption = page.Description
-
-		urls[idx] = url
-	}
-
-	dto := struct {
-		Header template.HTML
-		Pages  []URL
-	}{template.HTML(`<?xml version="1.0" encoding="UTF-8"?>`), urls}
-
-	//Topと同じだった場合
-	tmpl, err := template.ParseFiles("templates/map.tmpl")
-	if err != nil {
-		return err
-	}
-
-	err = tmpl.Execute(w, dto)
-	if err != nil {
-		return err
-	}
-	return nil
 }
