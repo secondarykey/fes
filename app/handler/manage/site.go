@@ -2,6 +2,8 @@ package manage
 
 import (
 	"app/datastore"
+	. "app/handler/internal"
+	"fmt"
 
 	"net/http"
 )
@@ -10,7 +12,8 @@ import (
 func viewSiteHandler(w http.ResponseWriter, r *http.Request) {
 
 	managers := ""
-	site, err := datastore.SelectSite(r, -1)
+	ctx := r.Context()
+	site, err := datastore.SelectSite(ctx, -1)
 	if err != nil {
 		if err == datastore.SiteNotFoundError {
 			site = &datastore.Site{
@@ -52,9 +55,15 @@ func editSiteHandler(w http.ResponseWriter, r *http.Request) {
 
 func downloadSitemapHandler(w http.ResponseWriter, r *http.Request) {
 
-	err := datastore.GenerateSitemap(w, r)
+	scheme := r.URL.Scheme
+	if scheme == "" {
+		scheme = "https"
+	}
+	root := fmt.Sprintf("%s://%s/", scheme, r.Host)
+
+	err := GenerateSitemap(r.Context(), root, w)
 	if err != nil {
-		errorPage(w, "sitemap Error", err, 500)
+		errorPage(w, "Error GenerateSitemap()", err, 500)
 		return
 	}
 }

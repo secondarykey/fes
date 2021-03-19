@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"app/datastore"
 	. "app/handler/internal"
 	"fmt"
 	"log"
@@ -53,9 +52,15 @@ func errorPage(w http.ResponseWriter, t string, e error, num int) {
 }
 
 func sitemap(w http.ResponseWriter, r *http.Request) {
+	scheme := r.URL.Scheme
+	if scheme == "" {
+		scheme = "https"
+	}
+	root := fmt.Sprintf("%s://%s/", scheme, r.Host)
+
 	// 60 * 60 * 24
 	w.Header().Set("Cache-Control", "public, max-age=86400")
-	err := datastore.GenerateSitemap(w, r)
+	err := GenerateSitemap(r.Context(), root, w)
 	if err != nil {
 		errorPage(w, "Generate sitemap error", err, 500)
 	}

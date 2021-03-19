@@ -106,7 +106,8 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 
 func privateHandler(w http.ResponseWriter, r *http.Request) {
 
-	site, err := datastore.SelectSite(r, -1)
+	ctx := r.Context()
+	site, err := datastore.SelectSite(ctx, -1)
 	if err != nil {
 		if err == datastore.SiteNotFoundError {
 			//TODO redirect???

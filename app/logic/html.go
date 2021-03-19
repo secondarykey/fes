@@ -212,8 +212,9 @@ type HTMLDto struct {
 //TODO 出力時と表示時のテスト
 func NewDtos(r *http.Request, page *datastore.Page, cur string, view bool) ([]*HTMLDto, string, error) {
 
+	ctx := r.Context()
 	id := page.Key.Name
-	site, err := datastore.SelectSite(r, -1)
+	site, err := datastore.SelectSite(ctx, -1)
 	if err != nil {
 		return nil, "", xerrors.Errorf("SelectSite() error: %w", err)
 	}

@@ -53,11 +53,9 @@ func CreatePageKey(id string) *datastore.Key {
 	return datastore.NameKey(KindPageName, id, nil)
 }
 
-func SelectPages(r *http.Request) ([]Page, error) {
+func SelectPages(ctx context.Context) ([]*Page, error) {
 
-	ctx := r.Context()
-	var pages []Page
-
+	var pages []*Page
 	cli, err := createClient(ctx)
 	if err != nil {
 		return nil, xerrors.Errorf("createClient() error: %w", err)
@@ -74,7 +72,7 @@ func SelectPages(r *http.Request) ([]Page, error) {
 		if err != nil {
 			return nil, err
 		}
-		pages = append(pages, page)
+		pages = append(pages, &page)
 	}
 	return pages, nil
 }
@@ -132,7 +130,8 @@ func SelectChildPages(r *http.Request, id string, cur string, limit int, mng boo
 }
 
 func SelectRootPage(r *http.Request) (*Page, error) {
-	site, err := SelectSite(r, -1)
+	ctx := r.Context()
+	site, err := SelectSite(ctx, -1)
 	if err != nil {
 		return nil, xerrors.Errorf("SelectSite() error: %w", err)
 	}
