@@ -2,62 +2,26 @@ package internal
 
 import (
 	"app/api"
-	_ "app/handler/internal/statik"
-	"log"
-	"os"
-	"strings"
 
+	"embed"
 	"html/template"
-	"io/ioutil"
+	"io/fs"
+	"log"
 	"net/http"
 
-	"github.com/rakyll/statik/fs"
 	"golang.org/x/xerrors"
 )
 
-var statikFS http.FileSystem
-var tmpls map[string]string
+//go:embed _assets/templates
+var embTmpl embed.FS
+var tmplFs fs.FS
 
 func init() {
-
 	var err error
-
-	statikFS, err = fs.New()
+	tmplFs, err = fs.Sub(embTmpl, "_assets/templates")
 	if err != nil {
-		log.Printf("fs.New() error: %+v", err)
+		log.Printf("%+v", err)
 	}
-
-	err = load()
-	if err != nil {
-		log.Printf("template load() error: %+v", err)
-	}
-}
-
-func load() error {
-
-	tmpls = make(map[string]string)
-	err := fs.Walk(statikFS, "/templates/", func(path string, fi os.FileInfo, err error) error {
-
-		r, err := statikFS.Open(path)
-		if err != nil {
-			return xerrors.Errorf("statik Open() error: %w", err)
-		}
-		defer r.Close()
-
-		byt, err := ioutil.ReadAll(r)
-		if err != nil {
-			return xerrors.Errorf("ioutil.ReadAll() error: %w", err)
-		}
-
-		tmpls[strings.Replace(path, "/templates", "", 1)] = string(byt)
-		return nil
-	})
-
-	if err != nil {
-		return xerrors.Errorf("fs.Walk() error: %w", err)
-	}
-
-	return nil
 }
 
 func View(w http.ResponseWriter, dto interface{}, names ...string) error {
@@ -81,15 +45,12 @@ func ViewManage(w http.ResponseWriter, dto interface{}, name string) error {
 
 func view(w http.ResponseWriter, root *template.Template, dto interface{}, names ...string) error {
 
-	var err error
-	for _, name := range names {
-		root, err = root.Parse(tmpls["/"+name])
-		if err != nil {
-			return xerrors.Errorf("template Parse() error: %w", err)
-		}
+	tmpl, err := root.ParseFS(tmplFs, names...)
+	if err != nil {
+		return xerrors.Errorf("ParseFS() error: %w", err)
 	}
 
-	err = root.Execute(w, dto)
+	err = tmpl.Execute(w, dto)
 	if err != nil {
 		return xerrors.Errorf("template Execute() error: %w", err)
 	}
