@@ -3,63 +3,106 @@
   <head>
     <meta name="google-signin-scope" content="profile email">
     <meta name="google-signin-client_id" content="1099382693490-ofpcp7hn72ttibl8ag4o9qap32tcc50u.apps.googleusercontent.com">
-    <script src="https://apis.google.com/js/platform.js" async defer></script>
+<style>
+    .outer {
+      display:flex;
+      justify-content:center;
+    }
+
+    .card-square.mdl-card {
+      width: 80%; height: 200px;
+      position:absolute;
+      top:50%;
+      transform:translateY(-50%);
+    }
+
+    .mdl-card__actions {
+      text-align:center;
+    }
+
+</style>
+
   </head>
 
   <body>
 
-    <div class="g-signin2" data-onsuccess="onSignIn" data-theme="dark"></div>
+    <div class="mdl-grid">
+      <div class="mdl-cell mdl-cell--12-col outer">
+        <div class="card-square mdl-card mdl-shadow--2dp">
+          <div class="mdl-card__actions mdl-card--border">
+            <img style="cursor:hand;" src="/images/btn_login.png" id="signin-button"/>
+            <br>
+            <a href="#" onclick="signOut();">Sign out</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <script src="https://apis.google.com/js/platform.js?onload=initClient" async defer></script>
+
     <script>
+      var auth2;
 
-    function EncodeHTMLForm( data ) {
-      var params = [];
+      var initClient = function() {
+        gapi.load("auth2",function() {
+          auth2 = gapi.auth2.init({
+            client_id: '1099382693490-ofpcp7hn72ttibl8ag4o9qap32tcc50u.apps.googleusercontent.com'
+          });
+          auth2.attachClickHandler('signin-button', {}, onSuccess, onFailure);
+        });
+      };
 
-      for( var name in data ) {
-        var value = data[ name ];
-        var param = encodeURIComponent( name ) + '=' + encodeURIComponent( value );
 
-        params.push( param );
+      function EncodeHTMLForm( data ) {
+        var params = [];
+        for( var name in data ) {
+          var value = data[ name ];
+          var param = encodeURIComponent( name ) + '=' + encodeURIComponent( value );
+  
+          params.push( param );
+        }
+        return params.join( '&' ).replace( /%20/g, '+' );
       }
-      return params.join( '&' ).replace( /%20/g, '+' );
-    }
 
-    function onSignIn(googleUser) {
 
+      function onSuccess(googleUser) {
         var profile = googleUser.getBasicProfile();
         var email = profile.getEmail();
         var id_token = googleUser.getAuthResponse().id_token;
 
-        //ajax で認証に飛ばす
-        var req = new XMLHttpRequest();
+        var xhr = new XMLHttpRequest();
+
         var args = {};
         args["email"] = email;
         args["token"] = id_token;
- 
-        req.open('POST', '/session', true);
-        req.responseType = 'json';
- 
-        req.onload = function () {
-          var data = this.response;
-          if ( data.Success == true )  {
+
+        xhr.open('POST', '/session',true);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        xhr.responseType = 'json';
+
+        xhr.onload = function() {
+          var resp = xhr.response;
+            if (resp.Success) {
               location.href = "/manage/home";
-          } else {
-          }
+            } else {
+              console.log(resp);
+              alert("error");
+            }
         };
+        xhr.send(EncodeHTMLForm(args));  
+      }
 
-        req.setRequestHeader('Content-Type','application/x-www-form-urlencoded');
-        req.send(EncodeHTMLForm(args));  
-    }
+      function onFailure(err) {
+        console.log(err);
+      }
 
-    function signOut() {
-      var auth2 = gapi.auth2.getAuthInstance();
-      auth2.signOut().then(function () {
-        console.log('User signed out.');
-      });
-    }
+      function signOut() {
+        auth2.signOut().then(function () {
+          console.log('User signed out.');
+        });
+      }
 
     </script>
-
-    <a href="#" onclick="signOut();">Sign out</a>
-
   </body>
 </html>

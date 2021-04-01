@@ -241,7 +241,8 @@ func PutPage(r *http.Request) error {
 		}
 
 		//TODO Deletedにされている場合、HTMLを検索して削除
-
+		//     このタイミングで削除を行うと、公開ページごと削除されてしまう。
+		//     公開ページを更新時に削除する仕組みか、テスト中に表示できる仕組みを他で用意する
 		return nil
 	})
 	if err != nil {
