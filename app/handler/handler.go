@@ -21,6 +21,11 @@ func Register() error {
 	//外部アクセス
 	r := mux.NewRouter()
 
+	err = RegisterStatic()
+	if err != nil {
+		return xerrors.Errorf("RegisterStatic() error: %w", err)
+	}
+
 	r.HandleFunc("/page/{key}", pageHandler).Methods("GET")
 	r.HandleFunc("/file/{key}", fileHandler).Methods("GET")
 	r.HandleFunc("/file/{date}/{key}", fileDateCacheHandler).Methods("GET")
