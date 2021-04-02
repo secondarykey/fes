@@ -87,13 +87,14 @@ func (h ManageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	//セッションの存在を確認
 	u, err := GetSession(r)
 	if err != nil {
-		http.Redirect(w, r, "/login", 301)
+		log.Printf("%+v", err)
+		http.Redirect(w, r, "/login", 302)
 		return
 	}
 
 	if u == nil {
 		log.Println("ユーザがいない")
-		http.Redirect(w, r, "/login", 301)
+		http.Redirect(w, r, "/login", 302)
 		return
 	}
 
