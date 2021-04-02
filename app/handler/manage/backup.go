@@ -12,6 +12,15 @@ import (
 	"time"
 )
 
+func refreshHandler(w http.ResponseWriter, r *http.Request) {
+	err := datastore.RefreshSite(r.Context())
+	if err != nil {
+		errorPage(w, "Refresh Site Error", err, 500)
+		return
+	}
+	w.Write([]byte("Success."))
+}
+
 func backupHandler(w http.ResponseWriter, r *http.Request) {
 
 	//バイナリを作成

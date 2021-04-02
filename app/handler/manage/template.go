@@ -114,7 +114,6 @@ func referenceTemplateHandler(w http.ResponseWriter, r *http.Request) {
 	t := r.FormValue("type")
 	//参照しているページを取得
 	pages, err := datastore.SelectReferencePages(r, id, t)
-
 	if err != nil {
 		errorPage(w, "Reference template pages Error", err, 500)
 		return
@@ -123,6 +122,8 @@ func referenceTemplateHandler(w http.ResponseWriter, r *http.Request) {
 		errorPage(w, "Reference template pages NotFound", fmt.Errorf(id), 404)
 		return
 	}
+
+	fmt.Println(len(pages))
 
 	//ページからHTMLを更新
 	err = logic.PutHTMLs(r, pages)

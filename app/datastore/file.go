@@ -46,7 +46,7 @@ func (f *File) Save() ([]datastore.Property, error) {
 }
 
 func createFileKey(name string) *datastore.Key {
-	return datastore.NameKey(KindFileName, name, nil)
+	return datastore.NameKey(KindFileName, name, createSiteKey())
 }
 
 func GetAllFile(ctx context.Context) ([]*File, error) {
@@ -328,7 +328,7 @@ func (d *FileData) LoadKey(k *datastore.Key) error {
 }
 
 func createFileDataKey(name string) *datastore.Key {
-	return datastore.NameKey(KindFileDataName, name, nil)
+	return datastore.NameKey(KindFileDataName, name, createSiteKey())
 }
 
 func convertImage(r io.Reader) ([]byte, bool, error) {

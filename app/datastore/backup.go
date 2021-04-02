@@ -7,9 +7,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"golang.org/x/xerrors"
-
 	"cloud.google.com/go/datastore"
+	"golang.org/x/xerrors"
 )
 
 type GobKind map[string][]byte
@@ -179,7 +178,7 @@ func getAllKind(ctx context.Context, cli *datastore.Client, name string, dst int
 	q := datastore.NewQuery(name)
 	keys, err := cli.GetAll(ctx, q, dst)
 	if err != nil {
-		return nil, xerrors.Errorf("GetAll() error: %w", err)
+		return nil, xerrors.Errorf("GetAll() [%s] error: %w", name, err)
 	}
 	return keys, nil
 }
@@ -210,6 +209,8 @@ func PutBackupData(r *http.Request, backup BackupData) error {
 	}
 
 	for kind, elm := range backup {
+
+		//Siteの場合を行わない
 
 		var entities []HasKey
 		var keys []*datastore.Key
@@ -267,13 +268,9 @@ func getAllKey(ctx context.Context, cli *datastore.Client) ([]*datastore.Key, er
 
 	var rtn []*datastore.Key
 
-	keys, err := getAllKindKey(ctx, cli, KindSiteName)
-	if err != nil {
-		return nil, err
-	}
-	rtn = append(rtn, keys...)
+	rtn = append(rtn, createSiteKey())
 
-	keys, err = getAllKindKey(ctx, cli, KindHTMLName)
+	keys, err := getAllKindKey(ctx, cli, KindHTMLName)
 	if err != nil {
 		return nil, err
 	}
@@ -315,7 +312,7 @@ func getAllKey(ctx context.Context, cli *datastore.Client) ([]*datastore.Key, er
 
 func createEntity(kind string, id string, data []byte) (HasKey, error) {
 
-	key := datastore.NameKey(kind, id, nil)
+	key := datastore.NameKey(kind, id, createSiteKey())
 	reader := bytes.NewBuffer(data)
 	decoder := gob.NewDecoder(reader)
 
@@ -323,6 +320,7 @@ func createEntity(kind string, id string, data []byte) (HasKey, error) {
 	var dst HasKey
 	switch kind {
 	case KindSiteName:
+		//TODO Siteは単独で行う
 		dst = &Site{}
 	case KindHTMLName:
 		dst = &HTML{}
