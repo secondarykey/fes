@@ -4,6 +4,12 @@ import (
 	"net/http"
 )
 
+func RegisterStatic() error {
+	fs := http.StripPrefix("/images/", http.FileServer(GrantFS(statikFS, "/static/images")))
+	http.Handle("/images/", fs)
+    return nil
+}
+
 func RegisterManageStatic() error {
 
 	fs := http.StripPrefix("/manage/", http.FileServer(GrantFS(statikFS, "/static/manage")))

@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/sessions"
+	"golang.org/x/xerrors"
 )
 
 var store = sessions.NewCookieStore([]byte("Let's Festival"))
@@ -14,7 +15,7 @@ func init() {
 	gob.Register(&LoginUser{})
 }
 
-const sessionName = "festival"
+const sessionName = "session"
 
 type LoginUser struct {
 	Email string
@@ -39,7 +40,7 @@ func NewLoginUser(email string, token string) *LoginUser {
 func GetSession(r *http.Request) (*LoginUser, error) {
 	sess, err := store.Get(r, sessionName)
 	if err != nil {
-		return nil, err
+		return nil, xerrors.Errorf("store.Get() error: %w", err)
 	}
 
 	obj := sess.Values["User"]
@@ -53,7 +54,7 @@ func SetSession(w http.ResponseWriter, r *http.Request, u *LoginUser) error {
 
 	sess, err := store.Get(r, sessionName)
 	if err != nil {
-		return err
+		return xerrors.Errorf("store.Get() error: %w", err)
 	}
 
 	sess.Options = getSessionOptions()

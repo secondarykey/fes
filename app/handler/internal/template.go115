@@ -3,6 +3,7 @@ package internal
 import (
 	"app/api"
 	_ "app/handler/internal/statik"
+	"io"
 	"log"
 	"os"
 	"strings"
