@@ -33,7 +33,7 @@ func (h *HTML) Save() ([]datastore.Property, error) {
 }
 
 func CreateHTMLKey(id string) *datastore.Key {
-	return datastore.NameKey(KindHTMLName, id, nil)
+	return datastore.NameKey(KindHTMLName, id, createSiteKey())
 }
 
 func GetHTML(ctx context.Context, id string) (*HTML, error) {

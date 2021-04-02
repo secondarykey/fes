@@ -101,6 +101,8 @@ func PutHTML(r *http.Request, id string) error {
 
 	htmls := make([]*datastore.HTML, len(dtos))
 
+	//pageを廃止する
+
 	for idx, dto := range dtos {
 		var buf []byte
 		w := bytes.NewBuffer(buf)
@@ -125,7 +127,6 @@ func PutHTML(r *http.Request, id string) error {
 		}
 
 		html.Content = w.Bytes()
-		html.Children = len(dtos)
 		htmls[idx] = html
 	}
 

@@ -6,13 +6,15 @@ import (
 
 	"cloud.google.com/go/datastore"
 	"golang.org/x/xerrors"
+	"google.golang.org/api/option"
 )
 
 const NoLimitCursor = "NoLimit"
 
-func createClient(ctx context.Context) (*datastore.Client, error) {
+func createClient(ctx context.Context, opts ...option.ClientOption) (*datastore.Client, error) {
 	c := config.Get()
-	cli, err := datastore.NewClient(ctx, c.ProjectID)
+	cli, err := datastore.NewClient(ctx, c.ProjectID, opts...)
+
 	if err != nil {
 		return nil, xerrors.Errorf("datastore.CreateClient() error: %w")
 	}

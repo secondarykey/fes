@@ -50,7 +50,7 @@ func (p *Page) Save() ([]datastore.Property, error) {
 }
 
 func CreatePageKey(id string) *datastore.Key {
-	return datastore.NameKey(KindPageName, id, nil)
+	return datastore.NameKey(KindPageName, id, createSiteKey())
 }
 
 func SelectPages(ctx context.Context) ([]*Page, error) {
@@ -301,19 +301,24 @@ func RemovePage(r *http.Request, id string) error {
 	}
 
 	_, err = cli.RunInTransaction(ctx, func(tx *datastore.Transaction) error {
+
 		pkey := CreatePageKey(id)
 		err = tx.Delete(pkey)
 		if err != nil {
 			return err
 		}
+
 		pdkey := CreatePageDataKey(id)
 		err = tx.Delete(pdkey)
 		if err != nil {
 			return err
 		}
+
 		if ExistFile(r, id) {
 			return RemoveFile(r, id)
 		}
+
+		//TODO HTMLを削除
 		return nil
 	})
 
@@ -425,7 +430,7 @@ func (d *PageData) LoadKey(k *datastore.Key) error {
 }
 
 func CreatePageDataKey(id string) *datastore.Key {
-	return datastore.NameKey(KindPageDataName, id, nil)
+	return datastore.NameKey(KindPageDataName, id, createSiteKey())
 }
 
 func SelectPageData(r *http.Request, id string) (*PageData, error) {

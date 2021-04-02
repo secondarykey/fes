@@ -41,8 +41,8 @@ func PutTemplate(r *http.Request) error {
 	id := vars["key"]
 
 	ctx := r.Context()
-	tmpKey := datastore.NameKey(KindTemplateName, id, nil)
-	tmpDataKey := datastore.NameKey(KindTemplateDataName, id, nil)
+	tmpKey := SetTemplateKey(id)
+	tmpDataKey := createTemplateDataKey(id)
 
 	template := Template{}
 	templateData := TemplateData{}
@@ -104,14 +104,18 @@ func PutTemplate(r *http.Request) error {
 
 func CreateTemplateKey() *datastore.Key {
 	id := uuid.NewV4()
-	return datastore.NameKey(KindTemplateName, id.String(), nil)
+	return datastore.NameKey(KindTemplateName, id.String(), createSiteKey())
+}
+
+func SetTemplateKey(id string) *datastore.Key {
+	return datastore.NameKey(KindTemplateName, id, createSiteKey())
 }
 
 func SelectTemplate(r *http.Request, id string) (*Template, error) {
 	temp := Template{}
 	ctx := r.Context()
 	//Method
-	key := datastore.NameKey(KindTemplateName, id, nil)
+	key := SetTemplateKey(id)
 	cli, err := createClient(ctx)
 	if err != nil {
 		return nil, xerrors.Errorf("createClient() error: %w", err)
@@ -190,11 +194,15 @@ func (d *TemplateData) LoadKey(k *datastore.Key) error {
 	return nil
 }
 
+func createTemplateDataKey(id string) *datastore.Key {
+	return datastore.NameKey(KindTemplateDataName, id, createSiteKey())
+}
+
 func SelectTemplateData(r *http.Request, id string) (*TemplateData, error) {
 	temp := TemplateData{}
 	ctx := r.Context()
 	//Method
-	key := datastore.NameKey(KindTemplateDataName, id, nil)
+	key := SetTemplateKey(id)
 	cli, err := createClient(ctx)
 	if err != nil {
 		return nil, xerrors.Errorf("createClient() error: %w", err)
@@ -219,13 +227,13 @@ func RemoveTemplate(r *http.Request, id string) error {
 
 	_, err = cli.RunInTransaction(ctx, func(tx *datastore.Transaction) error {
 
-		key := datastore.NameKey(KindTemplateName, id, nil)
+		key := SetTemplateKey(id)
 		err = tx.Delete(key)
 		if err != nil {
 			return xerrors.Errorf("Template Delete() error: %w", err)
 		}
 
-		dataKey := datastore.NameKey(KindTemplateDataName, id, nil)
+		dataKey := createTemplateDataKey(id)
 		err = tx.Delete(dataKey)
 		if err != nil {
 			return xerrors.Errorf("TemplateData Delete() error: %w", err)
