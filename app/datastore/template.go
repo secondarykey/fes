@@ -201,8 +201,9 @@ func createTemplateDataKey(id string) *datastore.Key {
 func SelectTemplateData(r *http.Request, id string) (*TemplateData, error) {
 	temp := TemplateData{}
 	ctx := r.Context()
+
 	//Method
-	key := SetTemplateKey(id)
+	key := createTemplateDataKey(id)
 	cli, err := createClient(ctx)
 	if err != nil {
 		return nil, xerrors.Errorf("createClient() error: %w", err)

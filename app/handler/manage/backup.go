@@ -2,7 +2,6 @@ package manage
 
 import (
 	"app/datastore"
-	"fmt"
 
 	"archive/zip"
 	"bytes"
@@ -44,8 +43,6 @@ func backupHandler(w http.ResponseWriter, r *http.Request) {
 
 			esp := strings.Replace(key, "?", "_QUESTION_", -1)
 			esp = strings.Replace(esp, "=", "_EQUAL_", -1)
-
-			fmt.Println(kind + "/" + esp)
 
 			writer, err := zipWriter.Create(kind + "/" + esp)
 			if err != nil {

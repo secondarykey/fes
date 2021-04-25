@@ -2,16 +2,33 @@ package datastore
 
 import (
 	"context"
+	"math"
+	"time"
 
 	"golang.org/x/xerrors"
 	"google.golang.org/api/option"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/keepalive"
 )
 
 //TODO Once
 func RefreshSite(ctx context.Context) error {
 
-	cli, err := createClient(ctx, option.WithGRPCDialOption(grpc.WithMaxMsgSize(10_000_000)))
+	grpc.MaxConcurrentStreams(math.MaxInt32)
+
+	cli, err := createClient(ctx,
+		option.WithGRPCDialOption(
+			grpc.WithDefaultCallOptions(
+				grpc.MaxCallRecvMsgSize(10_000_000_000_000),
+				grpc.MaxCallSendMsgSize(10_000_000_000_000),
+			)),
+		option.WithGRPCDialOption(
+			grpc.WithKeepaliveParams(keepalive.ClientParameters{
+				Time:                time.Second * 10,
+				Timeout:             time.Second * 50,
+				PermitWithoutStream: true,
+			})))
+	//cli, err := createClient(ctx)
 	if err != nil {
 		return xerrors.Errorf("createClient() error: %w", err)
 	}

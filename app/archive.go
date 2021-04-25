@@ -9,6 +9,7 @@ import (
 	"golang.org/x/xerrors"
 )
 
+//アーカイブ作成用
 func CreateStaticSite(dir string, opts ...config.Option) error {
 
 	err := config.Set(opts)
