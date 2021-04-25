@@ -15,6 +15,7 @@ import (
 )
 
 const KindSiteName = "Site"
+const SiteEntityKey = "fixing"
 
 var (
 	SiteNotFoundError = fmt.Errorf("site not found")
@@ -44,7 +45,7 @@ func (s *Site) Save() ([]datastore.Property, error) {
 }
 
 func createSiteKey() *datastore.Key {
-	return datastore.NameKey(KindSiteName, "fixing", nil)
+	return datastore.NameKey(KindSiteName, SiteEntityKey, nil)
 }
 
 func PutSite(r *http.Request) error {
@@ -154,6 +155,7 @@ func SelectSite(ctx context.Context, version int) (*Site, error) {
 
 	key := createSiteKey()
 
+	fmt.Println(key)
 	var site Site
 	err = cli.Get(ctx, key, &site)
 

@@ -11,6 +11,10 @@ import (
 
 const NoLimitCursor = "NoLimit"
 
+//
+// GRPC Large
+// cli, err := createClient(ctx, option.WithGRPCDialOption(grpc.WithMaxMsgSize(10_000_000)))
+//
 func createClient(ctx context.Context, opts ...option.ClientOption) (*datastore.Client, error) {
 	c := config.Get()
 	cli, err := datastore.NewClient(ctx, c.ProjectID, opts...)

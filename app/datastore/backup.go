@@ -6,9 +6,12 @@ import (
 	"encoding/gob"
 	"fmt"
 	"net/http"
+	"time"
 
 	"cloud.google.com/go/datastore"
 	"golang.org/x/xerrors"
+	"google.golang.org/api/option"
+	"google.golang.org/grpc"
 )
 
 type GobKind map[string][]byte
@@ -29,7 +32,7 @@ func GetBackupData(r *http.Request) (BackupData, error) {
 	backup := make(BackupData)
 
 	ctx := r.Context()
-	cli, err := createClient(ctx)
+	cli, err := createClient(ctx, option.WithGRPCDialOption(grpc.WithMaxMsgSize(10_000_000)))
 	if err != nil {
 		return nil, xerrors.Errorf("createClient() error: %w", err)
 	}
@@ -191,9 +194,10 @@ func convertGob(dst interface{}) []byte {
 
 func PutBackupData(r *http.Request, backup BackupData) error {
 
-	ctx := r.Context()
+	ctx, cancel := context.WithTimeout(r.Context(), time.Second*10)
+	defer cancel()
 
-	cli, err := createClient(ctx)
+	cli, err := createClient(ctx, option.WithGRPCDialOption(grpc.WithMaxMsgSize(1024*1024*1000)))
 	if err != nil {
 		return xerrors.Errorf("createClient() error: %w", err)
 	}
@@ -203,54 +207,77 @@ func PutBackupData(r *http.Request, backup BackupData) error {
 		return xerrors.Errorf("getAllKey() error: %w", err)
 	}
 
-	err = cli.DeleteMulti(ctx, keys)
-	if err != nil {
-		return xerrors.Errorf("backup data DeleteMulti() error: %w", err)
+	//サイトデータのみ抜き出す
+	siteData, ok := backup[KindSiteName]
+	if !ok {
+		return xerrors.Errorf("getAllKey() error: %w", err)
+	}
+	if len(siteData) != 1 {
+		return xerrors.Errorf("site data is once error: %w", err)
 	}
 
-	for kind, elm := range backup {
+	site, err := createEntity(KindSiteName, SiteEntityKey, siteData[SiteEntityKey])
+	if err != nil {
+		return xerrors.Errorf("createKind error: %w", err)
+	}
 
-		//Siteの場合を行わない
+	_, err = cli.RunInTransaction(ctx, func(tx *datastore.Transaction) error {
 
-		var entities []HasKey
-		var keys []*datastore.Key
-		for key, data := range elm {
-			has, err := createEntity(kind, key, data)
-			if err != nil {
-				return xerrors.Errorf("createKind error: %w", err)
-			}
-			entities = append(entities, has)
-			keys = append(keys, has.GetKey())
+		err = tx.DeleteMulti(keys)
+		if err != nil {
+			return xerrors.Errorf("backup data DeleteMulti() error: %w", err)
 		}
 
-		if kind != "FileData" {
-			_, err = cli.PutMulti(ctx, keys, entities)
+		_, err = tx.Put(site.GetKey(), site)
+		if err != nil {
+			return xerrors.Errorf("site data Put() error: %w", err)
+		}
+
+		for kind, elm := range backup {
+
+			//TODO gRPC cancel reson
+			if kind == KindSiteName || kind == KindFileDataName {
+				continue
+			}
+			//Siteの場合を行わない
+			var entities []HasKey
+			var keys []*datastore.Key
+
+			for key, data := range elm {
+				has, err := createEntity(kind, key, data)
+				if err != nil {
+					return xerrors.Errorf("createKind error: %w", err)
+				}
+				entities = append(entities, has)
+				keys = append(keys, has.GetKey())
+			}
+
+			_, err = tx.PutMulti(keys, entities)
 			if err != nil {
 				return xerrors.Errorf("entities PutMulti() error: %w", err)
 			}
-		} else {
-			width := 10
-			flag := true
-			leng := len(keys)
-			idx := 0
+		}
+		return nil
+	})
 
-			for flag {
-				last := idx + width
-				if last >= leng {
-					flag = false
-					last = leng
-				}
-				wkk := keys[idx:last]
-				wke := entities[idx:last]
+	if err != nil {
+		return xerrors.Errorf("restore tx error: %w", err)
+	}
 
-				_, err = cli.PutMulti(ctx, wkk, wke)
-				if err != nil {
-					return xerrors.Errorf("entities PutMulti() error: %w", err)
-				}
-				idx = last
-			}
+	//TODO gRPC cancel reson
+	data := backup[KindFileDataName]
+	for key, entity := range data {
+		has, err := createEntity(KindFileDataName, key, entity)
+		if err != nil {
+			return xerrors.Errorf("createEntiry error: %w", err)
+		}
+		_, err = cli.Put(ctx, has.GetKey(), has)
+		if err != nil {
+			return xerrors.Errorf("FileData Put() error: %w", err)
 		}
 	}
+
+	//TODO gRPC cancel reson
 
 	return nil
 }
@@ -312,7 +339,11 @@ func getAllKey(ctx context.Context, cli *datastore.Client) ([]*datastore.Key, er
 
 func createEntity(kind string, id string, data []byte) (HasKey, error) {
 
-	key := datastore.NameKey(kind, id, createSiteKey())
+	key := datastore.NameKey(kind, id, nil)
+	if kind != KindSiteName {
+		key = datastore.NameKey(kind, id, createSiteKey())
+	}
+
 	reader := bytes.NewBuffer(data)
 	decoder := gob.NewDecoder(reader)
 
@@ -320,7 +351,6 @@ func createEntity(kind string, id string, data []byte) (HasKey, error) {
 	var dst HasKey
 	switch kind {
 	case KindSiteName:
-		//TODO Siteは単独で行う
 		dst = &Site{}
 	case KindHTMLName:
 		dst = &HTML{}
