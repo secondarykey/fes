@@ -183,8 +183,10 @@ func changePublicPageHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func changePrivatePageHandler(w http.ResponseWriter, r *http.Request) {
+
 	vars := mux.Vars(r)
 	id := vars["key"]
+
 	err := datastore.RemoveHTML(r, id)
 	if err != nil {
 		errorPage(w, "Error Private HTML", err, 500)

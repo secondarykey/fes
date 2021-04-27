@@ -5,6 +5,10 @@ Edit Page[
 {{ end }}
 ]
 
+<a href="/manage/page/view/{{ .Page.Key.Name }}" target="private">Private</a> | 
+<a href="/page/{{ .Page.Key.Name }}" target="public">Public</a>
+
+
 {{ if .Publish }}
         <button type="button" id="generateBtn" class="mdl-button mdl-js-button mdl-button--raised mdl-button--primary">
           Publish
@@ -14,6 +18,7 @@ Edit Page[
 {{end}}
 
 {{define "page_template"}}
+
 
 <form id="editForm" method="post" action="/manage/page/{{ .Page.Key.Name }}" enctype="multipart/form-data">
 <table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp" width="100%">
@@ -29,10 +34,13 @@ Edit Page[
 
     <tr>
       <td class="mdl-data-table__cell--non-numeric">
+
         <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="publish">
           <span class="mdl-switch__label">Enabled</span>
           <input type="checkbox" name="publish" id="publish" class="mdl-switch__input" {{if not .Page.Deleted}}checked{{end}}>
+
         </label>
+
       </td>
     </tr>
 
@@ -159,6 +167,10 @@ Edit Page[
 
     <tr>
       <td class="mdl-data-table__cell--non-numeric">
+        <button type="button" id="privateBtn" class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent">
+          Private
+        </button>
+
         <button type="button" id="removeBtn" class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent">
           Remove
         </button>
@@ -243,6 +255,14 @@ Edit Page[
     });
 {{ end }}
 
+    var privateBtn = document.querySelector('#privateBtn');
+    privateBtn.addEventListener('click', function() {
+      confirmFes(function() {
+        var type = "private";
+        window.location.href = "/manage/page/" + type + "/{{ .Page.Key.Name }}";
+      });
+    });
+
     var removeBtn = document.querySelector('#removeBtn');
     removeBtn.addEventListener('click', function() {
       confirmFes(function() {
@@ -258,8 +278,6 @@ Edit Page[
         alertFes("select template");
         return;
       }
-      //var publish = document.querySelector('#publish');
-      //console.log(publish.value);
       confirmFes(function() {
         var updateForm = document.querySelector('#editForm');
         updateForm.submit();
