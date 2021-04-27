@@ -155,7 +155,6 @@ func SelectSite(ctx context.Context, version int) (*Site, error) {
 
 	key := createSiteKey()
 
-	fmt.Println(key)
 	var site Site
 	err = cli.Get(ctx, key, &site)
 
