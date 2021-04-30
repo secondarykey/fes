@@ -1,6 +1,7 @@
 package datastore
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -216,10 +217,9 @@ func SelectTemplateData(r *http.Request, id string) (*TemplateData, error) {
 	return &temp, nil
 }
 
-func RemoveTemplate(r *http.Request, id string) error {
+func RemoveTemplate(ctx context.Context, id string) error {
 
 	var err error
-	ctx := r.Context()
 
 	cli, err := createClient(ctx)
 	if err != nil {

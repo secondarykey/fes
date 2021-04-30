@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"golang.org/x/xerrors"
 )
 
 func viewTemplateHandler(w http.ResponseWriter, r *http.Request) {
@@ -92,12 +93,17 @@ func deleteTemplateHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["key"]
 
-	if datastore.UsingTemplate(r, id) {
-		errorPage(w, "Using Template", fmt.Errorf(id), 500)
+	ctx := r.Context()
+
+	if ok, err := datastore.UsingTemplate(ctx, id); err != nil {
+		errorPage(w, "Using Template", xerrors.Errorf("datastore.UsingTemplate() error : %w", err), 500)
+		return
+	} else if !ok {
+		errorPage(w, "Using Template", fmt.Errorf("Using template[%s]", id), 500)
 		return
 	}
 
-	err := datastore.RemoveTemplate(r, id)
+	err := datastore.RemoveTemplate(ctx, id)
 	if err != nil {
 		errorPage(w, "Remove Template Error", err, 500)
 		return

@@ -2,7 +2,6 @@ package datastore
 
 import (
 	"context"
-	"log"
 
 	"errors"
 	"fmt"
@@ -252,33 +251,50 @@ func PutPage(r *http.Request) error {
 	return nil
 }
 
-func UsingTemplate(r *http.Request, id string) bool {
+func UsingTemplate(ctx context.Context, id string) (bool, error) {
 
 	var err error
-	ctx := r.Context()
-
 	cli, err := createClient(ctx)
 	if err != nil {
-		log.Printf("createClient error UsingTemplate() %+v\n", err)
-		return true
+		return true, xerrors.Errorf("createClient() error: %w", err)
 	}
 
-	siteQ := datastore.NewQuery(KindPageName).Filter("SiteTemplate=", id).Limit(1)
-	siteT := cli.Run(ctx, siteQ)
-
-	//TODO なんか違う気がする
-
-	var page Page
-	_, err = siteT.Next(&page)
-	if errors.Is(err, iterator.Done) {
-		pageQ := datastore.NewQuery(KindPageName).Filter("PageTemplate=", id).Limit(1)
-		pageT := cli.Run(ctx, pageQ)
-		_, err = pageT.Next(&page)
-		if errors.Is(err, iterator.Done) {
-			return false
+	siteQ := datastore.NewQuery(KindPageName).Filter("SiteTemplate=", id).Limit(1).KeysOnly()
+	keys, err := cli.GetAll(ctx, siteQ, nil)
+	if err != nil {
+		if !errors.Is(err, datastore.ErrNoSuchEntity) {
+			return true, xerrors.Errorf("SiteTemplate Select error: %w", err)
 		}
 	}
-	return true
+
+	if len(keys) > 0 {
+		return true, fmt.Errorf("SiteTemplate Using [%v]", getIDs(keys))
+	}
+
+	pageQ := datastore.NewQuery(KindPageName).Filter("PageTemplate=", id).Limit(1).KeysOnly()
+	keys, err = cli.GetAll(ctx, pageQ, nil)
+	if err != nil {
+		if !errors.Is(err, datastore.ErrNoSuchEntity) {
+			return true, xerrors.Errorf("SiteTemplate Select error: %w", err)
+		}
+	}
+
+	if len(keys) > 0 {
+		return true, fmt.Errorf("SiteTemplate Using [%v]", getIDs(keys))
+	}
+
+	return false, nil
+}
+
+func getIDs(keys []*datastore.Key) []string {
+
+	ids := make([]string, len(keys))
+
+	for idx, key := range keys {
+		ids[idx] = key.Name
+	}
+
+	return ids
 }
 
 func RemovePage(r *http.Request, id string) error {
