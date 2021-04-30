@@ -268,7 +268,7 @@ func UsingTemplate(ctx context.Context, id string) (bool, error) {
 	}
 
 	if len(keys) > 0 {
-		return true, fmt.Errorf("SiteTemplate Using [%v]", getIDs(keys))
+		return true, fmt.Errorf("This ID is used as a Site Template PageID=%v", getIDs(keys))
 	}
 
 	pageQ := datastore.NewQuery(KindPageName).Filter("PageTemplate=", id).Limit(1).KeysOnly()
@@ -280,21 +280,10 @@ func UsingTemplate(ctx context.Context, id string) (bool, error) {
 	}
 
 	if len(keys) > 0 {
-		return true, fmt.Errorf("SiteTemplate Using [%v]", getIDs(keys))
+		return true, fmt.Errorf("This ID is used as a Page Template PageID=%v", getIDs(keys))
 	}
 
 	return false, nil
-}
-
-func getIDs(keys []*datastore.Key) []string {
-
-	ids := make([]string, len(keys))
-
-	for idx, key := range keys {
-		ids[idx] = key.Name
-	}
-
-	return ids
 }
 
 func RemovePage(r *http.Request, id string) error {

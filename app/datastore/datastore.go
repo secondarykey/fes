@@ -47,3 +47,14 @@ func Put(tx *datastore.Transaction, dst HasKey) error {
 	}
 	return nil
 }
+
+func getIDs(keys []*datastore.Key) []string {
+
+	ids := make([]string, len(keys))
+
+	for idx, key := range keys {
+		ids[idx] = key.Name
+	}
+
+	return ids
+}
