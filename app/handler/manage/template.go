@@ -16,7 +16,13 @@ func viewTemplateHandler(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
 	cursor := q.Get("cursor")
 
-	data, next, err := datastore.SelectTemplates(r, cursor)
+	vars := mux.Vars(r)
+	t, flag := vars["type"]
+	if !flag {
+		t = "2"
+	}
+
+	data, next, err := datastore.SelectTemplates(r.Context(), t, cursor)
 	if err != nil {
 		errorPage(w, "Error Select Template", err, 500)
 		return
@@ -98,7 +104,7 @@ func deleteTemplateHandler(w http.ResponseWriter, r *http.Request) {
 	if ok, err := datastore.UsingTemplate(ctx, id); err != nil {
 		errorPage(w, "Using Template", xerrors.Errorf("datastore.UsingTemplate() error : %w", err), 500)
 		return
-	} else if !ok {
+	} else if ok {
 		errorPage(w, "Using Template", fmt.Errorf("Using template[%s]", id), 500)
 		return
 	}
@@ -128,8 +134,6 @@ func referenceTemplateHandler(w http.ResponseWriter, r *http.Request) {
 		errorPage(w, "Reference template pages NotFound", fmt.Errorf(id), 404)
 		return
 	}
-
-	fmt.Println(len(pages))
 
 	//ページからHTMLを更新
 	err = logic.PutHTMLs(r, pages)

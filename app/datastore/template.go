@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -13,6 +14,12 @@ import (
 
 	"cloud.google.com/go/datastore"
 	"golang.org/x/xerrors"
+)
+
+const (
+	TemplateTypeAll  = 0
+	TemplateTypeSite = 1
+	TemplateTypePage = 2
 )
 
 const KindTemplateName = "Template"
@@ -115,6 +122,7 @@ func SetTemplateKey(id string) *datastore.Key {
 func SelectTemplate(r *http.Request, id string) (*Template, error) {
 	temp := Template{}
 	ctx := r.Context()
+
 	//Method
 	key := SetTemplateKey(id)
 	cli, err := createClient(ctx)
@@ -133,13 +141,21 @@ func SelectTemplate(r *http.Request, id string) (*Template, error) {
 	return &temp, nil
 }
 
-func SelectTemplates(r *http.Request, cur string) ([]Template, string, error) {
+func SelectTemplates(ctx context.Context, ty string, cur string) ([]Template, string, error) {
 
 	var rtn []Template
 
-	ctx := r.Context()
-
 	q := datastore.NewQuery(KindTemplateName).Order("- UpdatedAt")
+
+	if ty != "all" {
+		v, err := strconv.Atoi(ty)
+		if err == nil {
+			q = q.Filter("Type=", v)
+		} else {
+			log.Println("strconv parse error", ty)
+		}
+	}
+
 	if cur != NoLimitCursor {
 		q = q.Limit(10)
 		if cur != "" {

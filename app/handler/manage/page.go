@@ -72,8 +72,10 @@ func view(w http.ResponseWriter, r *http.Request, page *datastore.Page) {
 
 	publish := false
 
+	ctx := r.Context()
+
 	//全件検索
-	templates, _, err := datastore.SelectTemplates(r, datastore.NoLimitCursor)
+	templates, _, err := datastore.SelectTemplates(ctx, "all", datastore.NoLimitCursor)
 	if err != nil {
 		errorPage(w, "Error Select Template", err, 500)
 		return

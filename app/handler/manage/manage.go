@@ -52,6 +52,7 @@ func Register() error {
 
 	//Template
 	s.HandleFunc("/template/", viewTemplateHandler).Methods("GET")
+	s.HandleFunc("/template/type/{type}", viewTemplateHandler).Methods("GET")
 	s.HandleFunc("/template/add", addTemplateHandler).Methods("GET")
 	s.HandleFunc("/template/edit/{key}", editTemplateHandler)
 	s.HandleFunc("/template/delete/{key}", deleteTemplateHandler)
