@@ -141,8 +141,8 @@ func PutHTML(r *http.Request, id string) error {
 func PutHTMLs(r *http.Request, pages []datastore.Page) error {
 
 	var err error
+
 	//HTMLとを作成
-	//HTMLキーを作成
 	htmlData := make([][]byte, 0)
 	keys := make([]string, 0)
 
