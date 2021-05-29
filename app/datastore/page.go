@@ -402,19 +402,11 @@ func SelectReferencePages(r *http.Request, id string, typ string) ([]Page, error
 	}
 
 	q := datastore.NewQuery(KindPageName).Filter(filter, id)
-	t := cli.Run(ctx, q)
-	for {
-		var page Page
-		_, err := t.Next(&page)
-		if errors.Is(err, iterator.Done) {
-			break
-		}
-
-		if err != nil {
-			return nil, err
-		}
-		pages = append(pages, page)
+	_, err = cli.GetAll(ctx, q, &pages)
+	if err != nil {
+		return nil, xerrors.Errorf("GetAll() error: %w", err)
 	}
+
 	return pages, nil
 }
 

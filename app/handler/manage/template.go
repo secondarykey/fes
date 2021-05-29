@@ -130,6 +130,7 @@ func referenceTemplateHandler(w http.ResponseWriter, r *http.Request) {
 		errorPage(w, "Reference template pages Error", err, 500)
 		return
 	}
+
 	if pages == nil || len(pages) <= 0 {
 		errorPage(w, "Reference template pages NotFound", fmt.Errorf(id), 404)
 		return
