@@ -1,15 +1,15 @@
-runtime: go116
+runtime: go115
 main: app/_cmd
 
 instance_class: F1
 automatic_scaling:
-  target_cpu_utilization: 0.75
-  target_throughput_utilization: 0.75
-  max_instances: 2
+  target_cpu_utilization: 0.90
+  target_throughput_utilization: 0.90
   min_instances: 0
-  max_idle_instances: automatic
+  max_instances: 2
   min_idle_instances: 0
-  min_pending_latency: 30ms
+  max_idle_instances: 2
+  min_pending_latency: 2000ms
   max_pending_latency: automatic
-  max_concurrent_requests: 20
+  max_concurrent_requests: 60
 
