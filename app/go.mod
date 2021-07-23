@@ -11,7 +11,7 @@ require (
 	github.com/gorilla/mux v1.8.0
 	github.com/gorilla/sessions v1.2.1
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
-	github.com/rakyll/statik v0.1.7 // indirect
+	github.com/rakyll/statik v0.1.7
 	github.com/satori/go.uuid v1.2.0
 	golang.org/x/mod v0.4.2 // indirect
 	golang.org/x/net v0.0.0-20210331212208-0fccb6fa2b5c // indirect

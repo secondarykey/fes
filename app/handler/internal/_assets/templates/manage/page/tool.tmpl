@@ -10,19 +10,22 @@ Children Page Tool[<a href="/manage/page/{{ .Parent }}">Parent</a>]
   <thead>
     <tr>
       <th class="mdl-data-table__cell--non-numeric">Name</th>
-      <th class="mdl-data-table__cell--non-numeric">Enabled</th>
-      <th>Create</th>
-      <th>Update</th>
-      <th> </th>
-      <th> </th>
-      <th> </th>
+      <th style="width:80px;" class="mdl-data-table__cell--non-numeric">Enabled</th>
+      <th style="width:160px;">Create / Update</th>
+      <th style="width:50px;"> </th>
+      <th style="width:50px;"> </th>
+      <th style="width:50px;"> </th>
     </tr>
   </thead>
   <tbody id="seqBody">
 {{ range $i, $v := .Pages}}
     <tr class="seqRow" data-index="{{$i}}" data-id="{{.Key.Name}}" data-version="{{.Version}}">
 
-      <td class="mdl-data-table__cell--non-numeric"><a href="/manage/page/{{ .Key.Name}}" target="_page_editor" {{if .Deleted}}style="color:red;"{{end}}>{{ .Name }}</a></td>
+      <td class="mdl-data-table__cell--non-numeric">
+        <a href="/manage/page/{{ .Key.Name}}" target="_page_editor" {{if .Deleted}}style="color:red;"{{end}}>{{ .Name }}</a>
+        <br>
+        <span style="font-size:10px;color:#999999;">{{ .Key.Name }}</span>
+      </td>
 
       <td class="mdl-data-table__cell--non-numeric">
         <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect">
@@ -30,8 +33,7 @@ Children Page Tool[<a href="/manage/page/{{ .Parent }}">Parent</a>]
         </label>
       </td>
 
-      <td>{{convertDate .CreatedAt}}</td>
-      <td>{{convertDate .UpdatedAt}}</td>
+      <td>{{convertDate .CreatedAt}} <br> {{convertDate .UpdatedAt}}</td>
 
       <td>
         <button class="mdl-button mdl-js-button mdl-button--icon upBtn">
@@ -43,14 +45,13 @@ Children Page Tool[<a href="/manage/page/{{ .Parent }}">Parent</a>]
             <i class="material-icons">arrow_downward</i>
         </button>
       </td>
-
       <td>
         <!-- Left aligned menu below button -->
         <button id="MostButton_{{.Key.Name}}"
                 class="mdl-button mdl-js-button mdl-button--icon">
           <i class="material-icons">more_vert</i>
         </button>
-        <ul class="mdl-menu mdl-menu--bottom-left mdl-js-menu mdl-js-ripple-effect" for="MostButton_{{.Key.Name}}">
+        <ul class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect" for="MostButton_{{.Key.Name}}">
           <li class="mdl-menu__item">
             <button class="mdl-button mdl-js-button mdl-button--icon mostUpBtn">
               <i class="material-icons">vertical_align_top</i>

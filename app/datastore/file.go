@@ -49,7 +49,7 @@ func createFileKey(name string) *datastore.Key {
 	return datastore.NameKey(KindFileName, name, createSiteKey())
 }
 
-func GetAllFile(ctx context.Context) ([]*File, error) {
+func GetAllFiles(ctx context.Context) ([]*File, error) {
 
 	var dst []*File
 	q := datastore.NewQuery(KindFileName)
