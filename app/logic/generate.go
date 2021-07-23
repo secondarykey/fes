@@ -136,9 +136,9 @@ func createAssetFiles(dir string) (map[string]string, error) {
 		return nil, xerrors.Errorf("assets make directory error: %w", err)
 	}
 
-	files, err := datastore.GetAllFile(context.Background())
+	files, err := datastore.GetAllFiles(context.Background())
 	if err != nil {
-		return nil, xerrors.Errorf("datastore.GetAllFile() error: %w", err)
+		return nil, xerrors.Errorf("datastore.GetAllFiles() error: %w", err)
 	}
 
 	rtn := make(map[string]string)
@@ -274,7 +274,52 @@ func createChangeFile(name string, htmlMap, fileMap map[string]string) (string, 
 	}
 	defer tmp.Close()
 
-	tmp.Write([]byte(buf))
+	_, err = tmp.Write([]byte(buf))
+	if err != nil {
+		return "", xerrors.Errorf("Write() error: %w", err)
+	}
 
 	return tmpName, nil
+}
+
+func GenerateFiles(dir string) error {
+
+	err := os.Mkdir(dir, 0777)
+	if err != nil {
+		return xerrors.Errorf("make directory error: %w", err)
+	}
+
+	files, err := datastore.GetAllFiles(context.Background())
+	if err != nil {
+		return xerrors.Errorf("datastore.GetAllFiles() error: %w", err)
+	}
+
+	for _, file := range files {
+
+		name := file.GetKey().Name
+		//FileData検索
+		data, err := datastore.GetFileData(context.Background(), name)
+		if err != nil {
+			return xerrors.Errorf("datastore.GetFileData() error: %w", err)
+		}
+
+		mime := data.Mime
+
+		rename := name
+		if strings.Index(name, ".") == -1 {
+			if v, ok := exts[mime]; ok {
+				rename = fmt.Sprintf("%s.%s", name, v)
+			} else {
+				log.Printf("Not Found mime[%s]", mime)
+			}
+		}
+
+		fmt.Println("Generate", rename)
+		path := filepath.Join(dir, rename)
+		err = createFile(path, data.Content)
+		if err != nil {
+			return xerrors.Errorf("createFile() error: %w", err)
+		}
+	}
+	return nil
 }

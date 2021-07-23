@@ -28,6 +28,9 @@ Edit Page[
         <div class="mdl-textfield mdl-js-textfield">
           <input class="mdl-textfield__input" type="text" id="pageName" name="pageName" value="{{ .Page.Name }}">
           <label class="mdl-textfield__label" for="pageName">Name...</label>
+
+          <span style="font-size:10px;color:#999999;">{{.Page.Key.Name}}</span>
+
         </div>
       </td>
     </tr>
