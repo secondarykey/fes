@@ -29,7 +29,6 @@ func pageHandler(w http.ResponseWriter, r *http.Request) {
 
 func pageView(w http.ResponseWriter, r *http.Request, id string) {
 
-	w.Header().Set("Cache-Control", "public, max-age=3600")
 	//ページを取得してIDを作成
 	val := r.URL.Query()
 	page := val.Get("page")

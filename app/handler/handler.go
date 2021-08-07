@@ -6,12 +6,16 @@ import (
 	"log"
 
 	"net/http"
+	//_ "net/http/pprof"
 
 	"github.com/gorilla/mux"
 	"golang.org/x/xerrors"
 )
 
 func Register() error {
+
+	//TODO
+	// アーカイブの自動化
 
 	err := RegisterArchive("2020")
 	if err != nil {
@@ -35,6 +39,13 @@ func Register() error {
 	r.HandleFunc("/session", sessionHandler).Methods("POST")
 	r.HandleFunc("/sitemap/", sitemap).Methods("GET")
 	r.HandleFunc("/", indexHandler).Methods("GET")
+
+	//TODO
+	// エラーページ
+	// JavaScript 埋め込みモード
+	// Stylesheet 埋め込みモード
+	// favicon.ico
+	// robot.txt
 
 	http.Handle("/", r)
 

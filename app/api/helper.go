@@ -63,7 +63,7 @@ func (p Helper) ConvertTemplate(data string) template.HTML {
 		dto.Top = "/manage/page/view/"
 	}
 
-	buf := bytes.NewBuffer(make([]byte, 0, len(data)+30))
+	buf := bytes.NewBuffer(make([]byte, 0, len(data)+500))
 	err = tmpl.Execute(buf, dto)
 	if err != nil {
 		return template.HTML(fmt.Sprintf("Template Execute Error[%s]", err))
