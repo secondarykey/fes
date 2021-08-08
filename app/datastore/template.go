@@ -119,9 +119,8 @@ func SetTemplateKey(id string) *datastore.Key {
 	return datastore.NameKey(KindTemplateName, id, createSiteKey())
 }
 
-func SelectTemplate(r *http.Request, id string) (*Template, error) {
+func SelectTemplate(ctx context.Context, id string) (*Template, error) {
 	temp := Template{}
-	ctx := r.Context()
 
 	//Method
 	key := SetTemplateKey(id)
@@ -215,9 +214,8 @@ func createTemplateDataKey(id string) *datastore.Key {
 	return datastore.NameKey(KindTemplateDataName, id, createSiteKey())
 }
 
-func SelectTemplateData(r *http.Request, id string) (*TemplateData, error) {
+func SelectTemplateData(ctx context.Context, id string) (*TemplateData, error) {
 	temp := TemplateData{}
-	ctx := r.Context()
 
 	//Method
 	key := createTemplateDataKey(id)

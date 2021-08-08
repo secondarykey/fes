@@ -1,0 +1,80 @@
+{{define "title"}}
+Edit Varible
+{{end}}
+
+{{define "page_template"}}
+
+<form method="post" action="/manage/variable/edit" name="updateForm">
+{{ if .Variable.Key  }}
+<input type="hidden" name="check" value="false">
+{{ else }}
+<input type="hidden" name="check" value="true">
+{{ end }}
+
+<table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp" width="100%">
+  <tbody>
+    <tr>
+      <td class="mdl-data-table__cell--non-numeric">
+        <div class="mdl-textfield mdl-js-textfield">
+{{ if .Variable.Key  }}
+          {{ .Variable.Key.Name }}
+          <input type="hidden" name="keyValue" value="{{ .Variable.Key.Name }}">
+{{ else }}
+          <input class="mdl-textfield__input" type="text" id="variableName" name="keyValue" value="">
+          <label class="mdl-textfield__label" for="variableName">Variable Name...</label>
+{{end}}
+        </div>
+      </td>
+    </tr>
+
+    <tr>
+      <td class="mdl-data-table__cell--non-numeric">
+        <button type="button" id="variableTxt" class="mdl-button mdl-js-button mdl-button--raised">EditTool</button>
+        <br>
+        <div class="mdl-textfield mdl-js-textfield" style="width:100%;">
+          <textarea class="mdl-textfield__input" type="text" id="variableData" name="variableData" rows="10" style="width:100%;">{{ plane .VariableData.Content }}</textarea>
+          <label class="mdl-textfield__label" for="pageContent">Variable Data...</label>
+        </div>
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        <button type="button" id="updateBtn" class="mdl-button mdl-js-button mdl-button--raised mdl-button--primary">
+          Update
+        </button>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+  <input type="hidden" name="version" value="{{ .Variable.Version }}">
+
+</form>
+
+<script>
+
+    var txtDialogBtn = document.querySelector('#variableTxt');
+    txtDialogBtn.addEventListener('click', function() {
+      editTextArea(document.querySelector('#variableData'));
+    });
+
+    var updateBtn = document.querySelector('#updateBtn');
+    updateBtn.addEventListener('click', function() {
+
+{{ if .Variable.Key  }}
+{{ else }}
+      var nameTag = document.querySelector('#variableName');
+      if ( nameTag.value == "" ) {
+        alertFes("Edit Name!");
+        return;
+      }
+{{ end }}
+      confirmFes(function() {
+        var form = document.forms.updateForm;
+        form.submit();
+      });
+    });
+
+</script>
+{{ end }}

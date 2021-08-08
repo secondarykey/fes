@@ -66,9 +66,11 @@ func editTemplateHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+
 	vars := mux.Vars(r)
 	id := vars["key"]
-	tmp, err := datastore.SelectTemplate(r, id)
+	ctx := r.Context()
+	tmp, err := datastore.SelectTemplate(ctx, id)
 	if err != nil {
 		errorPage(w, "Error SelectTemplate", err, 500)
 		return
@@ -78,7 +80,7 @@ func editTemplateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tmpData, err := datastore.SelectTemplateData(r, id)
+	tmpData, err := datastore.SelectTemplateData(ctx, id)
 	if err != nil {
 		errorPage(w, "Not Found Template Data", err, 500)
 		return

@@ -15,12 +15,13 @@ import (
 
 func createTemplate(r *http.Request, page *datastore.Page, mng bool) (*template.Template, error) {
 
+	ctx := r.Context()
 	//テンプレートを取得
-	siteTmp, err := datastore.SelectTemplateData(r, page.SiteTemplate)
+	siteTmp, err := datastore.SelectTemplateData(ctx, page.SiteTemplate)
 	if err != nil {
 		return nil, xerrors.Errorf("datastore.SelectTemplateData(Site) error: %w", err)
 	}
-	pageTmp, err := datastore.SelectTemplateData(r, page.PageTemplate)
+	pageTmp, err := datastore.SelectTemplateData(ctx, page.PageTemplate)
 	if err != nil {
 		return nil, xerrors.Errorf("datastore.SelectTemplateData(Page) error: %w", err)
 	}
