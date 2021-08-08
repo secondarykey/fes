@@ -58,6 +58,12 @@ func Register() error {
 	s.HandleFunc("/template/delete/{key}", deleteTemplateHandler)
 	s.HandleFunc("/template/reference/{key}", referenceTemplateHandler)
 
+	s.HandleFunc("/variable/", viewVariableHandler).Methods("GET")
+	s.HandleFunc("/variable/add", addVariableHandler).Methods("GET")
+	s.HandleFunc("/variable/edit", editVariableHandler)
+	s.HandleFunc("/variable/edit/{key}", editVariableHandler).Methods("GET")
+	s.HandleFunc("/variable/delete/{key}", deleteVariableHandler)
+
 	//table
 	s.HandleFunc("/table/view", viewTableHandler)
 
@@ -150,13 +156,13 @@ func pageView(w http.ResponseWriter, r *http.Request, id string) {
 	}
 }
 
-func viewManage(w http.ResponseWriter, tName string, obj interface{}) error {
+func viewManage(w http.ResponseWriter, tName string, obj interface{}) {
 
 	err := ViewManage(w, obj, tName)
 	if err != nil {
-		return xerrors.Errorf("parse template error: %w", err)
+		log.Printf("viewManage error:\n%+v\n", err)
 	}
-	return nil
+	return
 }
 
 func errorPage(w http.ResponseWriter, t string, e error, num int) {

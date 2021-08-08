@@ -1,0 +1,77 @@
+{{define "title"}}
+Variable
+{{end}}
+
+{{define "page_template"}}
+
+<table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
+  <thead>
+    <tr>
+      <th class="mdl-data-table__cell--non-numeric">Name</th>
+      <th>Create</th>
+      <th>Update</th>
+      <th> </th>
+    </tr>
+  </thead>
+
+  <tbody>
+{{ range .Variables}}
+    <tr>
+      <td class="mdl-data-table__cell--non-numeric"><a href="/manage/variable/edit/{{ .Key.Name}}">{{ .Key.Name }}</a></td>
+      <td>{{convertDate .CreatedAt}}</td>
+      <td>{{convertDate .UpdatedAt}}</td>
+      <td>
+      <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent removeBtn" data-id="{{ .Key.Name }}">
+        Remove
+      </button>
+      </td>
+    </tr>
+{{ end }}
+
+    <tr>
+      <td class="mdl-data-table__cell--non-numeric">
+{{if ne .Now ""}}
+        <a href="javascript:history.back();" class="demo-nav__button" title="Older">
+          <button class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon">
+             <i class="material-icons">arrow_back</i>
+          </button>
+        </a>
+{{end}}
+      </td>
+      <td></td>
+      <td></td>
+      <td>
+        <a href="?cursor={{.Next}}" class="demo-nav__button" title="Newer">
+          <button class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon">
+            <i class="material-icons" role="presentation">arrow_forward</i>
+          </button>
+        </a>
+      </td>
+    </tr>
+
+  </tbody>
+</table>
+
+
+<a href="/manage/variable/add">
+<button id="add-content" class="mdl-button mdl-js-button mdl-button--fab mdl-button--primary">
+  <i class="material-icons">add</i>
+</button>
+</a>
+
+
+<script>
+
+    var removes = document.querySelectorAll('button.removeBtn');
+    for (var i=0; i< removes.length; i++) {
+        removes[i].addEventListener('click', function(e) {
+            confirmFes(function() {
+              var id = e.target.parentElement.getAttribute('data-id');
+              window.location.href = "/manage/variable/delete/" + id;
+            });
+        });
+    }
+
+</script>
+
+{{ end }}

@@ -43,6 +43,7 @@ func (p Helper) FuncMap() template.FuncMap {
 		"list":            p.list,
 		"mark":            p.mark,
 		"templateContent": p.ConvertTemplate,
+		"variable":        p.getVariable,
 	}
 }
 
@@ -70,4 +71,13 @@ func (p Helper) ConvertTemplate(data string) template.HTML {
 	}
 
 	return template.HTML(buf.String())
+}
+
+func (p Helper) getVariable(key string) string {
+	ctx := p.Request.Context()
+	val, err := datastore.GetVariable(ctx, key)
+	if err != nil {
+		return err.Error()
+	}
+	return val
 }
