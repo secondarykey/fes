@@ -265,6 +265,7 @@ func PutBackupData(r *http.Request, backup BackupData) error {
 	}
 
 	//TODO gRPC cancel reson
+
 	data := backup[KindFileDataName]
 	for key, entity := range data {
 		has, err := createEntity(KindFileDataName, key, entity)
@@ -273,7 +274,7 @@ func PutBackupData(r *http.Request, backup BackupData) error {
 		}
 		_, err = cli.Put(ctx, has.GetKey(), has)
 		if err != nil {
-			return xerrors.Errorf("FileData Put() error: %w", err)
+			return xerrors.Errorf("Put() error: %w", err)
 		}
 	}
 
