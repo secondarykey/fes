@@ -2,6 +2,8 @@ package manage
 
 import (
 	"app/datastore"
+	"encoding/base64"
+	"io"
 
 	"fmt"
 	"net/http"
@@ -109,6 +111,34 @@ func editVariableHandler(w http.ResponseWriter, r *http.Request) {
 		VariableData *datastore.VariableData
 	}{vari, variData}
 	viewManage(w, "variable/edit.tmpl", dto)
+}
+
+func uploadVariableHandler(w http.ResponseWriter, r *http.Request) {
+
+	r.ParseForm()
+
+	upload, header, err := r.FormFile("targetFile")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	defer upload.Close()
+
+	ct := header.Header["Content-Type"]
+
+	b, err := io.ReadAll(upload)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	html := base64.StdEncoding.EncodeToString(b)
+
+	if len(ct) > 0 {
+		html = `<img src="data:` + ct[0] + ";base64," + html + `">`
+	}
+
+	w.Write([]byte(html))
 }
 
 func deleteVariableHandler(w http.ResponseWriter, r *http.Request) {

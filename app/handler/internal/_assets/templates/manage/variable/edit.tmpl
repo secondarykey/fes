@@ -1,5 +1,5 @@
 {{define "title"}}
-Edit Varible
+Edit Variable
 {{end}}
 
 {{define "page_template"}}
@@ -30,6 +30,7 @@ Edit Varible
     <tr>
       <td class="mdl-data-table__cell--non-numeric">
         <button type="button" id="variableTxt" class="mdl-button mdl-js-button mdl-button--raised">EditTool</button>
+        <button type="button" id="base64Upload" class="mdl-button mdl-js-button mdl-button--raised">Base64 Image</button>
         <br>
         <div class="mdl-textfield mdl-js-textfield" style="width:100%;">
           <textarea class="mdl-textfield__input" type="text" id="variableData" name="variableData" rows="10" style="width:100%;">{{ plane .VariableData.Content }}</textarea>
@@ -49,6 +50,7 @@ Edit Varible
 </table>
 
   <input type="hidden" name="version" value="{{ .Variable.Version }}">
+
 
 </form>
 
@@ -73,6 +75,35 @@ Edit Varible
       confirmFes(function() {
         var form = document.forms.updateForm;
         form.submit();
+      });
+    });
+
+    const chooseFile = () =>
+      new Promise(resolve => {
+        const input = document.createElement('input')
+        input.setAttribute('type', 'file')
+        input.style.display = 'none'
+        document.body.appendChild(input)
+
+        input.addEventListener('change', () => {
+          const f = input.files[0]
+          document.body.removeChild(input)
+          resolve(f)
+        })
+        input.click()
+    });
+
+    var base64Upload = document.querySelector('#base64Upload');
+    base64Upload.addEventListener('click', function() {
+      chooseFile().then( f => {
+        const body = new FormData()
+        body.append('targetFile', f);
+        const xhr = new XMLHttpRequest()
+        xhr.open('post', '/manage/variable/upload')
+        xhr.onload = () => {
+          document.querySelector('#variableData').value = xhr.responseText;
+        }
+        xhr.send(body);
       });
     });
 

@@ -61,6 +61,7 @@ func Register() error {
 	s.HandleFunc("/variable/", viewVariableHandler).Methods("GET")
 	s.HandleFunc("/variable/add", addVariableHandler).Methods("GET")
 	s.HandleFunc("/variable/edit", editVariableHandler)
+	s.HandleFunc("/variable/upload", uploadVariableHandler).Methods("POST")
 	s.HandleFunc("/variable/edit/{key}", editVariableHandler).Methods("GET")
 	s.HandleFunc("/variable/delete/{key}", deleteVariableHandler)
 
