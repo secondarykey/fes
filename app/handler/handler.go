@@ -6,7 +6,7 @@ import (
 	"log"
 
 	"net/http"
-	//_ "net/http/pprof"
+	_ "net/http/pprof"
 
 	"github.com/gorilla/mux"
 	"golang.org/x/xerrors"

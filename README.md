@@ -1,11 +1,40 @@
 fes is Festival Edit System.
 
-・・・って名前つけたけど、フェス専用じゃなくてただのWebCMSになった。
-GoogleAppEngine上で動作します。
+# 概要
 
-まだまだデータストアへのアクセス数などを考えて設計変更していきますが、基本路線はこんな感じかな？
-実際に表示しているサイトのデータとかも載せていきたいと思っています。テスト書かないとね。
+テンプレートを作成して、ツリー状にページを作成していきます。
 
-多分マニュアルはWikiに書いていきます。 [Wiki](https://github.com/secondarykey/fes/wiki)に移動
+# データ
+
+- Site
+
+- Page
+
+- PageData
+
+- Content
+
+- Children
+
+- Top
+
+- Dir
+
+- Prev
+
+- Next
+
+# テンプレート
+
+"html"
+"eraseBR"
+"plane"
+"convertDate"
+"list"
+"mark"
+"templateContent"
+"variable"
+
+# 必要な機能
 
 

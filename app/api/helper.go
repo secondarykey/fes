@@ -44,6 +44,7 @@ func (p Helper) FuncMap() template.FuncMap {
 		"mark":            p.mark,
 		"templateContent": p.ConvertTemplate,
 		"variable":        p.getVariable,
+		"variableHTML":    p.getVariableHTML,
 	}
 }
 
@@ -80,4 +81,8 @@ func (p Helper) getVariable(key string) string {
 		return err.Error()
 	}
 	return val
+}
+
+func (p Helper) getVariableHTML(key string) template.HTML {
+	return template.HTML(p.getVariable(key))
 }
