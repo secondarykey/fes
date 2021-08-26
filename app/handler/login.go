@@ -4,6 +4,7 @@ import (
 	"app/datastore"
 	. "app/handler/internal"
 	"app/handler/manage"
+	"os"
 
 	"encoding/json"
 	"fmt"
@@ -22,7 +23,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 
 	err = View(w, nil, "authentication.tmpl")
 	if err != nil {
-		errorPage(w, "描画エラー", fmt.Errorf("認証ページの表示に失敗"), 500)
+		errorPage(w, "描画エラー", fmt.Errorf("認証ページの表示に失敗 %v", err), 500)
 	}
 }
 
@@ -53,7 +54,8 @@ func sessionHandler(w http.ResponseWriter, r *http.Request) {
 
 	claims := jwt.MapClaims{}
 	_, err = jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
-		return []byte("n8YCoX0-777jDXb0Fivmmcz9"), nil
+		secret := os.Getenv("CLIENT_SECRET")
+		return []byte(secret), nil
 	})
 	if err != nil {
 	}

@@ -3,6 +3,7 @@ package internal
 import (
 	"app/api"
 	"io"
+	"os"
 
 	"embed"
 	"html/template"
@@ -26,7 +27,10 @@ func init() {
 }
 
 func View(w http.ResponseWriter, dto interface{}, names ...string) error {
-	tmpl := template.New(names[0])
+	funcMap := map[string]interface{}{
+		"env": os.Getenv,
+	}
+	tmpl := template.New(names[0]).Funcs(funcMap)
 	return writeTemplate(w, tmpl, dto, names...)
 }
 
