@@ -1,108 +1,43 @@
-<html lang="en">
-
+<html>
   <head>
-    <meta name="google-signin-scope" content="profile email">
-    <meta name="google-signin-client_id" content="1099382693490-ofpcp7hn72ttibl8ag4o9qap32tcc50u.apps.googleusercontent.com">
-<style>
-    .outer {
-      display:flex;
-      justify-content:center;
-    }
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
 
-    .card-square.mdl-card {
-      width: 80%; height: 200px;
-      position:absolute;
-      top:50%;
-      transform:translateY(-50%);
-    }
+    <style type="text/css">
 
-    .mdl-card__actions {
-      text-align:center;
-    }
-
+html, body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+html {
+  display: table;
+}
+body {
+  display: table-cell;
+  text-align: center;
+  vertical-align: middle;
+}
 </style>
 
   </head>
 
   <body>
 
-    <div class="mdl-grid">
-      <div class="mdl-cell mdl-cell--12-col outer">
-        <div class="card-square mdl-card mdl-shadow--2dp">
-          <div class="mdl-card__actions mdl-card--border">
-            <img style="cursor:hand;" src="/images/btn_login.png" id="signin-button"/>
-            <br>
-            <a href="#" onclick="signOut();">Sign out</a>
-          </div>
-        </div>
-      </div>
+    <div id="g_id_onload"
+         data-client_id="1099382693490-het2am31rpai6cem6u6fmllaqcjjfthj.apps.googleusercontent.com"
+         data-login_uri="/session">
     </div>
 
+    <div class="g_id_signin"
+         data-type="standard"
+         data-size="middle"
+         data-theme="outline"
+         data-text="sign_in_with"
+         data-shape="rectangular"
+         data-logo_alignment="left">
+    </div>
 
-    <script src="https://apis.google.com/js/platform.js?onload=initClient" async defer></script>
-
-    <script>
-      var auth2;
-
-      var initClient = function() {
-        gapi.load("auth2",function() {
-          auth2 = gapi.auth2.init({
-            client_id: '1099382693490-ofpcp7hn72ttibl8ag4o9qap32tcc50u.apps.googleusercontent.com'
-          });
-          auth2.attachClickHandler('signin-button', {}, onSuccess, onFailure);
-        });
-      };
-
-
-      function EncodeHTMLForm( data ) {
-        var params = [];
-        for( var name in data ) {
-          var value = data[ name ];
-          var param = encodeURIComponent( name ) + '=' + encodeURIComponent( value );
-  
-          params.push( param );
-        }
-        return params.join( '&' ).replace( /%20/g, '+' );
-      }
-
-
-      function onSuccess(googleUser) {
-        var profile = googleUser.getBasicProfile();
-        var email = profile.getEmail();
-        var id_token = googleUser.getAuthResponse().id_token;
-
-        var xhr = new XMLHttpRequest();
-
-        var args = {};
-        args["email"] = email;
-        args["token"] = id_token;
-
-        xhr.open('POST', '/session',true);
-        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-        xhr.responseType = 'json';
-
-        xhr.onload = function() {
-          var resp = xhr.response;
-            if (resp.Success) {
-              location.href = "/manage/home";
-            } else {
-              console.log(resp);
-              alert("error");
-            }
-        };
-        xhr.send(EncodeHTMLForm(args));  
-      }
-
-      function onFailure(err) {
-        console.log(err);
-      }
-
-      function signOut() {
-        auth2.signOut().then(function () {
-          console.log('User signed out.');
-        });
-      }
-
-    </script>
   </body>
 </html>
+

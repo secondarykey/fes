@@ -19,11 +19,12 @@ func Listen(opts ...config.Option) error {
 
 	err = registerHandler()
 	if err != nil {
-		return xerrors.Errorf("error: %w", err)
+		return xerrors.Errorf("registerHandler() error: %w", err)
 	}
 
 	conf := config.Get()
 	serve := fmt.Sprintf(":%d", conf.Port)
+
 	fmt.Printf("Fes Start! Listen[%s]\n", serve)
 	err = http.ListenAndServe(serve, nil)
 	if err != nil {
