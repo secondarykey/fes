@@ -38,3 +38,14 @@ fes is Festival Edit System.
 # 必要な機能
 
 
+# 認証
+
+app/handler/internal/\_assets/environment.json
+
+```
+    "CLIENT_ID":"",
+    "CLIENT_SECRET":""
+```
+
+git update-index --skip-worktree  
+git update-index --no-skip-worktree 
