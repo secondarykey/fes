@@ -4,6 +4,7 @@ import (
 	. "app/handler/internal"
 	"fmt"
 	"log"
+	"os"
 
 	"net/http"
 	_ "net/http/pprof"
@@ -11,6 +12,27 @@ import (
 	"github.com/gorilla/mux"
 	"golang.org/x/xerrors"
 )
+
+func init() {
+	setEnvironment()
+}
+
+func setEnvironment() {
+
+	m := GetEnvironmentMap()
+
+	if m == nil {
+		log.Println("GetEnvironmentMap() is nil")
+		return
+	}
+
+	for k, v := range m {
+		err := os.Setenv(k, v)
+		if err != nil {
+			log.Println("os.Setenv() error: %v", err)
+		}
+	}
+}
 
 func Register() error {
 
@@ -36,7 +58,9 @@ func Register() error {
 	r.HandleFunc("/file_cache/{key}", fileCacheHandler).Methods("GET")
 
 	r.HandleFunc("/login", loginHandler).Methods("GET")
+	r.HandleFunc("/logout", logoutHandler).Methods("GET")
 	r.HandleFunc("/session", sessionHandler).Methods("POST")
+
 	r.HandleFunc("/sitemap/", sitemap).Methods("GET")
 	r.HandleFunc("/", indexHandler).Methods("GET")
 

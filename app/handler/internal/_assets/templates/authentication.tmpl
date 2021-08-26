@@ -1,108 +1,38 @@
-<html lang="en">
-
+<html>
   <head>
-    <meta name="google-signin-scope" content="profile email">
-    <meta name="google-signin-client_id" content="1099382693490-ofpcp7hn72ttibl8ag4o9qap32tcc50u.apps.googleusercontent.com">
-<style>
-    .outer {
-      display:flex;
-      justify-content:center;
-    }
-
-    .card-square.mdl-card {
-      width: 80%; height: 200px;
-      position:absolute;
-      top:50%;
-      transform:translateY(-50%);
-    }
-
-    .mdl-card__actions {
-      text-align:center;
-    }
-
-</style>
-
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <style type="text/css">
+    </style>
   </head>
 
   <body>
 
-    <div class="mdl-grid">
-      <div class="mdl-cell mdl-cell--12-col outer">
-        <div class="card-square mdl-card mdl-shadow--2dp">
-          <div class="mdl-card__actions mdl-card--border">
-            <img style="cursor:hand;" src="/images/btn_login.png" id="signin-button"/>
-            <br>
-            <a href="#" onclick="signOut();">Sign out</a>
-          </div>
-        </div>
-      </div>
+    <div id="g_id_onload"
+         data-client_id="{{ env "CLIENT_ID" }}"
+         data-auto_prompt="false"
+         data-ux_mode="redirect"
+         data-login_uri="/session">
     </div>
 
+    <div class="g_id_signin"
+         data-type="standard"
+         data-size="middle"
+         data-theme="outline"
+         data-text="sign_in_with"
+         data-shape="rectangular"
+         data-logo_alignment="left">
+    </div>
 
-    <script src="https://apis.google.com/js/platform.js?onload=initClient" async defer></script>
-
+<!--
+    <div id="signout_button" class="g_id_signout">Sign Out</div>
     <script>
-      var auth2;
-
-      var initClient = function() {
-        gapi.load("auth2",function() {
-          auth2 = gapi.auth2.init({
-            client_id: '1099382693490-ofpcp7hn72ttibl8ag4o9qap32tcc50u.apps.googleusercontent.com'
-          });
-          auth2.attachClickHandler('signin-button', {}, onSuccess, onFailure);
-        });
-      };
-
-
-      function EncodeHTMLForm( data ) {
-        var params = [];
-        for( var name in data ) {
-          var value = data[ name ];
-          var param = encodeURIComponent( name ) + '=' + encodeURIComponent( value );
-  
-          params.push( param );
-        }
-        return params.join( '&' ).replace( /%20/g, '+' );
-      }
-
-
-      function onSuccess(googleUser) {
-        var profile = googleUser.getBasicProfile();
-        var email = profile.getEmail();
-        var id_token = googleUser.getAuthResponse().id_token;
-
-        var xhr = new XMLHttpRequest();
-
-        var args = {};
-        args["email"] = email;
-        args["token"] = id_token;
-
-        xhr.open('POST', '/session',true);
-        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-        xhr.responseType = 'json';
-
-        xhr.onload = function() {
-          var resp = xhr.response;
-            if (resp.Success) {
-              location.href = "/manage/home";
-            } else {
-              console.log(resp);
-              alert("error");
-            }
-        };
-        xhr.send(EncodeHTMLForm(args));  
-      }
-
-      function onFailure(err) {
-        console.log(err);
-      }
-
-      function signOut() {
-        auth2.signOut().then(function () {
-          console.log('User signed out.');
-        });
-      }
-
+    const button = document.getElementById("signout_button");
+    button.onclick = () => {
+      google.accounts.id.disableAutoSelect();
+    }
     </script>
+ -->
+
   </body>
 </html>
+

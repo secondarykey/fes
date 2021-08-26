@@ -6,6 +6,7 @@ require (
 	cloud.google.com/go v0.81.0
 	cloud.google.com/go/datastore v1.5.0
 	cloud.google.com/go/storage v1.10.0
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/gorilla/mux v1.8.0

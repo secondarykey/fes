@@ -2,6 +2,7 @@ package api
 
 import (
 	"app/datastore"
+	"os"
 
 	"bytes"
 	"fmt"
@@ -45,6 +46,7 @@ func (p Helper) FuncMap() template.FuncMap {
 		"templateContent": p.ConvertTemplate,
 		"variable":        p.getVariable,
 		"variableHTML":    p.getVariableHTML,
+		"env":             os.Getenv,
 	}
 }
 

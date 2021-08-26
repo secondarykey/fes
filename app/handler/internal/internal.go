@@ -1,9 +1,28 @@
 package internal
 
 import (
+	_ "embed"
+	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 )
+
+//go:embed _assets/environment.json
+var envJson []byte
+
+func GetEnvironmentMap() map[string]string {
+
+	envMap := make(map[string]string)
+
+	err := json.Unmarshal(envJson, &envMap)
+	if err != nil {
+		log.Println(err)
+		return nil
+	}
+
+	return envMap
+}
 
 type CacheServer struct {
 	age     int
