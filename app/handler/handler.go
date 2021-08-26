@@ -4,6 +4,7 @@ import (
 	. "app/handler/internal"
 	"fmt"
 	"log"
+	"os"
 
 	"net/http"
 	_ "net/http/pprof"
@@ -11,6 +12,27 @@ import (
 	"github.com/gorilla/mux"
 	"golang.org/x/xerrors"
 )
+
+func init() {
+	setEnvironment()
+}
+
+func setEnvironment() {
+
+	m := GetEnvironmentMap()
+
+	if m == nil {
+		log.Println("GetEnvironmentMap() is nil")
+		return
+	}
+
+	for k, v := range m {
+		err := os.Setenv(k, v)
+		if err != nil {
+			log.Println("os.Setenv() error: %v", err)
+		}
+	}
+}
 
 func Register() error {
 

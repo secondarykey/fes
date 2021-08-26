@@ -4,11 +4,13 @@ import (
 	"app/datastore"
 	. "app/handler/internal"
 	"app/handler/manage"
-	"fmt"
 
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
+
+	"github.com/dgrijalva/jwt-go"
 )
 
 func loginHandler(w http.ResponseWriter, r *http.Request) {
@@ -46,8 +48,21 @@ func sessionHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	r.ParseForm()
-	email := r.FormValue("email")
-	token := r.FormValue("token")
+
+	tokenString := r.FormValue("credential")
+
+	claims := jwt.MapClaims{}
+	_, err = jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+		return []byte("n8YCoX0-777jDXb0Fivmmcz9"), nil
+	})
+	if err != nil {
+	}
+
+	emailV, ok := claims["email"]
+	email := ""
+	if ok {
+		email = fmt.Sprintf("%v", emailV)
+	}
 
 	flag := false
 
@@ -69,9 +84,9 @@ func sessionHandler(w http.ResponseWriter, r *http.Request) {
 		code = 403
 	} else {
 		//Cookieの作成
-		u := manage.NewLoginUser(email, token)
+		u := manage.NewLoginUser(email, tokenString)
 
-		err := manage.SetSession(w, r, u)
+		err = manage.SetSession(w, r, u)
 		if err != nil {
 			code = 500
 			dto.Success = false
