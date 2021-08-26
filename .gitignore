@@ -9,5 +9,6 @@ app/public/js
 app/public/sitemap.xml
 app/cmd/static/*/
 app/handler/internal/_assets/archives/*
+app/handler/internal/_assets/environment.json
 .*
 *.exe
