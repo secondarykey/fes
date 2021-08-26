@@ -58,7 +58,9 @@ func Register() error {
 	r.HandleFunc("/file_cache/{key}", fileCacheHandler).Methods("GET")
 
 	r.HandleFunc("/login", loginHandler).Methods("GET")
+	r.HandleFunc("/logout", logoutHandler).Methods("GET")
 	r.HandleFunc("/session", sessionHandler).Methods("POST")
+
 	r.HandleFunc("/sitemap/", sitemap).Methods("GET")
 	r.HandleFunc("/", indexHandler).Methods("GET")
 

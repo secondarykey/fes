@@ -22,10 +22,10 @@ type LoginUser struct {
 	Token string
 }
 
-func getSessionOptions() *sessions.Options {
+func getSessionOptions(age int) *sessions.Options {
 	return &sessions.Options{
 		Path:     "/",
-		MaxAge:   86400 * 7,
+		MaxAge:   age,
 		HttpOnly: true,
 	}
 }
@@ -43,6 +43,8 @@ func GetSession(r *http.Request) (*LoginUser, error) {
 		return nil, xerrors.Errorf("store.Get() error: %w", err)
 	}
 
+	fmt.Println(sess.Options)
+
 	obj := sess.Values["User"]
 	if user, ok := obj.(*LoginUser); ok {
 		return user, nil
@@ -57,8 +59,17 @@ func SetSession(w http.ResponseWriter, r *http.Request, u *LoginUser) error {
 		return xerrors.Errorf("store.Get() error: %w", err)
 	}
 
-	sess.Options = getSessionOptions()
+	age := 86400 * 7
+	if u == nil {
+		age = -1
+	}
+
+	sess.Options = getSessionOptions(age)
 	sess.Values["User"] = u
 
 	return sess.Save(r, w)
+}
+
+func ClearSession(w http.ResponseWriter, r *http.Request) error {
+	return SetSession(w, r, nil)
 }

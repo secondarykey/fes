@@ -24,8 +24,6 @@ func Register() error {
 	r := mux.NewRouter()
 	s := r.PathPrefix("/manage").Subrouter()
 
-	s.HandleFunc("/home", indexHandler).Methods("GET")
-
 	//Page
 	s.HandleFunc("/page/", viewRootPageHandler).Methods("GET")
 	s.HandleFunc("/page/{key}", viewPageHandler)
@@ -76,6 +74,8 @@ func Register() error {
 	s.HandleFunc("/site/", viewSiteHandler).Methods("GET")
 	s.HandleFunc("/site/edit", editSiteHandler).Methods("POST")
 	s.HandleFunc("/site/map", downloadSitemapHandler).Methods("GET")
+
+	s.HandleFunc("/", indexHandler).Methods("GET")
 
 	h := NewHandler(s)
 	http.Handle("/manage/", h)
