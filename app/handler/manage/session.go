@@ -43,8 +43,6 @@ func GetSession(r *http.Request) (*LoginUser, error) {
 		return nil, xerrors.Errorf("store.Get() error: %w", err)
 	}
 
-	fmt.Println(sess.Options)
-
 	obj := sess.Values["User"]
 	if user, ok := obj.(*LoginUser); ok {
 		return user, nil

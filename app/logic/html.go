@@ -3,6 +3,7 @@ package logic
 import (
 	"app/api"
 	"app/datastore"
+	"context"
 
 	"bytes"
 	"fmt"
@@ -13,9 +14,8 @@ import (
 	"golang.org/x/xerrors"
 )
 
-func createTemplate(r *http.Request, page *datastore.Page, mng bool) (*template.Template, error) {
+func createTemplate(ctx context.Context, page *datastore.Page, mng bool) (*template.Template, error) {
 
-	ctx := r.Context()
 	//テンプレートを取得
 	siteTmp, err := datastore.SelectTemplateData(ctx, page.SiteTemplate)
 	if err != nil {
@@ -31,8 +31,8 @@ func createTemplate(r *http.Request, page *datastore.Page, mng bool) (*template.
 	pageTmpData = "{{define \"" + api.PageTemplateName + "\"}}" + "\n" + pageTmpData + "\n" + "{{end}}"
 
 	helper := api.Helper{
-		Request: r,
-		Manage:  mng,
+		Ctx:    ctx,
+		Manage: mng,
 	}
 
 	//適用する
@@ -50,7 +50,9 @@ func createTemplate(r *http.Request, page *datastore.Page, mng bool) (*template.
 func WriteManageHTML(w http.ResponseWriter, r *http.Request, id string, p int) error {
 
 	var err error
-	page, err := datastore.SelectPage(r, id, -1)
+	ctx := r.Context()
+
+	page, err := datastore.SelectPage(ctx, id, -1)
 	if err != nil {
 		return err
 	}
@@ -59,14 +61,14 @@ func WriteManageHTML(w http.ResponseWriter, r *http.Request, id string, p int) e
 	}
 
 	//テンプレートの作成
-	tmpl, err := createTemplate(r, page, true)
+	tmpl, err := createTemplate(ctx, page, true)
 	if err != nil {
 		return err
 	}
 
 	//TODO カーソルが空
 	//DTOの作成
-	dtos, _, err := NewDtos(r, page, "", true)
+	dtos, _, err := NewDtos(ctx, page, "", true)
 	if err != nil {
 		return xerrors.Errorf("NewDtos() error: %w", err)
 	}
@@ -79,26 +81,24 @@ func WriteManageHTML(w http.ResponseWriter, r *http.Request, id string, p int) e
 	return err
 }
 
-func PutHTML(r *http.Request, id string) error {
+func PutHTML(ctx context.Context, id string) error {
 
 	var err error
 
-	page, err := datastore.SelectPage(r, id, -1)
+	page, err := datastore.SelectPage(ctx, id, -1)
 	if err != nil {
 		return xerrors.Errorf("SelectPage() error: %w", err)
 	}
 
-	dtos, _, err := NewDtos(r, page, "", false)
+	dtos, _, err := NewDtos(ctx, page, "", false)
 	if err != nil {
 		return xerrors.Errorf("NewDtos() error: %w", err)
 	}
 
-	tmpl, err := createTemplate(r, page, false)
+	tmpl, err := createTemplate(ctx, page, false)
 	if err != nil {
 		return xerrors.Errorf("createTemplate() error: %w", err)
 	}
-
-	ctx := r.Context()
 
 	htmls := make([]*datastore.HTML, len(dtos))
 
@@ -139,7 +139,7 @@ func PutHTML(r *http.Request, id string) error {
 	return nil
 }
 
-func PutHTMLs(r *http.Request, pages []datastore.Page) error {
+func PutHTMLs(ctx context.Context, pages []datastore.Page) error {
 
 	var err error
 
@@ -158,12 +158,12 @@ func PutHTMLs(r *http.Request, pages []datastore.Page) error {
 
 		//TODO Referenceなので、NextはすでにDtoに埋め込まれている
 
-		dtos, _, err := NewDtos(r, &elm, datastore.NoLimitCursor, false)
+		dtos, _, err := NewDtos(ctx, &elm, datastore.NoLimitCursor, false)
 		if err != nil {
 			return xerrors.Errorf("Reference NewDto() error: %w", err)
 		}
 
-		tmpl, err := createTemplate(r, &elm, false)
+		tmpl, err := createTemplate(ctx, &elm, false)
 		if err != nil {
 			return xerrors.Errorf("Reference createTemplate() error: %w", err)
 		}
@@ -190,7 +190,6 @@ func PutHTMLs(r *http.Request, pages []datastore.Page) error {
 	//return xerrors.Errorf("GetMulti() error: %w", err)
 	//}
 
-	ctx := r.Context()
 	err = datastore.PutHTML(ctx, htmls, nil)
 	if err != nil {
 		return xerrors.Errorf("PutHTML() error: %w", err)
@@ -212,16 +211,15 @@ type HTMLDto struct {
 }
 
 //TODO 出力時と表示時のテスト
-func NewDtos(r *http.Request, page *datastore.Page, cur string, view bool) ([]*HTMLDto, string, error) {
+func NewDtos(ctx context.Context, page *datastore.Page, cur string, view bool) ([]*HTMLDto, string, error) {
 
-	ctx := r.Context()
 	id := page.Key.Name
 	site, err := datastore.SelectSite(ctx, -1)
 	if err != nil {
 		return nil, "", xerrors.Errorf("SelectSite() error: %w", err)
 	}
 
-	pData, err := datastore.SelectPageData(r, id)
+	pData, err := datastore.SelectPageData(ctx, id)
 	if err != nil {
 		return nil, "", xerrors.Errorf("SelectPageData() error: %w", err)
 	}
@@ -252,7 +250,7 @@ func NewDtos(r *http.Request, page *datastore.Page, cur string, view bool) ([]*H
 		childNum = page.Paging
 	}
 
-	children, next, err := datastore.SelectChildPages(r, id, cur, childNum, view)
+	children, next, err := datastore.SelectChildPages(ctx, id, cur, childNum, view)
 	if err != nil {
 		return nil, "", xerrors.Errorf("SelectChildPages() error: %w", err)
 	}

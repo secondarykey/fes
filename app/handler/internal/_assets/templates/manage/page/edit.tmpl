@@ -86,7 +86,13 @@ Edit Page[
         <button type="button" id="uploadBtn" class="mdl-button mdl-js-button mdl-button--raised">
           Image
         </button>
+
+        <span id="attache" class="material-icons" style="color:red;display:none;vertical-align:middle;">attachment</span>
+
+        {{ if .ExistFile }}
         <a href="/file/{{ .Page.Key.Name }}" target="_blank">Page Image</a>
+        {{ end }}
+
         <input type="file" name="file" id="file" value="" style="display:none;"/>
 
         <input type="hidden" name="parentID" id="parentID" value="{{ .Page.Parent }}" />
@@ -285,6 +291,12 @@ Edit Page[
         var updateForm = document.querySelector('#editForm');
         updateForm.submit();
       });
+    });
+
+    var file = document.querySelector('#file');
+    file.addEventListener('change', function() {
+      var attache = document.querySelector('#attache');
+      attache.style.display = "inline";
     });
 
 

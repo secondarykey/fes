@@ -2,9 +2,10 @@ package manage
 
 import (
 	"app/datastore"
-	"fmt"
+	. "app/handler/internal"
 
 	"bytes"
+	"fmt"
 	"image"
 	"image/jpeg"
 	"io"
@@ -26,7 +27,9 @@ func viewFileHandler(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
 	cursor := q.Get("cursor")
 
-	files, next, err := datastore.SelectFiles(r, t, cursor)
+	ctx := r.Context()
+
+	files, next, err := datastore.SelectFiles(ctx, t, cursor)
 	if err != nil {
 		errorPage(w, "Error Select File", err, 500)
 		return
@@ -43,7 +46,15 @@ func viewFileHandler(w http.ResponseWriter, r *http.Request) {
 //URL = /manage/file/add
 func addFileHandler(w http.ResponseWriter, r *http.Request) {
 
-	err := datastore.SaveFile(r, "", datastore.FileTypeData)
+	fs, err := CreateFormFile(r, datastore.FileTypeData)
+	if err != nil {
+		errorPage(w, "CreateFormFile Error", err, 500)
+		return
+	}
+
+	ctx := r.Context()
+
+	err = datastore.SaveFile(ctx, fs)
 	if err != nil {
 		errorPage(w, "Error Add File", err, 500)
 		return
@@ -56,7 +67,9 @@ func addFileHandler(w http.ResponseWriter, r *http.Request) {
 func deleteFileHandler(w http.ResponseWriter, r *http.Request) {
 	//リダイレクト
 	id := r.FormValue("fileName")
-	err := datastore.RemoveFile(r, id)
+	ctx := r.Context()
+
+	err := datastore.RemoveFile(ctx, id)
 	if err != nil {
 		errorPage(w, "RemoveFile Error", err, 500)
 		return
@@ -79,7 +92,10 @@ func resizeFileHandler(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 	id := vars["key"]
-	file, err := datastore.SelectFile(r, id)
+
+	ctx := r.Context()
+
+	file, err := datastore.SelectFile(ctx, id)
 	if err != nil {
 		errorPage(w, "Select File Error", err, 500)
 		return
@@ -112,7 +128,9 @@ func resizeCommitFileHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = datastore.PutFileData(r, resize.id, writer.Bytes(), "image/jpeg")
+	ctx := r.Context()
+
+	err = datastore.PutFileData(ctx, resize.id, writer.Bytes(), "image/jpeg")
 	if err != nil {
 		errorPage(w, "Datastore FileData Put Error", err, 500)
 		return

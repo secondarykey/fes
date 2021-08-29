@@ -126,8 +126,11 @@ func referenceTemplateHandler(w http.ResponseWriter, r *http.Request) {
 	id := vars["key"]
 
 	t := r.FormValue("type")
+
+	ctx := r.Context()
+
 	//参照しているページを取得
-	pages, err := datastore.SelectReferencePages(r, id, t)
+	pages, err := datastore.SelectReferencePages(ctx, id, t)
 	if err != nil {
 		errorPage(w, "Reference template pages Error", err, 500)
 		return
@@ -139,7 +142,7 @@ func referenceTemplateHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//ページからHTMLを更新
-	err = logic.PutHTMLs(r, pages)
+	err = logic.PutHTMLs(ctx, pages)
 	if err != nil {
 		errorPage(w, "Put HTML data Error", err, 500)
 		return

@@ -22,8 +22,9 @@ func refreshHandler(w http.ResponseWriter, r *http.Request) {
 
 func backupHandler(w http.ResponseWriter, r *http.Request) {
 
+	ctx := r.Context()
 	//バイナリを作成
-	data, err := datastore.GetBackupData(r)
+	data, err := datastore.GetBackupData(ctx)
 	if err != nil {
 		errorPage(w, "Create BackupDataError", err, 500)
 		return
@@ -81,8 +82,9 @@ func restoreHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	ctx := r.Context()
 	//Putする
-	err = datastore.PutBackupData(r, backup)
+	err = datastore.PutBackupData(ctx, backup)
 	if err != nil {
 		errorPage(w, "Put Error", err, 500)
 		return
