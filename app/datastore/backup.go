@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/gob"
 	"fmt"
-	"net/http"
 	"time"
 
 	"cloud.google.com/go/datastore"
@@ -27,11 +26,10 @@ func init() {
 	gob.Register(TemplateData{})
 }
 
-func GetBackupData(r *http.Request) (BackupData, error) {
+func GetBackupData(ctx context.Context) (BackupData, error) {
 
 	backup := make(BackupData)
 
-	ctx := r.Context()
 	cli, err := createClient(ctx, option.WithGRPCDialOption(grpc.WithMaxMsgSize(10_000_000)))
 	if err != nil {
 		return nil, xerrors.Errorf("createClient() error: %w", err)
@@ -192,9 +190,9 @@ func convertGob(dst interface{}) []byte {
 	return buf.Bytes()
 }
 
-func PutBackupData(r *http.Request, backup BackupData) error {
+func PutBackupData(ctx context.Context, backup BackupData) error {
 
-	ctx, cancel := context.WithTimeout(r.Context(), time.Second*10)
+	ctx, cancel := context.WithTimeout(ctx, time.Second*10)
 	defer cancel()
 
 	cli, err := createClient(ctx, option.WithGRPCDialOption(grpc.WithMaxMsgSize(1024*1024*1000)))

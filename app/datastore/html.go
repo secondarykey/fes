@@ -5,7 +5,6 @@ import (
 	"errors"
 
 	"fmt"
-	"net/http"
 	"time"
 
 	"golang.org/x/xerrors"
@@ -94,10 +93,9 @@ func PutHTML(ctx context.Context, htmls []*HTML, page *Page) error {
 	return nil
 }
 
-func RemoveHTML(r *http.Request, id string) error {
+func RemoveHTML(ctx context.Context, id string) error {
 
-	ctx := r.Context()
-	page, err := SelectPage(r, id, -1)
+	page, err := SelectPage(ctx, id, -1)
 	if err != nil {
 		return err
 	}

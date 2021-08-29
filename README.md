@@ -4,7 +4,19 @@ fes is Festival Edit System.
 
 テンプレートを作成して、ツリー状にページを作成していきます。
 
-# データ
+# Issue
+
+- 認証ボタンを真ん中に
+- 認証機能をGUIで可能に
+- Archive機能をGUIで可能に
+- アーティスト機能
+- キャッシュ機能
+- URL機能
+- エラーページ
+- datastoreからRequest削除
+- 以下をマニュアルに記載
+
+## データの扱い
 
 - Site
 
@@ -24,7 +36,7 @@ fes is Festival Edit System.
 
 - Next
 
-# テンプレート
+## テンプレート
 
 "html"
 "eraseBR"
@@ -35,17 +47,16 @@ fes is Festival Edit System.
 "templateContent"
 "variable"
 
-# 必要な機能
 
 
-# 認証
+## 認証の方法
 
-app/handler/internal/\_assets/environment.json
 
 ```
     "CLIENT_ID":"",
     "CLIENT_SECRET":""
 ```
 
-git update-index --skip-worktree  
+git update-index --skip-worktree app/handler/internal/\_assets/environment.json
+
 git update-index --no-skip-worktree 

@@ -5,13 +5,11 @@ import (
 
 	"errors"
 	"fmt"
-	"net/http"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/gorilla/mux"
 	"golang.org/x/xerrors"
 	"google.golang.org/api/iterator"
 
@@ -76,9 +74,8 @@ func SelectPages(ctx context.Context) ([]*Page, error) {
 	return pages, nil
 }
 
-func SelectChildPages(r *http.Request, id string, cur string, limit int, mng bool) ([]Page, string, error) {
+func SelectChildPages(ctx context.Context, id string, cur string, limit int, mng bool) ([]Page, string, error) {
 
-	ctx := r.Context()
 	var pages []Page
 
 	cli, err := createClient(ctx)
@@ -128,21 +125,19 @@ func SelectChildPages(r *http.Request, id string, cur string, limit int, mng boo
 	return pages, cursor.String(), nil
 }
 
-func SelectRootPage(r *http.Request) (*Page, error) {
-	ctx := r.Context()
+func SelectRootPage(ctx context.Context) (*Page, error) {
 	site, err := SelectSite(ctx, -1)
 	if err != nil {
 		return nil, xerrors.Errorf("SelectSite() error: %w", err)
 	}
-	return SelectPage(r, site.Root, -1)
+	return SelectPage(ctx, site.Root, -1)
 }
 
-func SelectPage(r *http.Request, id string, version int) (*Page, error) {
+func SelectPage(ctx context.Context, id string, version int) (*Page, error) {
 
 	page := Page{}
-	ctx := r.Context()
-	key := CreatePageKey(id)
 
+	key := CreatePageKey(id)
 	cli, err := createClient(ctx)
 	if err != nil {
 		return nil, xerrors.Errorf("createClient() error: %w", err)
@@ -164,58 +159,19 @@ func SelectPage(r *http.Request, id string, version int) (*Page, error) {
 	return &page, nil
 }
 
-func PutPage(r *http.Request) error {
+type PageSet struct {
+	ID       string
+	Page     *Page
+	PageData *PageData
+	FileSet  *FileSet
+}
 
-	var err error
+func PutPage(ctx context.Context, p *PageSet) error {
 
-	vars := mux.Vars(r)
-	id := vars["key"]
+	id := p.ID
 
-	ctx := r.Context()
-	ver := r.FormValue("version")
-
-	version, err := strconv.Atoi(ver)
-	if err != nil {
-		return err
-	}
-
-	page, err := SelectPage(r, id, version)
-	if err != nil {
-		return err
-	}
-
-	if page == nil {
-		page = &Page{}
-	}
-
-	page.Name = r.FormValue("pageName")
-	page.Parent = r.FormValue("parentID")
-	page.Description = r.FormValue("pageDescription")
-	page.SiteTemplate = r.FormValue("siteTemplateID")
-	page.PageTemplate = r.FormValue("pageTemplateID")
-
-	flag := r.FormValue("publish")
-	if flag == "on" {
-		page.Deleted = false
-	} else {
-		page.Deleted = true
-	}
-
-	if page.SiteTemplate == "" {
-		//ページは選択しなくても表示はできるのでOK
-		return errors.New("Error:Select Site Template")
-	}
-
-	//Data については検索せずに更新
-	pageData := &PageData{
-		Content: []byte(r.FormValue("pageContent")),
-	}
-
-	paging, err := strconv.Atoi(r.FormValue("paging"))
-	//TODO err?
-	if err == nil {
-		page.Paging = paging
-	}
+	p.Page.LoadKey(CreatePageKey(id))
+	p.PageData.LoadKey(CreatePageDataKey(id))
 
 	cli, err := createClient(ctx)
 	if err != nil {
@@ -223,20 +179,22 @@ func PutPage(r *http.Request) error {
 	}
 
 	_, err = cli.RunInTransaction(ctx, func(tx *datastore.Transaction) error {
-		page.LoadKey(CreatePageKey(id))
-		_, err = tx.Put(page.GetKey(), page)
-		if err != nil {
-			return err
-		}
-		pageData.LoadKey(CreatePageDataKey(id))
-		_, err = tx.Put(pageData.GetKey(), pageData)
+
+		_, err = tx.Put(p.Page.GetKey(), p.Page)
 		if err != nil {
 			return err
 		}
 
-		err = SaveFile(r, id, FileTypePageImage)
+		_, err = tx.Put(p.PageData.GetKey(), p.PageData)
 		if err != nil {
-			//ファイル指定なしの場合の動作
+			return err
+		}
+
+		if p.FileSet != nil {
+			err = SaveFile(ctx, p.FileSet)
+			if err != nil {
+				//ファイル指定なしの場合の動作
+			}
 		}
 
 		//TODO Deletedにされている場合、HTMLを検索して削除
@@ -244,6 +202,7 @@ func PutPage(r *http.Request) error {
 		//     公開ページを更新時に削除する仕組みか、テスト中に表示できる仕組みを他で用意する
 		return nil
 	})
+
 	if err != nil {
 		return xerrors.Errorf("transaction error: %w", err)
 	}
@@ -286,12 +245,11 @@ func UsingTemplate(ctx context.Context, id string) (bool, error) {
 	return false, nil
 }
 
-func RemovePage(r *http.Request, id string) error {
+func RemovePage(ctx context.Context, id string) error {
 
 	var err error
-	ctx := r.Context()
 
-	children, _, err := SelectChildPages(r, id, NoLimitCursor, 0, false)
+	children, _, err := SelectChildPages(ctx, id, NoLimitCursor, 0, false)
 	if err != nil {
 		return fmt.Errorf("Datastore Error SelectChildPages child page[%v]", err)
 	}
@@ -319,8 +277,8 @@ func RemovePage(r *http.Request, id string) error {
 			return err
 		}
 
-		if ExistFile(r, id) {
-			return RemoveFile(r, id)
+		if ExistFile(ctx, id) {
+			return RemoveFile(ctx, id)
 		}
 
 		//TODO HTMLを削除
@@ -333,7 +291,7 @@ func RemovePage(r *http.Request, id string) error {
 	return nil
 }
 
-func PutPageSequence(r *http.Request, ids string, enables string, verCsv string) error {
+func PutPageSequence(ctx context.Context, ids string, enables string, verCsv string) error {
 
 	idArray := strings.Split(ids, ",")
 	enableArray := strings.Split(enables, ",")
@@ -358,7 +316,6 @@ func PutPageSequence(r *http.Request, ids string, enables string, verCsv string)
 		versions[idx] = verBuf
 	}
 
-	ctx := r.Context()
 	cli, err := createClient(ctx)
 	if err != nil {
 		return xerrors.Errorf("createClient() error: %w", err)
@@ -387,9 +344,8 @@ func PutPageSequence(r *http.Request, ids string, enables string, verCsv string)
 	return nil
 }
 
-func SelectReferencePages(r *http.Request, id string, typ string) ([]Page, error) {
+func SelectReferencePages(ctx context.Context, id string, typ string) ([]Page, error) {
 
-	ctx := r.Context()
 	cli, err := createClient(ctx)
 	if err != nil {
 		return nil, xerrors.Errorf("createClient() error: %w", err)
@@ -430,10 +386,9 @@ func CreatePageDataKey(id string) *datastore.Key {
 	return datastore.NameKey(KindPageDataName, id, createSiteKey())
 }
 
-func SelectPageData(r *http.Request, id string) (*PageData, error) {
+func SelectPageData(ctx context.Context, id string) (*PageData, error) {
 
 	page := PageData{}
-	ctx := r.Context()
 	key := CreatePageDataKey(id)
 
 	cli, err := createClient(ctx)

@@ -2,6 +2,7 @@ package manage
 
 import (
 	"app/datastore"
+	. "app/handler/internal"
 	"app/logic"
 
 	"net/http"
@@ -12,7 +13,9 @@ import (
 
 func viewRootPageHandler(w http.ResponseWriter, r *http.Request) {
 
-	page, err := datastore.SelectRootPage(r)
+	ctx := r.Context()
+
+	page, err := datastore.SelectRootPage(ctx)
 	if err != nil {
 		if err == datastore.SiteNotFoundError {
 			http.Redirect(w, r, "/manage/site/", 302)
@@ -45,8 +48,39 @@ func addPageHandler(w http.ResponseWriter, r *http.Request) {
 
 func viewPageHandler(w http.ResponseWriter, r *http.Request) {
 
+	ctx := r.Context()
+
 	if POST(r) {
-		err := datastore.PutPage(r)
+
+		vars := mux.Vars(r)
+		id := vars["key"]
+
+		var ps datastore.PageSet
+
+		p, pd, err := CreateFormPage(r)
+		if err != nil {
+			errorPage(w, "Error CreateFormPage", err, 500)
+			return
+		}
+
+		fs, err := CreateFormFile(r, datastore.FileTypePageImage)
+		if err != nil {
+			errorPage(w, "Error CreateFormFile", err, 500)
+			return
+		}
+
+		ps.ID = id
+		if fs != nil {
+			fs.ID = id
+		}
+
+		ps.Page = p
+		ps.PageData = pd
+		ps.FileSet = fs
+
+		ctx := r.Context()
+
+		err = datastore.PutPage(ctx, &ps)
 		if err != nil {
 			errorPage(w, "Error Put Page", err, 500)
 			return
@@ -55,8 +89,9 @@ func viewPageHandler(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 	id := vars["key"]
+
 	//ページ検索
-	page, err := datastore.SelectPage(r, id, -1)
+	page, err := datastore.SelectPage(ctx, id, -1)
 	if err != nil {
 		errorPage(w, "Error Select Page", err, 500)
 		return
@@ -87,7 +122,7 @@ func view(w http.ResponseWriter, r *http.Request, page *datastore.Page) {
 
 	id := page.Key.Name
 
-	pageData, err = datastore.SelectPageData(r, id)
+	pageData, err = datastore.SelectPageData(ctx, id)
 	if err != nil {
 		errorPage(w, "Error Select PageData", err, 500)
 		return
@@ -99,7 +134,7 @@ func view(w http.ResponseWriter, r *http.Request, page *datastore.Page) {
 	}
 
 	//全件でOK
-	children, _, err = datastore.SelectChildPages(r, id, datastore.NoLimitCursor, 0, true)
+	children, _, err = datastore.SelectChildPages(ctx, id, datastore.NoLimitCursor, 0, true)
 	if err != nil {
 		errorPage(w, "Error Select Children page", err, 500)
 		return
@@ -133,13 +168,15 @@ func view(w http.ResponseWriter, r *http.Request, page *datastore.Page) {
 		if parent == "" {
 			break
 		}
-		parentPage, err := datastore.SelectPage(r, parent, -1)
+		parentPage, err := datastore.SelectPage(ctx, parent, -1)
 		if err != nil {
 			break
 		}
 		wk = append(wk, *parentPage)
 		parent = parentPage.Parent
 	}
+
+	exist := datastore.ExistFile(ctx, id)
 
 	breadcrumbs := make([]datastore.Page, len(wk))
 	for idx, _ := range wk {
@@ -152,10 +189,11 @@ func view(w http.ResponseWriter, r *http.Request, page *datastore.Page) {
 		Children         []datastore.Page
 		Breadcrumbs      []datastore.Page
 		Templates        []datastore.Template
+		ExistFile        bool
 		Publish          bool
 		SiteTemplateName string
 		PageTemplateName string
-	}{page, pageData, children, breadcrumbs, templates, publish, siteTemplateName, pageTemplateName}
+	}{page, pageData, children, breadcrumbs, templates, exist, publish, siteTemplateName, pageTemplateName}
 
 	viewManage(w, "page/edit.tmpl", dto)
 }
@@ -164,7 +202,9 @@ func deletePageHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["key"]
 
-	err := datastore.RemovePage(r, id)
+	ctx := r.Context()
+
+	err := datastore.RemovePage(ctx, id)
 	if err != nil {
 		errorPage(w, "Error Delete Page", err, 500)
 		return
@@ -176,7 +216,9 @@ func changePublicPageHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["key"]
 
-	err := logic.PutHTML(r, id)
+	ctx := r.Context()
+
+	err := logic.PutHTML(ctx, id)
 	if err != nil {
 		errorPage(w, "Error Publish HTML", err, 500)
 		return
@@ -189,7 +231,9 @@ func changePrivatePageHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["key"]
 
-	err := datastore.RemoveHTML(r, id)
+	ctx := r.Context()
+
+	err := datastore.RemoveHTML(ctx, id)
 	if err != nil {
 		errorPage(w, "Error Private HTML", err, 500)
 		return
@@ -202,7 +246,9 @@ func toolPageHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["key"]
 
-	children, _, err := datastore.SelectChildPages(r, id, datastore.NoLimitCursor, 0, true)
+	ctx := r.Context()
+
+	children, _, err := datastore.SelectChildPages(ctx, id, datastore.NoLimitCursor, 0, true)
 	if err != nil {
 		errorPage(w, "Error Select Children page", err, 500)
 		return
@@ -222,7 +268,9 @@ func changeSequencePageHandler(w http.ResponseWriter, r *http.Request) {
 	enablesCsv := r.FormValue("enables")
 	versionsCsv := r.FormValue("versions")
 
-	err := datastore.PutPageSequence(r, idCsv, enablesCsv, versionsCsv)
+	ctx := r.Context()
+
+	err := datastore.PutPageSequence(ctx, idCsv, enablesCsv, versionsCsv)
 	if err != nil {
 		errorPage(w, "Error Page sequence update", err, 500)
 		return

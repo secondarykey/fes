@@ -2,23 +2,23 @@ package api
 
 import (
 	"app/datastore"
+	"context"
 	"os"
 
 	"bytes"
 	"fmt"
 	"html/template"
-	"net/http"
 )
 
 //Public template object
 type Helper struct {
-	Request *http.Request
-	Manage  bool
+	Ctx    context.Context
+	Manage bool
 }
 
 func (p Helper) list(id string, num int) []datastore.Page {
 	//TODO 1ページ目固定
-	pages, _, err := datastore.SelectChildPages(p.Request, id, "", num, p.Manage)
+	pages, _, err := datastore.SelectChildPages(p.Ctx, id, "", num, p.Manage)
 	if err != nil {
 		return make([]datastore.Page, 0)
 	}
@@ -77,8 +77,7 @@ func (p Helper) ConvertTemplate(data string) template.HTML {
 }
 
 func (p Helper) getVariable(key string) string {
-	ctx := p.Request.Context()
-	val, err := datastore.GetVariable(ctx, key)
+	val, err := datastore.GetVariable(p.Ctx, key)
 	if err != nil {
 		return err.Error()
 	}
