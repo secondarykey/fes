@@ -68,7 +68,6 @@ func Register() error {
 
 	s.HandleFunc("/datastore/backup", backupHandler).Methods("POST")
 	s.HandleFunc("/datastore/restore", restoreHandler).Methods("POST")
-	s.HandleFunc("/datastore/refresh", refreshHandler).Methods("POST")
 
 	//Site
 	s.HandleFunc("/site/", viewSiteHandler).Methods("GET")
