@@ -11,20 +11,11 @@ import (
 	"time"
 )
 
-func refreshHandler(w http.ResponseWriter, r *http.Request) {
-	err := datastore.RefreshSite(r.Context())
-	if err != nil {
-		errorPage(w, "Refresh Site Error", err, 500)
-		return
-	}
-	w.Write([]byte("Success."))
-}
-
 func backupHandler(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 	//バイナリを作成
-	data, err := datastore.GetBackupData(ctx)
+	data, err := datastore.CreateBackupData(ctx)
 	if err != nil {
 		errorPage(w, "Create BackupDataError", err, 500)
 		return
@@ -34,18 +25,26 @@ func backupHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "application/zip")
 	now := time.Now()
 	w.Header().Set("Content-Disposition", "attachment; filename=fes-backup-"+now.Format("20060102150405")+".zip")
+
 	//Zipにする
 	zipWriter := zip.NewWriter(w)
 	defer zipWriter.Close()
 
+	//fmt.Println("data length", len(data))
+
 	for kind, elm := range data {
+
+		//fmt.Println(kind, len(elm))
 
 		for key, byt := range elm {
 
 			esp := strings.Replace(key, "?", "_QUESTION_", -1)
 			esp = strings.Replace(esp, "=", "_EQUAL_", -1)
 
-			writer, err := zipWriter.Create(kind + "/" + esp)
+			name := kind + "/" + esp
+			//fmt.Println(name)
+
+			writer, err := zipWriter.Create(name)
 			if err != nil {
 				errorPage(w, "Create Zip", err, 500)
 				return

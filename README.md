@@ -13,7 +13,6 @@ fes is Festival Edit System.
 - キャッシュ機能
 - URL機能
 - エラーページ
-- datastoreからRequest削除
 - 以下をマニュアルに記載
 
 ## データの扱い
@@ -47,15 +46,19 @@ fes is Festival Edit System.
 "templateContent"
 "variable"
 
-
-
 ## 認証の方法
 
+app/handler/internal/\_assets/environment.json の値を編集します。
 
 ```
     "CLIENT_ID":"",
     "CLIENT_SECRET":""
 ```
+
+この値はGCPのプロジェクトからAPIのOAuth2を設定して、設定します。
+
+この値により管理機能にGoogle認証が追加されます。
+認証を許すメールアドレスを管理画面上で設定します。
 
 git update-index --skip-worktree app/handler/internal/\_assets/environment.json
 

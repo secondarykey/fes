@@ -22,17 +22,19 @@ var (
 )
 
 type Site struct {
-	Name          string
-	Description   string
-	Root          string
-	Managers      []string
+	Name        string
+	Description string
+	Root        string
+	Managers    []string
+
+	TargetVersion string `datastore:"-"`
+	Meta
+
+	//Deprecated
 	HTMLCache     bool
 	TemplateCache bool
 	FileCache     bool
 	PageCache     bool
-
-	TargetVersion string `datastore:"-"`
-	Meta
 }
 
 func (s *Site) Load(props []datastore.Property) error {
@@ -70,27 +72,6 @@ func PutSite(r *http.Request) error {
 	site.Description = r.FormValue("description")
 	site.Root = r.FormValue("rootPage")
 	site.Managers = strings.Split(r.FormValue("manager"), ",")
-
-	if cache := r.FormValue("htmlCache"); cache != "" {
-		if val, err := strconv.ParseBool(cache); err == nil {
-			site.HTMLCache = val
-		}
-	}
-	if cache := r.FormValue("templateCache"); cache != "" {
-		if val, err := strconv.ParseBool(cache); err == nil {
-			site.TemplateCache = val
-		}
-	}
-	if cache := r.FormValue("pageCache"); cache != "" {
-		if val, err := strconv.ParseBool(cache); err == nil {
-			site.PageCache = val
-		}
-	}
-	if cache := r.FormValue("fileCache"); cache != "" {
-		if val, err := strconv.ParseBool(cache); err == nil {
-			site.FileCache = val
-		}
-	}
 
 	var page *Page
 	if foundErr != nil {
