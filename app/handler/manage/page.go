@@ -33,17 +33,17 @@ func addPageHandler(w http.ResponseWriter, r *http.Request) {
 	parent := vars["key"]
 
 	//新規ページなので
-	page := &datastore.Page{
-		Parent: parent,
-	}
+	page := datastore.Page{}
+
+	page.Parent = parent
 	page.Deleted = true
 
 	uid := uuid.NewV4()
-
 	id := uid.String()
+
 	page.LoadKey(datastore.CreatePageKey(id))
 
-	view(w, r, page)
+	view(w, r, &page)
 }
 
 func viewPageHandler(w http.ResponseWriter, r *http.Request) {
@@ -95,6 +95,17 @@ func viewPageHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		errorPage(w, "Error Select Page", err, 500)
 		return
+	}
+
+	if page == nil {
+		if id == datastore.ErrorPageID {
+			page = &datastore.Page{}
+			page.Deleted = true
+			page.Parent = ""
+			page.LoadKey(datastore.CreatePageKey(id))
+		} else {
+			//TODO ありえないけどどうしよう
+		}
 	}
 
 	view(w, r, page)
@@ -165,7 +176,7 @@ func view(w http.ResponseWriter, r *http.Request, page *datastore.Page) {
 	parent := page.Parent
 
 	for {
-		if parent == "" {
+		if parent == "" || parent == datastore.ErrorPageID {
 			break
 		}
 		parentPage, err := datastore.SelectPage(ctx, parent, -1)
@@ -286,7 +297,7 @@ type Tree struct {
 
 func treePageHandler(w http.ResponseWriter, r *http.Request) {
 
-	tree, err := datastore.PageTree(r.Context())
+	tree, err := datastore.CreatePagesTree(r.Context())
 	if err != nil {
 		errorPage(w, "Error Page Tree", err, 500)
 		return

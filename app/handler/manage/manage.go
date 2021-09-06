@@ -24,6 +24,7 @@ func Register() error {
 	r := mux.NewRouter()
 	s := r.PathPrefix("/manage").Subrouter()
 
+	s.HandleFunc("/favico.ico", viewRootPageHandler).Methods("GET")
 	//Page
 	s.HandleFunc("/page/", viewRootPageHandler).Methods("GET")
 	s.HandleFunc("/page/{key}", viewPageHandler)
@@ -43,6 +44,7 @@ func Register() error {
 	s.HandleFunc("/file/", viewFileHandler).Methods("GET")
 	s.HandleFunc("/file/type/{type}", viewFileHandler).Methods("GET")
 	s.HandleFunc("/file/add", addFileHandler).Methods("POST")
+	s.HandleFunc("/file/favicon", faviconUploadHandler).Methods("POST")
 	s.HandleFunc("/file/delete", deleteFileHandler).Methods("POST")
 	s.HandleFunc("/file/resize/{key}", resizeFileHandler).Methods("GET")
 	s.HandleFunc("/file/resize/commit", resizeCommitFileHandler).Methods("POST")
@@ -149,7 +151,7 @@ func pageView(w http.ResponseWriter, r *http.Request, id string) {
 	}
 
 	//管理用の書き出し
-	err := logic.WriteManageHTML(w, r, id, page)
+	err := logic.WriteManageHTML(w, r, id, page, nil)
 	if err != nil {
 		errorPage(w, "ERROR:Generate HTML", err, 500)
 		return

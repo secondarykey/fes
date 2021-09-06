@@ -7,59 +7,63 @@ File[<a href="/manage/file/type/1">File</a>|<a href="/manage/file/type/2">Page</
 <table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
   <thead>
     <tr>
-      <th class="mdl-data-table__cell--non-numeric" style="width:20px;">
+      <th class="mdl-data-table__cell--non-numeric">
+
 {{if ne .Now ""}}
-        <a href="javascript:history.back();" class="demo-nav__button" title="Older">
+        <a href="javascript:history.back();" class="fes-nav__button" title="Older">
           <button class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon">
              <i class="material-icons">arrow_back</i>
           </button>
         </a>
 {{end}}
+        Name
+
       </th>
-      <th class="mdl-data-table__cell--non-numeric">Name</th>
-      <th>Size(byte)</th>
-      <th>Create</th>
-      <th>Update</th>
-      <th>
-        <a href="?cursor={{.Next}}" class="demo-nav__button" title="Newer">
+
+      <th style="width:120px;">Size(byte)</th>
+      <th style="width:160px;">Create / Update</th>
+
+      <th style="width:100px;">
+        <a href="?cursor={{.Next}}" class="fes-nav__button" title="Newer">
           <button class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon">
             <i class="material-icons" role="presentation">arrow_forward</i>
           </button>
         </a>
       </th>
+
     </tr>
   </thead>
   <tbody>
 {{ range .Files}}
     <tr>
-      <td style="width:20px;"></td>
+
       <td class="mdl-data-table__cell--non-numeric"><a href="/file/{{ .Key.Name}}" target="_blank">{{ .Key.Name }}</a></td>
       <td><a href="/manage/file/resize/{{.Key.Name}}">{{convertSize .Size}}</a></td>
-      <td>{{convertDate .CreatedAt}}</td>
-      <td>{{convertDate .UpdatedAt}}</td>
+      <td>{{convertDate .CreatedAt}}<br>{{convertDate .UpdatedAt}}</td>
+
       <td>
-      <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent removeBtn" data-id="{{ .Key.Name }}">
-        Remove
-      </button>
+        <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent removeBtn" data-id="{{ .Key.Name }}">
+          <span class="material-icons">delete_forever</span>
+        </button>
       </td>
     </tr>
 {{ end }}
     <tr>
       <td class="mdl-data-table__cell--non-numeric">
 {{if ne .Now ""}}
-        <a href="javascript:history.back();" class="demo-nav__button" title="Older">
+        <a href="javascript:history.back();" class="fes-nav__button" title="Older">
           <button class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon">
              <i class="material-icons">arrow_back</i>
           </button>
         </a>
 {{end}}
       </td>
+
       <td></td>
       <td></td>
-      <td></td>
-      <td></td>
+
       <td>
-        <a href="?cursor={{.Next}}" class="demo-nav__button" title="Newer">
+        <a href="?cursor={{.Next}}" class="fes-nav__button" title="Newer">
           <button class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon">
             <i class="material-icons" role="presentation">arrow_forward</i>
           </button>

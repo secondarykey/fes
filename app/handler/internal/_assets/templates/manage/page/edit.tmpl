@@ -5,14 +5,12 @@ Edit Page[
 {{ end }}
 ]
 
-<a href="/manage/page/view/{{ .Page.Key.Name }}" target="private">Private</a> | 
-<a href="/page/{{ .Page.Key.Name }}" target="public">Public</a>
-
-
-{{ if .Publish }}
-        <button type="button" id="generateBtn" class="mdl-button mdl-js-button mdl-button--raised mdl-button--primary">
-          Publish
-        </button>
+{{ if ne .Page.Key.Name "ErrorPage" }}
+  {{ if .Publish }}
+  <button type="button" id="generateBtn" class="mdl-button mdl-js-button mdl-button--raised mdl-button--primary">
+    <span class="material-icons">publish</span>
+  </button>
+  {{ end }}
 {{ end }}
 
 {{end}}
@@ -32,59 +30,12 @@ Edit Page[
           <span style="font-size:10px;color:#999999;">{{.Page.Key.Name}}</span>
 
         </div>
-      </td>
-    </tr>
-
-    <tr>
-      <td class="mdl-data-table__cell--non-numeric">
-
-        <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="publish">
-          <span class="mdl-switch__label">Enabled</span>
-          <input type="checkbox" name="publish" id="publish" class="mdl-switch__input" {{if not .Page.Deleted}}checked{{end}}>
-
-        </label>
-
-      </td>
-    </tr>
-
-    <tr>
-      <td class="mdl-data-table__cell--non-numeric">
-        <div id="siteTemplate" class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label mdl-select">
-          <input class="mdl-textfield__input" type="text" id="site" value="{{.SiteTemplateName}}" readonly/>
-          <label class="mdl-textfield__label" for="site">Site Template</label>
-          <ul class="mdl-menu mdl-menu--bottom-left mdl-js-menu mdl-js-ripple-effect" for="site">
-{{ range .Templates}}
-  {{ if eq .Type 1}}
-              <li class="mdl-menu__item" data-id="{{ .Key.Name }}">{{ .Name }}</li>
-  {{ end }}
-{{ end }}
-          </ul>
-        </div>
-      </td>
-    </tr>
-
-    <tr>
-      <td class="mdl-data-table__cell--non-numeric">
-        <div id="pageTemplate" class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label mdl-select">
-          <input class="mdl-textfield__input" type="text" id="page" value="{{.PageTemplateName}}" readonly/>
-          <label class="mdl-textfield__label" for="page">Page Template</label>
-          <ul class="mdl-menu mdl-menu--bottom-left mdl-js-menu mdl-js-ripple-effect" for="page">
-{{ range .Templates}}
-  {{ if eq .Type 2}}
-              <li class="mdl-menu__item" data-id="{{ .Key.Name }}">{{ .Name }}</li>
-  {{ end }}
-{{ end }}
-          </ul>
-        </div>
-      </td>
-    </tr>
-
-
-    <tr>
-      <td class="mdl-data-table__cell--non-numeric">
+        <a href="/manage/page/view/{{ .Page.Key.Name }}" target="private"><button type="button" class="mdl-button"><span class="material-icons">preview</span></button></a>
+        <a href="/page/{{ .Page.Key.Name }}" target="public"><button type="button" class="mdl-button"><span class="material-icons">public</span></button></a>
+        <br>
         <!-- Image upload-->
         <button type="button" id="uploadBtn" class="mdl-button mdl-js-button mdl-button--raised">
-          Image
+          <span class="material-icons">image</span>
         </button>
 
         <span id="attache" class="material-icons" style="color:red;display:none;vertical-align:middle;">attachment</span>
@@ -102,8 +53,60 @@ Edit Page[
       </td>
     </tr>
 
-{{ if ne .Page.Name "" }}
+{{ if ne .Page.Key.Name "ErrorPage" }}
+    <tr>
+      <td class="mdl-data-table__cell--non-numeric">
 
+        <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="publish">
+          <span class="mdl-switch__label">Enabled</span>
+          <input type="checkbox" name="publish" id="publish" class="mdl-switch__input" {{if not .Page.Deleted}}checked{{end}}>
+        </label>
+
+      </td>
+    </tr>
+{{ end }}
+
+    <tr>
+      <td class="mdl-data-table__cell--non-numeric">
+        <div id="siteTemplate" class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label mdl-select">
+          <input class="mdl-textfield__input" type="text" id="site" value="{{.SiteTemplateName}}" readonly/>
+          <label class="mdl-textfield__label" for="site">Site Template</label>
+          <ul class="mdl-menu mdl-menu--bottom-left mdl-js-menu mdl-js-ripple-effect" for="site">
+{{ range .Templates}}
+  {{ if eq .Type 1}}
+              <li class="mdl-menu__item" data-id="{{ .Key.Name }}">{{ .Name }}</li>
+  {{ end }}
+{{ end }}
+          </ul>
+        </div>
+        <button type="button" class="mdl-button" id="siteTemplateBtn">
+          <span class="material-icons">open_in_new<span>
+        </button>
+      </td>
+    </tr>
+
+    <tr>
+      <td class="mdl-data-table__cell--non-numeric">
+        <div id="pageTemplate" class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label mdl-select">
+          <input class="mdl-textfield__input" type="text" id="page" value="{{.PageTemplateName}}" readonly/>
+          <label class="mdl-textfield__label" for="page">Page Template</label>
+          <ul class="mdl-menu mdl-menu--bottom-left mdl-js-menu mdl-js-ripple-effect" for="page">
+{{ range .Templates}}
+  {{ if eq .Type 2}}
+              <li class="mdl-menu__item" data-id="{{ .Key.Name }}">{{ .Name }}</li>
+  {{ end }}
+{{ end }}
+          </ul>
+        </div>
+        <button type="button" class="mdl-button" id="pageTemplateBtn">
+          <span class="material-icons">open_in_new<span>
+        </button>
+      </td>
+    </tr>
+
+
+{{ if ne .Page.Key.Name "ErrorPage" }}
+  {{ if ne .Page.Name "" }}
 
     <tr>
       <td class="mdl-data-table__cell--non-numeric">
@@ -118,11 +121,9 @@ Edit Page[
         </ul>
         </div>
 
-        <br>
-
         <a href="/manage/page/tool/{{ .Page.Key.Name }}">
         <button type="button" id="toolBtn" class="mdl-button mdl-js-button mdl-button--raised">
-          Tool
+          <span class="material-icons">list</span>
         </button>
         </a>
 
@@ -152,6 +153,8 @@ Edit Page[
         </div>
       </td>
     </tr>
+
+  {{ end }}
 {{ end }}
 
     <tr>
@@ -165,7 +168,9 @@ Edit Page[
 
     <tr>
       <td class="mdl-data-table__cell--non-numeric">
-        <button type="button" id="contentBtn" class="mdl-button mdl-js-button mdl-button--raised">EditTool</button>
+        <button type="button" id="contentBtn" class="mdl-button mdl-js-button mdl-button--raised">
+          <span class="material-icons">mode_edit</span>
+        </button>
         <br>
         <div class="mdl-textfield mdl-js-textfield" style="width:100%;">
           <textarea class="mdl-textfield__input" type="text" id="pageContent" name="pageContent" rows="10" style="width:100%;">{{ plane .PageData.Content }}</textarea>
@@ -177,15 +182,15 @@ Edit Page[
     <tr>
       <td class="mdl-data-table__cell--non-numeric">
         <button type="button" id="privateBtn" class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent">
-          Private
+          <span class="material-icons">public_off</span>
         </button>
 
         <button type="button" id="removeBtn" class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent">
-          Remove
+          <span class="material-icons">delete_forever</span>
         </button>
 
         <button type="button" id="updateBtn" class="mdl-button mdl-js-button mdl-button--raised mdl-button--primary">
-          Update
+          <span class="material-icons">save</span>
         </button>
       </td>
     </tr>
@@ -299,6 +304,17 @@ Edit Page[
       attache.style.display = "inline";
     });
 
+    var siteTemplateBtn = document.querySelector('#siteTemplateBtn');
+    siteTemplateBtn.addEventListener('click', function() {
+        var siteID = document.querySelector('#siteTemplateID');
+        window.location.href = "/manage/template/edit/" + siteID.getAttribute("value");
+    });
+
+    var pageTemplateBtn = document.querySelector('#pageTemplateBtn');
+    pageTemplateBtn.addEventListener('click', function() {
+        var pageID = document.querySelector('#pageTemplateID');
+        window.location.href = "/manage/template/edit/" + pageID.getAttribute("value");
+    });
 
 </script>
 {{ end }}

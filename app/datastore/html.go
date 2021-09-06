@@ -77,7 +77,9 @@ func PutHTML(ctx context.Context, htmls []*HTML, page *Page) error {
 		}
 
 		if page != nil {
-			page.Publish = time.Now()
+			if page.Publish.IsZero() {
+				page.Publish = time.Now()
+			}
 			err = Put(tx, page)
 			if err != nil {
 				return xerrors.Errorf("Page(Publish) Put() error: %w", err)

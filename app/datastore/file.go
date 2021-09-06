@@ -17,7 +17,10 @@ import (
 const (
 	FileTypeData      = 1
 	FileTypePageImage = 2
+	FileTypeSystem    = 3
 )
+
+const SystemFaviconID = "system-favicon"
 
 const KindFileName = "File"
 
@@ -302,6 +305,17 @@ func GetFileData(ctx context.Context, name string) (*FileData, error) {
 		}
 	}
 	return &rtn, nil
+}
+
+func GetFavicon(ctx context.Context) ([]byte, error) {
+	d, err := GetFileData(ctx, SystemFaviconID)
+	if err != nil {
+		return nil, xerrors.Errorf("GetFileData() error: %w", err)
+	}
+	if d == nil {
+		return nil, nil
+	}
+	return d.Content, nil
 }
 
 type FileSet struct {

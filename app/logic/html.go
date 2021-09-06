@@ -14,7 +14,7 @@ import (
 	"golang.org/x/xerrors"
 )
 
-func createTemplate(ctx context.Context, page *datastore.Page, mng bool) (*template.Template, error) {
+func createTemplate(ctx context.Context, page *datastore.Page, mng bool, dto interface{}) (*template.Template, error) {
 
 	//テンプレートを取得
 	siteTmp, err := datastore.SelectTemplateData(ctx, page.SiteTemplate)
@@ -31,8 +31,10 @@ func createTemplate(ctx context.Context, page *datastore.Page, mng bool) (*templ
 	pageTmpData = "{{define \"" + api.PageTemplateName + "\"}}" + "\n" + pageTmpData + "\n" + "{{end}}"
 
 	helper := api.Helper{
-		Ctx:    ctx,
-		Manage: mng,
+		Ctx:         ctx,
+		ID:          page.GetKey().Name,
+		Manage:      mng,
+		TemplateDto: dto,
 	}
 
 	//適用する
@@ -47,7 +49,7 @@ func createTemplate(ctx context.Context, page *datastore.Page, mng bool) (*templ
 	return tmpl, nil
 }
 
-func WriteManageHTML(w http.ResponseWriter, r *http.Request, id string, p int) error {
+func WriteManageHTML(w http.ResponseWriter, r *http.Request, id string, p int, ve *ErrorDto) error {
 
 	var err error
 	ctx := r.Context()
@@ -60,17 +62,19 @@ func WriteManageHTML(w http.ResponseWriter, r *http.Request, id string, p int) e
 		return fmt.Errorf("Page not found[%s]", id)
 	}
 
-	//テンプレートの作成
-	tmpl, err := createTemplate(ctx, page, true)
-	if err != nil {
-		return err
-	}
-
+	//TODO p の使いみち
 	//TODO カーソルが空
 	//DTOの作成
-	dtos, _, err := NewDtos(ctx, page, "", true)
+	dtos, _, err := NewDtos(ctx, page, "", true, ve)
 	if err != nil {
 		return xerrors.Errorf("NewDtos() error: %w", err)
+	}
+
+	//TODO Paging
+	//テンプレートの作成
+	tmpl, err := createTemplate(ctx, page, true, dtos[0])
+	if err != nil {
+		return xerrors.Errorf("createTemplate(): %w", err)
 	}
 
 	//書き込み
@@ -90,12 +94,13 @@ func PutHTML(ctx context.Context, id string) error {
 		return xerrors.Errorf("SelectPage() error: %w", err)
 	}
 
-	dtos, _, err := NewDtos(ctx, page, "", false)
+	dtos, _, err := NewDtos(ctx, page, "", false, nil)
 	if err != nil {
 		return xerrors.Errorf("NewDtos() error: %w", err)
 	}
 
-	tmpl, err := createTemplate(ctx, page, false)
+	//TODO Paging
+	tmpl, err := createTemplate(ctx, page, false, dtos[0])
 	if err != nil {
 		return xerrors.Errorf("createTemplate() error: %w", err)
 	}
@@ -158,12 +163,13 @@ func PutHTMLs(ctx context.Context, pages []datastore.Page) error {
 
 		//TODO Referenceなので、NextはすでにDtoに埋め込まれている
 
-		dtos, _, err := NewDtos(ctx, &elm, datastore.NoLimitCursor, false)
+		dtos, _, err := NewDtos(ctx, &elm, datastore.NoLimitCursor, false, nil)
 		if err != nil {
 			return xerrors.Errorf("Reference NewDto() error: %w", err)
 		}
 
-		tmpl, err := createTemplate(ctx, &elm, false)
+		//TODO paging
+		tmpl, err := createTemplate(ctx, &elm, false, dtos[0])
 		if err != nil {
 			return xerrors.Errorf("Reference createTemplate() error: %w", err)
 		}
@@ -208,10 +214,18 @@ type HTMLDto struct {
 	Dir      string
 	Prev     string
 	Next     string
+
+	Error *ErrorDto
+}
+
+type ErrorDto struct {
+	No      int
+	Message string
+	Detail  string
 }
 
 //TODO 出力時と表示時のテスト
-func NewDtos(ctx context.Context, page *datastore.Page, cur string, view bool) ([]*HTMLDto, string, error) {
+func NewDtos(ctx context.Context, page *datastore.Page, cur string, view bool, ve *ErrorDto) ([]*HTMLDto, string, error) {
 
 	id := page.Key.Name
 	site, err := datastore.SelectSite(ctx, -1)
@@ -230,6 +244,7 @@ func NewDtos(ctx context.Context, page *datastore.Page, cur string, view bool) (
 		Page:     page,
 		PageData: pData,
 		Content:  content,
+		Error:    ve,
 	}
 
 	dir := "/manage/page/view/"

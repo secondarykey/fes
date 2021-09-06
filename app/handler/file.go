@@ -18,19 +18,19 @@ func fileHandler(w http.ResponseWriter, r *http.Request) {
 	//表示
 	fileData, err := datastore.GetFileData(r.Context(), id)
 	if err != nil {
-		errorPage(w, "Datastore:FileData Search Error", err, 500)
+		errorPage(w, r, "Datastore:FileData Search Error", err, 500)
 		return
 	}
 
 	if fileData == nil {
-		errorPage(w, "Datastore:Not Found FileData Error", fmt.Errorf("指定したIDのデータが存在しません。%s", id), 404)
+		errorPage(w, r, "Datastore:Not Found FileData Error", fmt.Errorf("指定したIDのデータが存在しません。%s", id), 404)
 		return
 	}
 
 	w.Header().Set("Content-Type", fileData.Mime)
 	_, err = w.Write(fileData.Content)
 	if err != nil {
-		errorPage(w, "Writing FileData Error", err, 500)
+		errorPage(w, r, "Writing FileData Error", err, 500)
 		return
 	}
 	return

@@ -12,8 +12,10 @@ import (
 
 //Public template object
 type Helper struct {
-	Ctx    context.Context
-	Manage bool
+	Ctx         context.Context
+	ID          string
+	Manage      bool
+	TemplateDto interface{}
 }
 
 func (p Helper) list(id string, num int) []datastore.Page {
@@ -30,23 +32,27 @@ var privateMark = `data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAAC
 func (p Helper) mark() template.HTML {
 	src := ""
 	if p.Manage {
-		src = `<img src="` + privateMark + `" style="position: fixed; display: block; right: 0; bottom: 0; margin-right: 40px; margin-bottom: 40px; z-index: 900;" />`
+		src = `<a href="/manage/page/` + p.ID + `"><img src="` + privateMark + `" style="position: fixed; display: block; right: 0; bottom: 0; margin-right: 40px; margin-bottom: 40px; z-index: 900;" /></a>`
 	}
 	return template.HTML(src)
 }
 
 func (p Helper) FuncMap() template.FuncMap {
 	return template.FuncMap{
-		"html":            ConvertHTML,
-		"eraseBR":         EraseBR,
-		"plane":           ConvertString,
-		"convertDate":     ConvertDate,
-		"list":            p.list,
-		"mark":            p.mark,
-		"templateContent": p.ConvertTemplate,
-		"variable":        p.getVariable,
-		"variableHTML":    p.getVariableHTML,
-		"env":             os.Getenv,
+		"html":              ConvertHTML,
+		"eraseBR":           EraseBR,
+		"plane":             ConvertString,
+		"convertDate":       ConvertDate,
+		"convertDateFormat": ConvertDateFormat,
+		"list":              p.list,
+		"mark":              p.mark,
+		"templateContent":   p.ConvertTemplate,
+		"variable":          p.getVariable,
+		"variableHTML":      p.getVariableHTML,
+		"variableCSS":       p.getVariableCSS,
+		"variableJS":        p.getVariableJS,
+		"variableJSStr":     p.getVariableJSStr,
+		"env":               os.Getenv,
 	}
 }
 
@@ -58,17 +64,8 @@ func (p Helper) ConvertTemplate(data string) template.HTML {
 		return template.HTML(fmt.Sprintf("Template Parse Error[%s]", err))
 	}
 
-	dto := struct {
-		Dir string
-		Top string
-	}{"/page/", "/"}
-	if p.Manage {
-		dto.Dir = "/manage/page/view/"
-		dto.Top = "/manage/page/view/"
-	}
-
 	buf := bytes.NewBuffer(make([]byte, 0, len(data)+500))
-	err = tmpl.Execute(buf, dto)
+	err = tmpl.Execute(buf, p.TemplateDto)
 	if err != nil {
 		return template.HTML(fmt.Sprintf("Template Execute Error[%s]", err))
 	}
@@ -86,4 +83,16 @@ func (p Helper) getVariable(key string) string {
 
 func (p Helper) getVariableHTML(key string) template.HTML {
 	return template.HTML(p.getVariable(key))
+}
+
+func (p Helper) getVariableCSS(key string) template.CSS {
+	return template.CSS(p.getVariable(key))
+}
+
+func (p Helper) getVariableJS(key string) template.JS {
+	return template.JS(p.getVariable(key))
+}
+
+func (p Helper) getVariableJSStr(key string) template.JSStr {
+	return template.JSStr(p.getVariable(key))
 }

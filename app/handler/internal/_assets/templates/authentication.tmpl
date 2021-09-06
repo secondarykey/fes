@@ -2,25 +2,46 @@
   <head>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style type="text/css">
+    .system {
+       font-size:24px;
+       color:black;
+    }
+    div.box{
+      width:225px;
+      height:150px;
+      background:#f1f1f1;
+      border-radius:15px;
+      display: table-cell;
+      color: white;
+      padding: 1em;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      margin-right: -50%;
+      transform: translate(-50%, -50%) 
+    }
     </style>
   </head>
 
   <body>
 
-    <div id="g_id_onload"
-         data-client_id="{{ env "CLIENT_ID" }}"
-         data-auto_prompt="false"
-         data-ux_mode="redirect"
-         data-login_uri="/session">
-    </div>
+    <div class="box">
+      <h2 class="system">Fes System</h2>
+      <div id="g_id_onload"
+           data-client_id="{{ env "CLIENT_ID" }}"
+           data-auto_prompt="false"
+           data-ux_mode="redirect"
+           data-login_uri="/session">
+      </div>
 
-    <div class="g_id_signin"
-         data-type="standard"
-         data-size="middle"
-         data-theme="outline"
-         data-text="sign_in_with"
-         data-shape="rectangular"
-         data-logo_alignment="left">
+      <div class="g_id_signin"
+           data-type="standard"
+           data-size="large"
+           data-theme="outline"
+           data-text="sign_in_with"
+           data-shape="rectangular"
+           data-logo_alignment="left">
+      </div>
     </div>
 
 <!--

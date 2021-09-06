@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"golang.org/x/xerrors"
 )
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
@@ -14,7 +15,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	site, err := datastore.SelectSite(ctx, -1)
 	if err != nil {
-		errorPage(w, "Not Found", fmt.Errorf("サイトにトップページが指定されていません。"), 404)
+		errorPage(w, r, "Not Found", fmt.Errorf("サイトにトップページが指定されていません。"), 404)
 		return
 	}
 	pageView(w, r, site.Root)
@@ -38,11 +39,11 @@ func pageView(w http.ResponseWriter, r *http.Request, id string) {
 
 	html, err := datastore.GetHTML(r.Context(), id)
 	if err != nil {
-		errorPage(w, "error get html", err, 500)
+		errorPage(w, r, "datastore.GetHTML() error", err, 500)
 		return
 	}
 	if html == nil {
-		errorPage(w, "page not found", fmt.Errorf("ページが存在しません。[%s]", id), 404)
+		errorPage(w, r, "page not found", xerrors.Errorf("Page NotFound: %w", fmt.Errorf("%s", id)), 404)
 		return
 	}
 

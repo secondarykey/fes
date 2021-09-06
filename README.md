@@ -6,13 +6,10 @@ fes is Festival Edit System.
 
 # Issue
 
-- 認証ボタンを真ん中に
-- 認証機能をGUIで可能に
+- URL機能
 - Archive機能をGUIで可能に
 - アーティスト機能
 - キャッシュ機能
-- URL機能
-- エラーページ
 - 以下をマニュアルに記載
 
 ## データの扱い

@@ -29,8 +29,12 @@ Edit Variable
 
     <tr>
       <td class="mdl-data-table__cell--non-numeric">
-        <button type="button" id="variableTxt" class="mdl-button mdl-js-button mdl-button--raised">EditTool</button>
-        <button type="button" id="base64Upload" class="mdl-button mdl-js-button mdl-button--raised">Base64 Image</button>
+        <button type="button" id="variableTxt" class="mdl-button mdl-js-button mdl-button--raised">
+          <span class="material-icons">mode_edit</span>
+        </button>
+        <button type="button" id="base64Upload" class="mdl-button mdl-js-button mdl-button--raised">
+          <span class="material-icons">image</span>
+        </button>
         <br>
         <div class="mdl-textfield mdl-js-textfield" style="width:100%;">
           <textarea class="mdl-textfield__input" type="text" id="variableData" name="variableData" rows="10" style="width:100%;">{{ plane .VariableData.Content }}</textarea>
@@ -42,7 +46,7 @@ Edit Variable
     <tr>
       <td>
         <button type="button" id="updateBtn" class="mdl-button mdl-js-button mdl-button--raised mdl-button--primary">
-          Update
+          <span class="material-icons">save</span>
         </button>
       </td>
     </tr>

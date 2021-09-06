@@ -3,8 +3,10 @@ package main
 import (
 	"app"
 	"app/config"
+
 	"fmt"
 	"log"
+	"os"
 )
 
 func main() {
@@ -13,6 +15,7 @@ func main() {
 		config.SetDatastore())
 	if err != nil {
 		log.Fatalf("%+v", err)
+		os.Exit(1)
 	}
 	fmt.Println("bye!")
 	return

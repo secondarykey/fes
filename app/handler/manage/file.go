@@ -63,6 +63,25 @@ func addFileHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/manage/file/", 302)
 }
 
+func faviconUploadHandler(w http.ResponseWriter, r *http.Request) {
+	fs, err := CreateFormFile(r, datastore.FileTypeSystem)
+	if err != nil {
+		errorPage(w, "CreateFormFile Error", err, 500)
+		return
+	}
+	ctx := r.Context()
+	fs.ID = datastore.SystemFaviconID
+	fs.Name = datastore.SystemFaviconID
+
+	err = datastore.SaveFile(ctx, fs)
+	if err != nil {
+		errorPage(w, "Error Add File", err, 500)
+		return
+	}
+	//リダイレクト
+	http.Redirect(w, r, "/manage/site/", 302)
+}
+
 //URL = /manage/file/delete
 func deleteFileHandler(w http.ResponseWriter, r *http.Request) {
 	//リダイレクト

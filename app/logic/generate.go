@@ -49,7 +49,7 @@ func CreateStaticSite(dir string) error {
 func createPageFiles(dir string) (map[string]string, error) {
 
 	//Pageをすべて検索
-	tree, err := datastore.PageTree(context.Background())
+	tree, err := datastore.CreatePagesTree(context.Background())
 	if err != nil {
 		return nil, xerrors.Errorf("datastore.PageTree() error: %w", err)
 	}
