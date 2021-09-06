@@ -42,11 +42,19 @@ func EraseBR(data string) string {
 	return strings.Replace(data, "<br>", " ", -1)
 }
 
-func ConvertDate(t time.Time) string {
+func ConvertDate(t time.Time) template.HTML {
+	return convertDate(t, "2006/01/02 15:04:05", "Asia/Tokyo")
+}
+
+func ConvertDateFormat(t time.Time, f string) template.HTML {
+	return convertDate(t, f, "Asia/Tokyo")
+}
+
+func convertDate(t time.Time, f string, l string) template.HTML {
 	if t.IsZero() {
 		return "None"
 	}
-	jst, _ := time.LoadLocation("Asia/Tokyo")
+	jst, _ := time.LoadLocation(l)
 	jt := t.In(jst)
-	return jt.Format("2006/01/02 15:04:05")
+	return template.HTML(jt.Format(f))
 }

@@ -16,6 +16,10 @@ import (
 	"cloud.google.com/go/datastore"
 )
 
+const (
+	ErrorPageID = "ErrorPage"
+)
+
 var (
 	RootPageNotFoundError = fmt.Errorf("site root not set")
 )
@@ -38,7 +42,11 @@ type Page struct {
 }
 
 func (p *Page) Load(props []datastore.Property) error {
-	return datastore.LoadStruct(p, props)
+	err := datastore.LoadStruct(p, props)
+	if err != nil {
+		return xerrors.Errorf("page Load() error: %w", err)
+	}
+	return nil
 }
 
 func (p *Page) Save() ([]datastore.Property, error) {
@@ -157,6 +165,14 @@ func SelectPage(ctx context.Context, id string, version int) (*Page, error) {
 		}
 	}
 	return &page, nil
+}
+
+func GetErrorPage(ctx context.Context) (*Page, error) {
+	p, err := SelectPage(ctx, ErrorPageID, -1)
+	if err != nil {
+		return nil, xerrors.Errorf("SelectPage() error: %w", err)
+	}
+	return p, nil
 }
 
 type PageSet struct {
@@ -413,7 +429,7 @@ type Tree struct {
 	Indent   int
 }
 
-func PageTree(ctx context.Context) (*Tree, error) {
+func CreatePagesTree(ctx context.Context) (*Tree, error) {
 
 	cli, err := createClient(ctx)
 	if err != nil {
@@ -433,6 +449,9 @@ func PageTree(ctx context.Context) (*Tree, error) {
 	//キーマップの作成
 	for idx, elm := range pages {
 		key := keys[idx]
+		if key.Name == ErrorPageID {
+			continue
+		}
 		elm.LoadKey(key)
 		children, ok := parentMap[elm.Parent]
 		if !ok {

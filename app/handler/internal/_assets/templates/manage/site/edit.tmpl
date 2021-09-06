@@ -32,14 +32,37 @@ Setting
         </div>
       </td>
     </tr>
-  </tbody>
+
+    <tr>
+      <td class="mdl-data-table__cell--non-numeric">
+        <div class="mdl-textfield mdl-js-textfield">
+          <a href="/manage/page/ErrorPage">Error Page Design</a>
+        </div>
+      </td>
+    </tr>
+
+    <tr>
+      <td class="mdl-data-table__cell--non-numeric">
+        <div class="mdl-textfield mdl-js-textfield">
+          <img src="/favicon.ico">
+          <button type="button" id="faviconBtn" class="mdl-button mdl-js-button mdl-button--raised">
+          Favicon Upload
+          </button>
+
+        </div>
+      </td>
+    </tr>
+
   </tbody>
 </table>
 
   <input type="hidden" name="rootPage" id="siteRoot" value="{{ .Site.Root }}">
   <input type="hidden" id="version" name="version" value="{{ .Site.Version }}">
 
+</form>
 
+<form method="post" action="/manage/file/favicon" id="faviconForm" enctype="multipart/form-data">
+  <input type="file" name="file" id="file" value="" style="display:none;"/>
 </form>
 
 <!-- Advanced -->
@@ -95,5 +118,17 @@ Setting
       form.submit();
     });
   });
+
+  var uploadBtn = document.querySelector('#faviconBtn');
+  var file = document.querySelector('#file');
+  uploadBtn.addEventListener('click', function() {
+    file.click();
+    return false;
+  });
+  file.addEventListener('change', function() {
+    var updateForm = document.querySelector('#faviconForm');
+    updateForm.submit();
+  });
+
 </script>
 {{ end }}

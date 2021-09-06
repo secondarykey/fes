@@ -21,7 +21,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 
 	err = View(w, nil, "authentication.tmpl")
 	if err != nil {
-		errorPage(w, "描画エラー", fmt.Errorf("認証ページの表示に失敗 %v", err), 500)
+		errorPage(w, r, "描画エラー", fmt.Errorf("認証ページの表示に失敗 %v", err), 500)
 	}
 }
 
@@ -39,7 +39,7 @@ func sessionHandler(w http.ResponseWriter, r *http.Request) {
 	site, err := datastore.SelectSite(ctx, -1)
 	if err != nil {
 		if err != datastore.SiteNotFoundError {
-			errorPage(w, "サイト取得エラー", err, 500)
+			errorPage(w, r, "サイト取得エラー", err, 500)
 			return
 		}
 	}
@@ -80,14 +80,14 @@ func sessionHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !flag {
-		errorPage(w, "認証エラー", err, 403)
+		errorPage(w, r, "認証エラー", err, 403)
 		return
 	} else {
 		//Cookieの作成
 		u := manage.NewLoginUser(email, tokenString)
 		err = manage.SetSession(w, r, u)
 		if err != nil {
-			errorPage(w, "セッション作成エラー", err, 500)
+			errorPage(w, r, "セッション作成エラー", err, 500)
 			return
 		}
 	}

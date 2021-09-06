@@ -1,9 +1,8 @@
 {{define "title"}}
 Edit Template
-
-        <button type="button" id="generateBtn" class="mdl-button mdl-js-button mdl-button--raised mdl-button--primary">
-        Update reference
-        </button>
+    <button type="button" id="generateBtn" class="mdl-button mdl-js-button mdl-button--raised mdl-button--primary">
+      <span class="material-icons">view_list</span>
+    </button>
 {{end}}
 
 {{define "page_template"}}
@@ -35,8 +34,11 @@ Edit Template
 
     <tr>
       <td class="mdl-data-table__cell--non-numeric">
-        <button type="button" id="templateTxt" class="mdl-button mdl-js-button mdl-button--raised">EditTool</button>
+
+        <button type="button" id="templateTxt" class="mdl-button mdl-js-button mdl-button--raised"> <span class="material-icons">mode_edit</span> </button>
+
         <br>
+
         <div class="mdl-textfield mdl-js-textfield" style="width:100%;">
           <textarea class="mdl-textfield__input" type="text" id="templateData" name="template" rows="10" style="width:100%;">{{ plane .TemplateData.Content }}</textarea>
           <label class="mdl-textfield__label" for="pageContent">Template Data...</label>
@@ -47,7 +49,7 @@ Edit Template
     <tr>
       <td>
         <button type="button" id="updateBtn" class="mdl-button mdl-js-button mdl-button--raised mdl-button--primary">
-          Update
+          <span class="material-icons">save</span>
         </button>
       </td>
     </tr>

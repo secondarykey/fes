@@ -8,9 +8,8 @@ Template[<a href="/manage/template/type/2">Page</a>|<a href="/manage/template/ty
   <thead>
     <tr>
       <th class="mdl-data-table__cell--non-numeric">Name</th>
-      <th>Create</th>
-      <th>Update</th>
-      <th> </th>
+      <th style="width:160px;">Create / Update</th>
+      <th style="width:100px;"> </th>
     </tr>
   </thead>
 
@@ -18,12 +17,11 @@ Template[<a href="/manage/template/type/2">Page</a>|<a href="/manage/template/ty
 {{ range .Templates}}
     <tr>
       <td class="mdl-data-table__cell--non-numeric"><a href="/manage/template/edit/{{ .Key.Name}}">{{ .Name }}</a></td>
-      <td>{{convertDate .CreatedAt}}</td>
-      <td>{{convertDate .UpdatedAt}}</td>
+      <td>{{convertDate .CreatedAt}} <br> {{convertDate .UpdatedAt}}</td>
       <td>
-      <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent removeBtn" data-id="{{ .Key.Name }}">
-        Remove
-      </button>
+        <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent removeBtn" data-id="{{ .Key.Name }}">
+          <span class="material-icons">delete_forever</span>
+        </button>
       </td>
     </tr>
 {{ end }}
@@ -31,7 +29,7 @@ Template[<a href="/manage/template/type/2">Page</a>|<a href="/manage/template/ty
     <tr>
       <td class="mdl-data-table__cell--non-numeric">
 {{if ne .Now ""}}
-        <a href="javascript:history.back();" class="demo-nav__button" title="Older">
+        <a href="javascript:history.back();" class="fes-nav__button" title="Older">
           <button class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon">
              <i class="material-icons">arrow_back</i>
           </button>
@@ -39,9 +37,8 @@ Template[<a href="/manage/template/type/2">Page</a>|<a href="/manage/template/ty
 {{end}}
       </td>
       <td></td>
-      <td></td>
       <td>
-        <a href="?cursor={{.Next}}" class="demo-nav__button" title="Newer">
+        <a href="?cursor={{.Next}}" class="fes-nav__button" title="Newer">
           <button class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon">
             <i class="material-icons" role="presentation">arrow_forward</i>
           </button>
