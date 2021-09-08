@@ -71,7 +71,8 @@ func viewPageHandler(w http.ResponseWriter, r *http.Request) {
 
 		ps.ID = id
 		if fs != nil {
-			fs.ID = id
+			draftID := datastore.CreateDraftPageImageID(id)
+			fs.ID = draftID
 		}
 
 		ps.Page = p

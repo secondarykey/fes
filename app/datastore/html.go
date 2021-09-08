@@ -71,6 +71,11 @@ func PutHTML(ctx context.Context, htmls []*HTML, page *Page) error {
 
 	_, err = cli.RunInTransaction(ctx, func(tx *datastore.Transaction) error {
 
+		err = PublishPageImage(tx, page.GetKey().Name)
+		if err != nil {
+			return xerrors.Errorf("PublishPageImage() error: %w", err)
+		}
+
 		err = PutMulti(tx, dsts)
 		if err != nil {
 			return xerrors.Errorf("HTML PutMulti() error: %w", err)
