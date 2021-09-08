@@ -2,6 +2,7 @@ package datastore
 
 import (
 	"context"
+	"fmt"
 
 	"errors"
 	_ "image/gif"
@@ -20,7 +21,10 @@ const (
 	FileTypeSystem    = 3
 )
 
-const SystemFaviconID = "system-favicon"
+const (
+	SystemFaviconID        = "system-favicon"
+	draftPageImageIDSuffix = "DRAFT"
+)
 
 const KindFileName = "File"
 
@@ -323,4 +327,85 @@ type FileSet struct {
 	Name     string
 	File     *File
 	FileData *FileData
+}
+
+func GetFileSet(tx *datastore.Transaction, id string) (*FileSet, error) {
+
+	fkey := createFileKey(id)
+	fdkey := createFileDataKey(id)
+
+	var f File
+	var fd FileData
+
+	err := tx.Get(fkey, &f)
+	if err != nil {
+		if !errors.Is(err, datastore.ErrNoSuchEntity) {
+			return nil, xerrors.Errorf("File Get() error: %w", err)
+		}
+		return nil, nil
+	}
+
+	err = tx.Get(fdkey, &fd)
+	if err != nil {
+		return nil, xerrors.Errorf("FileData Get() error: %w", err)
+	}
+
+	var fs FileSet
+	fs.ID = id
+	fs.File = &f
+	fs.FileData = &fd
+	return &fs, nil
+}
+
+func CreateDraftPageImageID(id string) string {
+	return fmt.Sprintf("%s-%s", id, draftPageImageIDSuffix)
+}
+
+func PublishPageImage(tx *datastore.Transaction, id string) error {
+
+	fmt.Println("PublishPageImage()")
+
+	draftId := CreateDraftPageImageID(id)
+
+	fmt.Println("DraftID", draftId)
+
+	fs, err := GetFileSet(tx, draftId)
+	if err != nil {
+		return xerrors.Errorf("GetFileSet() error: %w", err)
+	}
+
+	if fs == nil {
+		fmt.Println("fs is nil")
+		return nil
+	}
+
+	f := fs.File
+	fd := fs.FileData
+
+	ids := make([]*datastore.Key, 2)
+	ids[0] = f.GetKey()
+	ids[1] = fd.GetKey()
+
+	f.LoadKey(createFileKey(id))
+	fd.LoadKey(createFileDataKey(id))
+
+	fmt.Println("delete multi", ids)
+	err = tx.DeleteMulti(ids)
+	if err != nil {
+		return xerrors.Errorf("DeleteMulti() error: %w", err)
+	}
+
+	fmt.Println("file put", f.GetKey())
+	_, err = tx.Put(f.GetKey(), f)
+	if err != nil {
+		return xerrors.Errorf("File Put() error: %w", err)
+	}
+
+	fmt.Println("filedata put", fd.GetKey())
+	_, err = tx.Put(fd.GetKey(), fd)
+	if err != nil {
+		return xerrors.Errorf("FileData Put() error: %w", err)
+	}
+
+	return nil
 }

@@ -123,6 +123,8 @@ func solidError(w http.ResponseWriter, title, msg string) {
 
 func favicon(w http.ResponseWriter, r *http.Request) {
 
+	w.Header().Set("Cache-Control", "public, max-age=86400")
+
 	ctx := r.Context()
 	//ファイルが存在するか？
 	fav, err := datastore.GetFavicon(ctx)
@@ -145,6 +147,8 @@ func favicon(w http.ResponseWriter, r *http.Request) {
 }
 
 func robotTxt(w http.ResponseWriter, r *http.Request) {
+
+	w.Header().Set("Cache-Control", "public, max-age=86400")
 
 	host := getHost(r)
 

@@ -4,6 +4,7 @@ import (
 	"app/datastore"
 	"context"
 	"os"
+	"time"
 
 	"bytes"
 	"fmt"
@@ -42,6 +43,8 @@ func (p Helper) FuncMap() template.FuncMap {
 		"html":              ConvertHTML,
 		"eraseBR":           EraseBR,
 		"plane":             ConvertString,
+		"fileURL":           p.GetFileURL,
+		"pageImageURL":      p.GetPageImageURL,
 		"convertDate":       ConvertDate,
 		"convertDateFormat": ConvertDateFormat,
 		"list":              p.list,
@@ -71,6 +74,48 @@ func (p Helper) ConvertTemplate(data string) template.HTML {
 	}
 
 	return template.HTML(buf.String())
+}
+func (p Helper) GetFileURL(id string) string {
+	return p.getFileURL(id, false)
+}
+
+func (p Helper) getFileURL(id string, draft bool) string {
+
+	targetID := ""
+	d := time.Now()
+
+	if draft && p.Manage {
+		draftId := datastore.CreateDraftPageImageID(id)
+		f, err := datastore.SelectFile(p.Ctx, draftId)
+		if err != nil {
+			return err.Error()
+		}
+		if f != nil {
+			targetID = draftId
+			d = f.UpdatedAt
+		}
+	}
+
+	if targetID == "" {
+		f, err := datastore.SelectFile(p.Ctx, id)
+		if err != nil {
+			return err.Error()
+		}
+		targetID = id
+		if f != nil {
+		}
+	}
+
+	cacheDir := convertDate(d, "20060102150405", "UTC")
+
+	return fmt.Sprintf("/file/%s/%s", cacheDir, targetID)
+}
+
+func (p Helper) GetPageImageURL(id string) string {
+	if id == "" {
+		id = p.ID
+	}
+	return p.getFileURL(id, true)
 }
 
 func (p Helper) getVariable(key string) string {
