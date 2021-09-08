@@ -6,6 +6,8 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
+
+	"golang.org/x/xerrors"
 )
 
 func CreateFormPage(r *http.Request) (*datastore.Page, *datastore.PageData, error) {
@@ -15,8 +17,16 @@ func CreateFormPage(r *http.Request) (*datastore.Page, *datastore.PageData, erro
 
 	ver := r.FormValue("version")
 	p.TargetVersion = ver
+
 	p.Name = r.FormValue("pageName")
 	p.Parent = r.FormValue("parentID")
+	seqBuf := r.FormValue("seq")
+	v, err := strconv.Atoi(seqBuf)
+	if err != nil {
+		return nil, nil, xerrors.Errorf("Seq parse error: %w", err)
+	}
+
+	p.Seq = v
 	p.Description = r.FormValue("pageDescription")
 	p.SiteTemplate = r.FormValue("siteTemplateID")
 	p.PageTemplate = r.FormValue("pageTemplateID")
