@@ -7,13 +7,16 @@ fes is Festival Edit System.
 # Issue
 
 - URL機能
-- Archive機能をGUIで可能に
-- アーティスト機能
 - キャッシュ機能
+- Archive機能をGUIで可能に
+
 - ログイン後にリダイレクト
+
+- アーティスト機能
+
 - 管理用のURLを変更できるようにする
 
-- Seqの更新にバグ？
+- エラーページの秘を消す
 
 - 以下をマニュアルに記載
 
@@ -47,6 +50,8 @@ fes is Festival Edit System.
 "mark"
 "templateContent"
 "variable"
+
+かなり増えた
 
 ## 認証の方法
 
