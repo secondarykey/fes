@@ -57,7 +57,7 @@ func viewPageHandler(w http.ResponseWriter, r *http.Request) {
 
 		var ps datastore.PageSet
 
-		p, pd, err := CreateFormPage(r)
+		p, pd, err := CreateFormPage(r, id)
 		if err != nil {
 			errorPage(w, "Error CreateFormPage", err, 500)
 			return

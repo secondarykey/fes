@@ -10,10 +10,17 @@ import (
 	"golang.org/x/xerrors"
 )
 
-func CreateFormPage(r *http.Request) (*datastore.Page, *datastore.PageData, error) {
+func CreateFormPage(r *http.Request, id string) (*datastore.Page, *datastore.PageData, error) {
 
-	var p datastore.Page
-	var pd datastore.PageData
+	ctx := r.Context()
+	p, err := datastore.SelectPage(ctx, id, -1)
+	if err != nil {
+		return nil, nil, xerrors.Errorf("SelectPage() error: %w", err)
+	}
+
+	if p == nil {
+		p = &datastore.Page{}
+	}
 
 	ver := r.FormValue("version")
 	p.TargetVersion = ver
@@ -50,7 +57,8 @@ func CreateFormPage(r *http.Request) (*datastore.Page, *datastore.PageData, erro
 		return nil, nil, errors.New("Error:Select Site Template")
 	}
 
+	var pd datastore.PageData
 	pd.Content = []byte(r.FormValue("pageContent"))
 
-	return &p, &pd, nil
+	return p, &pd, nil
 }
