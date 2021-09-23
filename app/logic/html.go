@@ -4,199 +4,52 @@ import (
 	"app/api"
 	"app/datastore"
 	"context"
+	"io"
+	"log"
+	"sync"
 
 	"bytes"
 	"fmt"
 	"html/template"
 	"net/http"
-	"strconv"
 
 	"golang.org/x/xerrors"
 )
 
-func createTemplate(ctx context.Context, page *datastore.Page, mng bool, dto interface{}) (*template.Template, error) {
+func WriteManageHTML(w io.Writer, r *http.Request, id string, page int, ve *ErrorDto) error {
 
-	//テンプレートを取得
-	siteTmp, err := datastore.SelectTemplateData(ctx, page.SiteTemplate)
-	if err != nil {
-		return nil, xerrors.Errorf("datastore.SelectTemplateData(Site) error: %w", err)
-	}
-	pageTmp, err := datastore.SelectTemplateData(ctx, page.PageTemplate)
-	if err != nil {
-		return nil, xerrors.Errorf("datastore.SelectTemplateData(Page) error: %w", err)
-	}
-	siteTmpData := string(siteTmp.Content)
-	pageTmpData := string(pageTmp.Content)
-	siteTmpData = "{{define \"" + api.SiteTemplateName + "\"}}" + "\n" + siteTmpData + "\n" + "{{end}}"
-	pageTmpData = "{{define \"" + api.PageTemplateName + "\"}}" + "\n" + pageTmpData + "\n" + "{{end}}"
-
-	helper := api.Helper{
-		Ctx:         ctx,
-		ID:          page.GetKey().Name,
-		Manage:      mng,
-		TemplateDto: dto,
-	}
-
-	//適用する
-	tmpl, err := template.New(api.SiteTemplateName).Funcs(helper.FuncMap()).Parse(siteTmpData)
-	if err != nil {
-		return nil, xerrors.Errorf("Template New() error: %w", err)
-	}
-	tmpl, err = tmpl.Parse(pageTmpData)
-	if err != nil {
-		return nil, xerrors.Errorf("Template Parse() error: %w", err)
-	}
-	return tmpl, nil
-}
-
-func WriteManageHTML(w http.ResponseWriter, r *http.Request, id string, p int, ve *ErrorDto) error {
-
+	gen := newGenerator()
 	var err error
 	ctx := r.Context()
 
-	page, err := datastore.SelectPage(ctx, id, -1)
+	htmls, _, err := gen.createHTMLs(ctx, true, ve, id)
 	if err != nil {
-		return err
-	}
-	if page == nil {
-		return fmt.Errorf("Page not found[%s]", id)
+		return xerrors.Errorf("createHTMLs() error: %w", err)
 	}
 
-	//TODO p の使いみち
-	//TODO カーソルが空
-	//DTOの作成
-	dtos, _, err := NewDtos(ctx, page, "", true, ve)
+	if len(htmls) >= page {
+		page -= 1
+	} else {
+		page = len(htmls) - 1
+	}
+
+	_, err = w.Write(htmls[page].Content)
 	if err != nil {
-		return xerrors.Errorf("NewDtos() error: %w", err)
-	}
-
-	//TODO Paging
-	//テンプレートの作成
-	tmpl, err := createTemplate(ctx, page, true, dtos[0])
-	if err != nil {
-		return xerrors.Errorf("createTemplate(): %w", err)
-	}
-
-	//書き込み
-	err = tmpl.Execute(w, dtos[0])
-	if err != nil {
-		return xerrors.Errorf("Template Execute() error: %w", err)
-	}
-	return err
-}
-
-func PutHTML(ctx context.Context, id string) error {
-
-	var err error
-
-	page, err := datastore.SelectPage(ctx, id, -1)
-	if err != nil {
-		return xerrors.Errorf("SelectPage() error: %w", err)
-	}
-
-	dtos, _, err := NewDtos(ctx, page, "", false, nil)
-	if err != nil {
-		return xerrors.Errorf("NewDtos() error: %w", err)
-	}
-
-	//TODO Paging
-	tmpl, err := createTemplate(ctx, page, false, dtos[0])
-	if err != nil {
-		return xerrors.Errorf("createTemplate() error: %w", err)
-	}
-
-	htmls := make([]*datastore.HTML, len(dtos))
-
-	//pageを廃止する
-
-	for idx, dto := range dtos {
-		var buf []byte
-		w := bytes.NewBuffer(buf)
-
-		err = tmpl.Execute(w, dto)
-		if err != nil {
-			return xerrors.Errorf("PageTemplate Execute() error: %w", err)
-		}
-
-		realId := id
-		if idx > 0 {
-			realId = fmt.Sprintf("%s?page=%d", id, idx+1)
-		}
-
-		html, err := datastore.GetHTML(ctx, realId)
-		if err != nil {
-			return xerrors.Errorf("GetHTML() error: %w", err)
-		}
-		if html == nil {
-			html = &datastore.HTML{}
-			html.LoadKey(datastore.CreateHTMLKey(realId))
-		}
-
-		html.Content = w.Bytes()
-		htmls[idx] = html
-	}
-
-	err = datastore.PutHTML(ctx, htmls, page)
-	if err != nil {
-		return xerrors.Errorf("datastore.PutHTML(): %w", err)
+		return xerrors.Errorf("writer Write() error: %w", err)
 	}
 
 	return nil
 }
 
-func PutHTMLs(ctx context.Context, pages []datastore.Page) error {
+func PutHTMLs(ctx context.Context, ids ...string) error {
+	gen := newGenerator()
 
-	var err error
-
-	//HTMLとを作成
-	htmlData := make([][]byte, 0)
-	keys := make([]string, 0)
-
-	for _, elm := range pages {
-
-		if elm.Deleted {
-			continue
-		}
-
-		var buf []byte
-		w := bytes.NewBuffer(buf)
-
-		//TODO Referenceなので、NextはすでにDtoに埋め込まれている
-
-		dtos, _, err := NewDtos(ctx, &elm, datastore.NoLimitCursor, false, nil)
-		if err != nil {
-			return xerrors.Errorf("Reference NewDto() error: %w", err)
-		}
-
-		//TODO paging
-		tmpl, err := createTemplate(ctx, &elm, false, dtos[0])
-		if err != nil {
-			return xerrors.Errorf("Reference createTemplate() error: %w", err)
-		}
-
-		err = tmpl.Execute(w, dtos[0])
-		if err != nil {
-			return xerrors.Errorf("Reference createTemplate() error: %w", err)
-		}
-
-		htmlData = append(htmlData, w.Bytes())
-		keys = append(keys, elm.Key.Name)
+	htmls, page, err := gen.createHTMLs(ctx, false, nil, ids...)
+	if err != nil {
+		return xerrors.Errorf("datastore.PutHTML(): %w", err)
 	}
 
-	htmls := make([]*datastore.HTML, len(keys))
-	for idx, _ := range htmls {
-		htmls[idx] = &datastore.HTML{}
-		htmls[idx].LoadKey(datastore.CreateHTMLKey(keys[idx]))
-		htmls[idx].Content = htmlData[idx]
-	}
-
-	//TODO 必要かな？(他の属性が変更される可能性)
-	//err = datastore.GetMulti(ctx, htmls)
-	//if err != nil {
-	//return xerrors.Errorf("GetMulti() error: %w", err)
-	//}
-
-	err = datastore.PutHTML(ctx, htmls, nil)
+	err = gen.dao.PutHTML(ctx, htmls, page)
 	if err != nil {
 		return xerrors.Errorf("PutHTML() error: %w", err)
 	}
@@ -224,18 +77,23 @@ type ErrorDto struct {
 	Detail  string
 }
 
-//TODO 出力時と表示時のテスト
-func NewDtos(ctx context.Context, page *datastore.Page, cur string, view bool, ve *ErrorDto) ([]*HTMLDto, string, error) {
+func (gen *Generator) createHTMLDto(ctx context.Context, page *datastore.Page, pData *datastore.PageData, view bool, ve *ErrorDto) ([]*HTMLDto, error) {
 
 	id := page.Key.Name
-	site, err := datastore.SelectSite(ctx, -1)
+	site, err := gen.dao.SelectSite(ctx, -1)
 	if err != nil {
-		return nil, "", xerrors.Errorf("SelectSite() error: %w", err)
+		return nil, xerrors.Errorf("SelectSite() error: %w", err)
 	}
 
-	pData, err := datastore.SelectPageData(ctx, id)
-	if err != nil {
-		return nil, "", xerrors.Errorf("SelectPageData() error: %w", err)
+	dir := "/manage/page/view/"
+	top := "/manage/page/view/"
+	//表示でない場合
+	if !view {
+		if page.Deleted {
+			return nil, fmt.Errorf("Page is private or deleted[%s]", id)
+		}
+		dir = "/page/"
+		top = "/"
 	}
 
 	content := string(pData.Content)
@@ -245,95 +103,158 @@ func NewDtos(ctx context.Context, page *datastore.Page, cur string, view bool, v
 		PageData: pData,
 		Content:  content,
 		Error:    ve,
+		Top:      top,
+		Dir:      dir,
 	}
 
-	dir := "/manage/page/view/"
-	top := "/manage/page/view/"
-
-	//表示でない場合
-	if !view {
-		if page.Deleted {
-			return nil, "", fmt.Errorf("Page is private or deleted[%s]", id)
-		}
-		dir = "/page/"
-		top = "/"
-	}
-
-	childNum := 0
-	//本番時には複数件取得して展開
-	if view && page.Paging > 0 {
-		childNum = page.Paging
-	}
-
-	children, next, err := datastore.SelectChildPages(ctx, id, cur, childNum, view)
+	children, _, err := gen.dao.SelectChildPages(ctx, id, "", page.Paging, view)
 	if err != nil {
-		return nil, "", xerrors.Errorf("SelectChildPages() error: %w", err)
+		return nil, xerrors.Errorf("SelectChildPages() error: %w", err)
+	}
+	dto.Children = children
+
+	dtos := make([]*HTMLDto, 0)
+	dtos = append(dtos, &dto)
+
+	return dtos, nil
+}
+
+var (
+	cacheTemplateData = make(map[string]string)
+)
+
+func startTemplateCache() {
+	cacheTemplateData = make(map[string]string)
+}
+
+func deleteTemplateCache() {
+	cacheTemplateData = nil
+}
+
+func (gen *Generator) createTemplate(ctx context.Context, page *datastore.Page, mng bool, dto interface{}) (*template.Template, error) {
+
+	var ok bool
+	var siteTmpData string
+	var pageTmpData string
+
+	if siteTmpData, ok = cacheTemplateData[page.SiteTemplate]; !ok {
+		siteTmp, err := gen.dao.SelectTemplateData(ctx, page.SiteTemplate)
+		if err != nil {
+			return nil, xerrors.Errorf("datastore.SelectTemplateData(Site) error: %w", err)
+		}
+		siteTmpData = string(siteTmp.Content)
+		cacheTemplateData[page.SiteTemplate] = siteTmpData
 	}
 
-	leng := len(children)
-	last := 1
-	dtoNum := 1
-
-	if page.Paging > 0 {
-		last = leng/page.Paging + 1
-		mod := leng % page.Paging
-
-		if mod == 0 {
-			last -= 1
+	if pageTmpData, ok = cacheTemplateData[page.PageTemplate]; !ok {
+		pageTmp, err := gen.dao.SelectTemplateData(ctx, page.PageTemplate)
+		if err != nil {
+			return nil, xerrors.Errorf("datastore.SelectTemplateData(Page) error: %w", err)
 		}
-
-		if !view {
-			dtoNum = last
-		}
+		pageTmpData = string(pageTmp.Content)
+		cacheTemplateData[page.PageTemplate] = pageTmpData
 	}
 
-	dtos := make([]*HTMLDto, dtoNum)
+	siteTmpData = fmt.Sprintf(`{{ define "%s" }}%s{{end}}`, api.SiteTemplateName, siteTmpData)
+	pageTmpData = fmt.Sprintf(`{{ define "%s" }}%s{{end}}`, api.PageTemplateName, pageTmpData)
 
-	for idx := 0; idx < dtoNum; idx++ {
-
-		cp := dto
-		prevId := ""
-		nextId := ""
-		pNum := idx + 1
-
-		/*
-			if view {
-				pNum = pageNum
-			}
-		*/
-
-		if last != pNum || view {
-			nextId = id + "?page=" + strconv.Itoa(pNum+1)
-		}
-
-		if pNum > 1 {
-			prevId = id
-			if pNum > 2 {
-				prevId += "?page=" + strconv.Itoa(pNum-1)
-			}
-		}
-
-		start := 0
-		end := len(children)
-		if !view && page.Paging > 0 {
-			start = idx * page.Paging
-
-			end = start + page.Paging
-			if end > leng {
-				end = leng
-			}
-		}
-
-		cpChildren := children[start:end]
-
-		cp.Top = top
-		cp.Dir = dir
-		cp.Children = cpChildren
-		cp.Prev = prevId
-		cp.Next = nextId
-
-		dtos[idx] = &cp
+	helper := api.Helper{
+		Ctx:         ctx,
+		ID:          page.GetKey().Name,
+		Manage:      mng,
+		TemplateDto: dto,
 	}
 
-	return dtos, next, nil
+	//適用する
+	tmpl, err := template.New(api.SiteTemplateName).Funcs(helper.FuncMap()).Parse(siteTmpData)
+	if err != nil {
+		return nil, xerrors.Errorf("Template New() error: %w", err)
+	}
+	tmpl, err = tmpl.Parse(pageTmpData)
+	if err != nil {
+		return nil, xerrors.Errorf("Template Parse() error: %w", err)
+	}
+	return tmpl, nil
+}
+
+type Generator struct {
+	dao *datastore.Dao
+}
+
+func newGenerator() *Generator {
+	var gen Generator
+	gen.dao = datastore.NewDao()
+	return &gen
+}
+
+func (gen *Generator) createHTMLs(ctx context.Context, mng bool, ve *ErrorDto, ids ...string) ([]*datastore.HTML, *datastore.Page, error) {
+
+	log.Println("createHTMLs() start")
+	defer log.Println("createHTMLs() end")
+
+	pages, err := gen.dao.SelectPages(ctx, ids...)
+	if err != nil {
+		return nil, nil, xerrors.Errorf("datasore.SelectPages() error: %w", err)
+	}
+
+	page := &pages[0]
+	if len(pages) > 1 {
+		page = nil
+	}
+
+	data, err := gen.dao.GetPageData(ctx, ids...)
+	if err != nil {
+		return nil, nil, xerrors.Errorf("datasore.GetPageData() error: %w", err)
+	}
+
+	//HTMLとを作成
+	htmlData := make([][]byte, 0)
+	keys := make([]string, 0)
+
+	var wg sync.WaitGroup
+	for idx, elm := range pages {
+
+		if elm.Deleted {
+			continue
+		}
+		pData := data[idx]
+
+		dtos, err := gen.createHTMLDto(ctx, &elm, &pData, mng, nil)
+		if err != nil {
+			return nil, nil, xerrors.Errorf("createHTMLDto() error: %w", err)
+		}
+
+		tmpl, err := gen.createTemplate(ctx, &elm, mng, dtos[0])
+		if err != nil {
+			return nil, nil, xerrors.Errorf("createTemplate() error: %w", err)
+		}
+
+		wg.Add(1)
+		go func(tmpl *template.Template, v interface{}) error {
+
+			defer wg.Done()
+			var buf []byte
+			w := bytes.NewBuffer(buf)
+			err = tmpl.Execute(w, v)
+			if err != nil {
+				return xerrors.Errorf("Reference createTemplate() error: %w", err)
+			}
+			htmlData = append(htmlData, w.Bytes())
+			keys = append(keys, elm.Key.Name)
+
+			return nil
+		}(tmpl, dtos[0])
+	}
+	wg.Wait()
+
+	htmls := make([]*datastore.HTML, len(keys))
+	for idx, _ := range htmls {
+		htmls[idx] = &datastore.HTML{}
+		htmls[idx].LoadKey(datastore.CreateHTMLKey(keys[idx]))
+		htmls[idx].Content = htmlData[idx]
+	}
+
+	log.Println("HTML Num", len(htmls))
+
+	return htmls, page, nil
 }

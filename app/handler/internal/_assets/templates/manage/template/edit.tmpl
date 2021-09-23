@@ -1,8 +1,7 @@
-{{define "title"}}
+{{define "title"}}Edit Template{{end}}
+
+{{define "header"}}
 Edit Template
-    <button type="button" id="generateBtn" class="mdl-button mdl-js-button mdl-button--raised mdl-button--primary">
-      <span class="material-icons">view_list</span>
-    </button>
 {{end}}
 
 {{define "page_template"}}
@@ -47,6 +46,12 @@ Edit Template
     </tr>
 
     <tr>
+      <td class="mdl-data-table__cell--non-numeric">
+      <a href="/manage/template/reference/{{.Template.Type}}/{{ .Template.Key.Name }}">Reference(Pages)</a>
+      </td>
+    </tr>
+
+    <tr>
       <td>
         <button type="button" id="updateBtn" class="mdl-button mdl-js-button mdl-button--raised mdl-button--primary">
           <span class="material-icons">save</span>
@@ -59,11 +64,6 @@ Edit Template
   <input type="hidden" name="version" value="{{ .Template.Version }}">
   <input type="hidden" name="templateType" value="{{ .Template.Type }}">
 
-</form>
-
-<!-- Reference -->
-<form id="referenceForm" name="referenceForm" method="post" action="/manage/template/reference/{{.Template.Key.Name}}">
-  <input type="hidden" name="type" id="referenceType" value="{{.Template.Type}}" />
 </form>
 
 <script>
@@ -103,12 +103,5 @@ Edit Template
       });
     });
 
-    var generateBtn = document.querySelector('#generateBtn');
-    generateBtn.addEventListener('click', function() {
-      confirmFes(function() {
-        var form = document.querySelector('#referenceForm');
-        form.submit();
-      });
-    });
 </script>
 {{ end }}

@@ -29,7 +29,10 @@ func viewFileHandler(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 
-	files, next, err := datastore.SelectFiles(ctx, t, cursor)
+	dao := datastore.NewDao()
+	defer dao.Close()
+
+	files, next, err := dao.SelectFiles(ctx, t, cursor)
 	if err != nil {
 		errorPage(w, "Error Select File", err, 500)
 		return
@@ -54,7 +57,10 @@ func addFileHandler(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 
-	err = datastore.SaveFile(ctx, fs)
+	dao := datastore.NewDao()
+	defer dao.Close()
+
+	err = dao.SaveFile(ctx, fs)
 	if err != nil {
 		errorPage(w, "Error Add File", err, 500)
 		return
@@ -73,7 +79,10 @@ func faviconUploadHandler(w http.ResponseWriter, r *http.Request) {
 	fs.ID = datastore.SystemFaviconID
 	fs.Name = datastore.SystemFaviconID
 
-	err = datastore.SaveFile(ctx, fs)
+	dao := datastore.NewDao()
+	defer dao.Close()
+
+	err = dao.SaveFile(ctx, fs)
 	if err != nil {
 		errorPage(w, "Error Add File", err, 500)
 		return
@@ -88,7 +97,10 @@ func deleteFileHandler(w http.ResponseWriter, r *http.Request) {
 	id := r.FormValue("fileName")
 	ctx := r.Context()
 
-	err := datastore.RemoveFile(ctx, id)
+	dao := datastore.NewDao()
+	defer dao.Close()
+
+	err := dao.RemoveFile(ctx, id)
 	if err != nil {
 		errorPage(w, "RemoveFile Error", err, 500)
 		return
@@ -114,7 +126,10 @@ func resizeFileHandler(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 
-	file, err := datastore.SelectFile(ctx, id)
+	dao := datastore.NewDao()
+	defer dao.Close()
+
+	file, err := dao.SelectFile(ctx, id)
 	if err != nil {
 		errorPage(w, "Select File Error", err, 500)
 		return
@@ -148,8 +163,10 @@ func resizeCommitFileHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ctx := r.Context()
+	dao := datastore.NewDao()
+	defer dao.Close()
 
-	err = datastore.PutFileData(ctx, resize.id, writer.Bytes(), "image/jpeg")
+	err = dao.PutFileData(ctx, resize.id, writer.Bytes(), "image/jpeg")
 	if err != nil {
 		errorPage(w, "Datastore FileData Put Error", err, 500)
 		return
@@ -183,7 +200,8 @@ func resizeFileViewHandler(w http.ResponseWriter, r *http.Request) {
 
 func writeResize(w io.Writer, r *http.Request, re Resize) error {
 
-	fileData, err := datastore.GetFileData(r.Context(), re.id)
+	dao := datastore.NewDao()
+	fileData, err := dao.GetFileData(r.Context(), re.id)
 	if err != nil {
 		return err
 	}

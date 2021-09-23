@@ -88,8 +88,10 @@ func errorPage(w http.ResponseWriter, r *http.Request, t string, e error, num in
 	log.Println(msg)
 
 	ctx := r.Context()
+	dao := datastore.NewDao()
+	defer dao.Close()
 
-	page, err := datastore.GetErrorPage(ctx)
+	page, err := dao.GetErrorPage(ctx)
 	if err != nil {
 		log.Printf("%+v", err)
 		solidError(w, t, msg)
@@ -126,8 +128,11 @@ func favicon(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "public, max-age=86400")
 
 	ctx := r.Context()
+	dao := datastore.NewDao()
+	defer dao.Close()
+
 	//ファイルが存在するか？
-	fav, err := datastore.GetFavicon(ctx)
+	fav, err := dao.GetFavicon(ctx)
 	if err != nil {
 		log.Printf("GetFavicon error: %+v", err)
 		return

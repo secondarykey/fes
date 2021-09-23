@@ -11,18 +11,39 @@ import (
 
 const NoLimitCursor = "NoLimit"
 
+type Dao struct {
+	cli *datastore.Client
+}
+
+func NewDao() *Dao {
+	var dao Dao
+	return &dao
+}
+
+func (dao *Dao) Close() error {
+	if dao.cli != nil {
+		err := dao.cli.Close()
+		if err != nil {
+			return xerrors.Errorf("dao Close() error: %w", err)
+		}
+	}
+	return nil
+}
+
 //
 // GRPC Large
 // cli, err := createClient(ctx, option.WithGRPCDialOption(grpc.WithMaxMsgSize(10_000_000)))
 //
-func createClient(ctx context.Context, opts ...option.ClientOption) (*datastore.Client, error) {
-	c := config.Get()
-	cli, err := datastore.NewClient(ctx, c.ProjectID, opts...)
-
-	if err != nil {
-		return nil, xerrors.Errorf("datastore.CreateClient() error: %w")
+func (dao *Dao) createClient(ctx context.Context, opts ...option.ClientOption) (*datastore.Client, error) {
+	var err error
+	if dao.cli == nil {
+		c := config.Get()
+		dao.cli, err = datastore.NewClient(ctx, c.ProjectID, opts...)
+		if err != nil {
+			return nil, xerrors.Errorf("datastore.CreateClient() error: %w")
+		}
 	}
-	return cli, nil
+	return dao.cli, nil
 }
 
 func PutMulti(tx *datastore.Transaction, dsts []HasKey) error {

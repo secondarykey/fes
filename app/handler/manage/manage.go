@@ -25,16 +25,24 @@ func Register() error {
 	s := r.PathPrefix("/manage").Subrouter()
 
 	s.HandleFunc("/favico.ico", viewRootPageHandler).Methods("GET")
+
 	//Page
 	s.HandleFunc("/page/", viewRootPageHandler).Methods("GET")
 	s.HandleFunc("/page/{key}", viewPageHandler)
 	s.HandleFunc("/page/add/{key}", addPageHandler).Methods("GET")
 	s.HandleFunc("/page/delete/{key}", deletePageHandler).Methods("GET")
-	s.HandleFunc("/page/public/{key}", changePublicPageHandler).Methods("GET")
-	s.HandleFunc("/page/private/{key}", changePrivatePageHandler).Methods("GET")
-	s.HandleFunc("/page/tool/{key}", toolPageHandler).Methods("GET")
-	s.HandleFunc("/page/tool/sequence", changeSequencePageHandler).Methods("POST")
+
+	//Tool
+	s.HandleFunc("/page/children/{key}", childrenPageHandler).Methods("GET")
+	s.HandleFunc("/page/update/sequence", changeSequencePageHandler).Methods("POST")
+	s.HandleFunc("/page/template/page/{key}", referencePageTemplateHandler).Methods("GET")
+	s.HandleFunc("/page/template/site/{key}", referenceSiteTemplateHandler).Methods("GET")
 	s.HandleFunc("/page/tree/", treePageHandler).Methods("GET")
+
+	//HTML
+	s.HandleFunc("/html/publish/{key}", changePublishPageHandler).Methods("GET")
+	s.HandleFunc("/html/private/{key}", changePrivatePageHandler).Methods("GET")
+	s.HandleFunc("/html/update", updateHTMLHandler).Methods("POST")
 
 	//ページ表示
 	s.HandleFunc("/page/view/{key}", privatePageHandler).Methods("GET")
@@ -56,7 +64,7 @@ func Register() error {
 	s.HandleFunc("/template/add", addTemplateHandler).Methods("GET")
 	s.HandleFunc("/template/edit/{key}", editTemplateHandler)
 	s.HandleFunc("/template/delete/{key}", deleteTemplateHandler)
-	s.HandleFunc("/template/reference/{key}", referenceTemplateHandler)
+	s.HandleFunc("/template/reference/{type}/{key}", referenceTemplateHandler)
 
 	s.HandleFunc("/variable/", viewVariableHandler).Methods("GET")
 	s.HandleFunc("/variable/add", addVariableHandler).Methods("GET")
@@ -75,6 +83,8 @@ func Register() error {
 	s.HandleFunc("/site/", viewSiteHandler).Methods("GET")
 	s.HandleFunc("/site/edit", editSiteHandler).Methods("POST")
 	s.HandleFunc("/site/map", downloadSitemapHandler).Methods("GET")
+
+	s.HandleFunc("/system/gc", gc).Methods("GET")
 
 	s.HandleFunc("/", indexHandler).Methods("GET")
 
@@ -118,7 +128,9 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 func privateHandler(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
-	site, err := datastore.SelectSite(ctx, -1)
+	dao := datastore.NewDao()
+
+	site, err := dao.SelectSite(ctx, -1)
 	if err != nil {
 		if err == datastore.SiteNotFoundError {
 			//TODO redirect???
@@ -132,7 +144,6 @@ func privateHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func privatePageHandler(w http.ResponseWriter, r *http.Request) {
-
 	vars := mux.Vars(r)
 	id := vars["key"]
 	pageView(w, r, id)
@@ -159,12 +170,20 @@ func pageView(w http.ResponseWriter, r *http.Request, id string) {
 }
 
 func viewManage(w http.ResponseWriter, tName string, obj interface{}) {
-
 	err := ViewManage(w, obj, tName)
 	if err != nil {
-		log.Printf("viewManage error:\n%+v\n", err)
+		log.Printf("viewManage() error:\n%+v\n", err)
 	}
 	return
+}
+
+func gc(w http.ResponseWriter, r *http.Request) {
+
+	err := logic.GC(w)
+	if err != nil {
+		errorPage(w, "ERROR:GC", err, 500)
+		return
+	}
 }
 
 func errorPage(w http.ResponseWriter, t string, e error, num int) {
@@ -174,9 +193,9 @@ func errorPage(w http.ResponseWriter, t string, e error, num int) {
 	log.Println(desc)
 
 	dto := struct {
-		Title       string
-		Description string
-		Number      int
+		Title   string
+		Message string
+		No      int
 	}{t, desc, num}
 
 	w.WriteHeader(num)

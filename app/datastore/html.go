@@ -35,13 +35,13 @@ func CreateHTMLKey(id string) *datastore.Key {
 	return datastore.NameKey(KindHTMLName, id, createSiteKey())
 }
 
-func GetHTML(ctx context.Context, id string) (*HTML, error) {
+func (dao *Dao) GetHTML(ctx context.Context, id string) (*HTML, error) {
 
 	var err error
 	key := CreateHTMLKey(id)
 	html := HTML{}
 
-	cli, err := createClient(ctx)
+	cli, err := dao.createClient(ctx)
 	if err != nil {
 		return nil, xerrors.Errorf("createClient() error: %w", err)
 	}
@@ -57,39 +57,42 @@ func GetHTML(ctx context.Context, id string) (*HTML, error) {
 	return &html, nil
 }
 
-func PutHTML(ctx context.Context, htmls []*HTML, page *Page) error {
+const MB4 = 3_900_000
 
-	cli, err := createClient(ctx)
+func (dao *Dao) PutHTML(ctx context.Context, htmls []*HTML, page *Page) error {
+
+	cli, err := dao.createClient(ctx)
 	if err != nil {
 		return xerrors.Errorf("createClient() error: %w", err)
 	}
 
-	dsts := make([]HasKey, len(htmls))
-	for idx, html := range htmls {
-		dsts[idx] = html
+	data := make([]HasKey, 0, len(htmls))
+
+	for _, html := range htmls {
+		data = append(data, html)
 	}
 
 	_, err = cli.RunInTransaction(ctx, func(tx *datastore.Transaction) error {
 
-		err = PublishPageImage(tx, page.GetKey().Name)
-		if err != nil {
-			return xerrors.Errorf("PublishPageImage() error: %w", err)
+		if page != nil {
+			err = PublishPageImage(tx, page.GetKey().Name)
+			if err != nil {
+				return xerrors.Errorf("PublishPageImage() error: %w", err)
+			}
+			if page.Publish.IsZero() {
+				page.Publish = time.Now()
+				err = Put(tx, page)
+				if err != nil {
+					return xerrors.Errorf("Page(Publish) Put() error: %w", err)
+				}
+			}
 		}
 
-		err = PutMulti(tx, dsts)
+		err = PutMulti(tx, data)
 		if err != nil {
 			return xerrors.Errorf("HTML PutMulti() error: %w", err)
 		}
 
-		if page != nil {
-			if page.Publish.IsZero() {
-				page.Publish = time.Now()
-			}
-			err = Put(tx, page)
-			if err != nil {
-				return xerrors.Errorf("Page(Publish) Put() error: %w", err)
-			}
-		}
 		return nil
 	})
 
@@ -100,9 +103,9 @@ func PutHTML(ctx context.Context, htmls []*HTML, page *Page) error {
 	return nil
 }
 
-func RemoveHTML(ctx context.Context, id string) error {
+func (dao *Dao) RemoveHTML(ctx context.Context, id string) error {
 
-	page, err := SelectPage(ctx, id, -1)
+	page, err := dao.SelectPage(ctx, id, -1)
 	if err != nil {
 		return err
 	}
@@ -111,7 +114,7 @@ func RemoveHTML(ctx context.Context, id string) error {
 	}
 
 	//TODO ページ数個削除
-	cli, err := createClient(ctx)
+	cli, err := dao.createClient(ctx)
 	if err != nil {
 		return xerrors.Errorf("createClient() error: %w", err)
 	}

@@ -3,13 +3,13 @@ main: app/_cmd
 
 instance_class: F1
 automatic_scaling:
-  target_cpu_utilization: 0.90
-  target_throughput_utilization: 0.90
+  target_cpu_utilization: 0.80
+  target_throughput_utilization: 0.80
   min_instances: 0
-  max_instances: 2
+  max_instances: 1
   min_idle_instances: 0
-  max_idle_instances: 2
-  min_pending_latency: 4000ms
+  max_idle_instances: 1
+  min_pending_latency: automatic
   max_pending_latency: automatic
-  max_concurrent_requests: 60
+  max_concurrent_requests: 80
 

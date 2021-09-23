@@ -36,7 +36,10 @@ func logoutHandler(w http.ResponseWriter, r *http.Request) {
 func sessionHandler(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
-	site, err := datastore.SelectSite(ctx, -1)
+	dao := datastore.NewDao()
+	defer dao.Close()
+
+	site, err := dao.SelectSite(ctx, -1)
 	if err != nil {
 		if err != datastore.SiteNotFoundError {
 			errorPage(w, r, "サイト取得エラー", err, 500)

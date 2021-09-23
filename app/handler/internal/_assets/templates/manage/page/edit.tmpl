@@ -1,18 +1,16 @@
-{{define "title"}}
+{{define "title"}}Edit Page{{end}}
+
+{{define "header"}}
 Edit Page[
 {{ range .Breadcrumbs}}
 &gt; <a href="/manage/page/{{ .Key.Name }}">{{ .Name }}</a>
 {{ end }}
 ]
-
-{{ if ne .Page.Key.Name "ErrorPage" }}
-  {{ if .Publish }}
-  <button type="button" id="generateBtn" class="mdl-button mdl-js-button mdl-button--raised mdl-button--primary">
-    <span class="material-icons">publish</span>
-  </button>
-  {{ end }}
+{{ if .Publish }}
+<button type="button" id="generateBtn" class="mdl-button mdl-js-button mdl-button--raised mdl-button--primary">
+  <span class="material-icons">publish</span>
+</button>
 {{ end }}
-
 {{end}}
 
 {{define "page_template"}}
@@ -122,7 +120,7 @@ Edit Page[
         </ul>
         </div>
 
-        <a href="/manage/page/tool/{{ .Page.Key.Name }}">
+        <a href="/manage/page/children/{{ .Page.Key.Name }}">
         <button type="button" id="toolBtn" class="mdl-button mdl-js-button mdl-button--raised">
           <span class="material-icons">list</span>
         </button>
@@ -264,8 +262,7 @@ Edit Page[
     var generateBtn = document.querySelector('#generateBtn');
     generateBtn.addEventListener('click', function() {
       confirmFes(function() {
-        var type = "public";
-        window.location.href = "/manage/page/" + type + "/{{ .Page.Key.Name }}";
+        window.location.href = "/manage/page/publish/{{ .Page.Key.Name }}";
       });
     });
 {{ end }}
@@ -273,8 +270,7 @@ Edit Page[
     var privateBtn = document.querySelector('#privateBtn');
     privateBtn.addEventListener('click', function() {
       confirmFes(function() {
-        var type = "private";
-        window.location.href = "/manage/page/" + type + "/{{ .Page.Key.Name }}";
+        window.location.href = "/manage/html/private/{{ .Page.Key.Name }}";
       });
     });
 

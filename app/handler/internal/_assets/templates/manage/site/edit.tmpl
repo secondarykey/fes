@@ -1,6 +1,6 @@
-{{define "title"}}
-Setting
-{{end}}
+{{define "title"}}Site Setting{{end}}
+
+{{define "header"}} Site Setting {{end}}
 
 {{define "page_template"}}
 
@@ -76,6 +76,15 @@ Setting
     <ul class="mdl-list">
 
       <li class="mdl-list__item">
+         <form id="GCForm" target="gcWindow" method="get" action="/manage/system/gc">
+           <button id="GCBtn" type="button" class="mdl-button mdl-js-button mdl-button--raised mdl-button--primary">
+            GC
+           </button>
+         </form>
+      </li>
+
+
+      <li class="mdl-list__item">
          <form method="post" action="/manage/datastore/backup" onsubmit="return confirm('a large amount of access to Datastore occurs?');">
            <button type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-button--primary">
             Backup
@@ -130,5 +139,11 @@ Setting
     updateForm.submit();
   });
 
+  var gcBtn = document.querySelector('#GCBtn');
+  gcBtn.addEventListener('click', function() {
+    window.open("about:blank","gcWindow");
+    var gcForm = document.querySelector('#GCForm');
+    gcForm.submit();
+  });
 </script>
 {{ end }}

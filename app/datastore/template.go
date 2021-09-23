@@ -3,12 +3,9 @@ package datastore
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log"
-	"net/http"
 	"strconv"
 
-	"github.com/gorilla/mux"
 	uuid "github.com/satori/go.uuid"
 	"google.golang.org/api/iterator"
 
@@ -41,63 +38,28 @@ func (t *Template) Save() ([]datastore.Property, error) {
 	return datastore.SaveStruct(t)
 }
 
-func PutTemplate(r *http.Request) error {
+type TemplateSet struct {
+	Template     *Template
+	TemplateData *TemplateData
+}
+
+func (dao *Dao) PutTemplate(ctx context.Context, ts *TemplateSet) error {
 
 	var err error
 
-	vars := mux.Vars(r)
-	id := vars["key"]
-
-	ctx := r.Context()
-	tmpKey := SetTemplateKey(id)
-	tmpDataKey := createTemplateDataKey(id)
-
-	template := Template{}
-	templateData := TemplateData{}
-
-	ver := r.FormValue("version")
-	version, err := strconv.Atoi(ver)
-	if err != nil {
-		return xerrors.Errorf("version strconv.Atoi() error: %w", err)
-	}
-
-	cli, err := createClient(ctx)
+	cli, err := dao.createClient(ctx)
 	if err != nil {
 		return xerrors.Errorf("createClient() error: %w", err)
 	}
 
-	if version > 0 {
-		template.TargetVersion = fmt.Sprintf("%d", version)
-	}
-
-	//TODO Version
-	err = cli.Get(ctx, tmpKey, &template)
-
-	if err != nil {
-		if !errors.Is(err, datastore.ErrNoSuchEntity) {
-			return xerrors.Errorf("Template Get() error: %w", err)
-		}
-	}
-
-	template.LoadKey(tmpKey)
-	templateData.LoadKey(tmpDataKey)
-
-	template.Name = r.FormValue("name")
-	template.Type, err = strconv.Atoi(r.FormValue("templateType"))
-	if err != nil {
-		return xerrors.Errorf("TemplateType Atoi() error: %w", err)
-	}
-
-	templateData.Content = []byte(r.FormValue("template"))
-
 	_, err = cli.RunInTransaction(ctx, func(tx *datastore.Transaction) error {
 
-		_, err = tx.Put(template.GetKey(), &template)
+		_, err = tx.Put(ts.Template.GetKey(), ts.Template)
 		if err != nil {
 			return xerrors.Errorf("Template Put() error: %w", err)
 		}
 
-		_, err = tx.Put(templateData.GetKey(), &templateData)
+		_, err = tx.Put(ts.TemplateData.GetKey(), ts.TemplateData)
 		if err != nil {
 			return xerrors.Errorf("TemplateData Put() error: %w", err)
 		}
@@ -119,12 +81,12 @@ func SetTemplateKey(id string) *datastore.Key {
 	return datastore.NameKey(KindTemplateName, id, createSiteKey())
 }
 
-func SelectTemplate(ctx context.Context, id string) (*Template, error) {
+func (dao *Dao) SelectTemplate(ctx context.Context, id string) (*Template, error) {
 	temp := Template{}
 
 	//Method
 	key := SetTemplateKey(id)
-	cli, err := createClient(ctx)
+	cli, err := dao.createClient(ctx)
 	if err != nil {
 		return nil, xerrors.Errorf("createClient() error: %w", err)
 	}
@@ -140,7 +102,7 @@ func SelectTemplate(ctx context.Context, id string) (*Template, error) {
 	return &temp, nil
 }
 
-func SelectTemplates(ctx context.Context, ty string, cur string) ([]Template, string, error) {
+func (dao *Dao) SelectTemplates(ctx context.Context, ty string, cur string) ([]Template, string, error) {
 
 	var rtn []Template
 
@@ -166,7 +128,7 @@ func SelectTemplates(ctx context.Context, ty string, cur string) ([]Template, st
 		}
 	}
 
-	cli, err := createClient(ctx)
+	cli, err := dao.createClient(ctx)
 	if err != nil {
 		return nil, "", xerrors.Errorf("createClient() error: %w", err)
 	}
@@ -210,16 +172,16 @@ func (d *TemplateData) LoadKey(k *datastore.Key) error {
 	return nil
 }
 
-func createTemplateDataKey(id string) *datastore.Key {
+func CreateTemplateDataKey(id string) *datastore.Key {
 	return datastore.NameKey(KindTemplateDataName, id, createSiteKey())
 }
 
-func SelectTemplateData(ctx context.Context, id string) (*TemplateData, error) {
+func (dao *Dao) SelectTemplateData(ctx context.Context, id string) (*TemplateData, error) {
 	temp := TemplateData{}
 
 	//Method
-	key := createTemplateDataKey(id)
-	cli, err := createClient(ctx)
+	key := CreateTemplateDataKey(id)
+	cli, err := dao.createClient(ctx)
 	if err != nil {
 		return nil, xerrors.Errorf("createClient() error: %w", err)
 	}
@@ -231,11 +193,11 @@ func SelectTemplateData(ctx context.Context, id string) (*TemplateData, error) {
 	return &temp, nil
 }
 
-func RemoveTemplate(ctx context.Context, id string) error {
+func (dao *Dao) RemoveTemplate(ctx context.Context, id string) error {
 
 	var err error
 
-	cli, err := createClient(ctx)
+	cli, err := dao.createClient(ctx)
 	if err != nil {
 		return xerrors.Errorf("createClient() error: %w", err)
 	}
@@ -248,7 +210,7 @@ func RemoveTemplate(ctx context.Context, id string) error {
 			return xerrors.Errorf("Template Delete() error: %w", err)
 		}
 
-		dataKey := createTemplateDataKey(id)
+		dataKey := CreateTemplateDataKey(id)
 		err = tx.Delete(dataKey)
 		if err != nil {
 			return xerrors.Errorf("TemplateData Delete() error: %w", err)

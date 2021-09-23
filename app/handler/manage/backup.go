@@ -13,9 +13,12 @@ import (
 
 func backupHandler(w http.ResponseWriter, r *http.Request) {
 
+	dao := datastore.NewDao()
+	defer dao.Close()
+
 	ctx := r.Context()
 	//バイナリを作成
-	data, err := datastore.CreateBackupData(ctx)
+	data, err := dao.CreateBackupData(ctx)
 	if err != nil {
 		errorPage(w, "Create BackupDataError", err, 500)
 		return
@@ -81,9 +84,12 @@ func restoreHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	dao := datastore.NewDao()
+	defer dao.Close()
+
 	ctx := r.Context()
 	//Putする
-	err = datastore.PutBackupData(ctx, backup)
+	err = dao.PutBackupData(ctx, backup)
 	if err != nil {
 		errorPage(w, "Put Error", err, 500)
 		return

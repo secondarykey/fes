@@ -11,9 +11,12 @@ import (
 //setting画面
 func viewSiteHandler(w http.ResponseWriter, r *http.Request) {
 
+	dao := datastore.NewDao()
+	defer dao.Close()
+
 	managers := ""
 	ctx := r.Context()
-	site, err := datastore.SelectSite(ctx, -1)
+	site, err := dao.SelectSite(ctx, -1)
 	if err != nil {
 		if err == datastore.SiteNotFoundError {
 			site = &datastore.Site{
@@ -44,7 +47,17 @@ func viewSiteHandler(w http.ResponseWriter, r *http.Request) {
 
 //settingの更新
 func editSiteHandler(w http.ResponseWriter, r *http.Request) {
-	err := datastore.PutSite(r)
+	dao := datastore.NewDao()
+	defer dao.Close()
+
+	site, err := CreateFormSite(r)
+	if err != nil {
+		errorPage(w, "CreateFormSite() Error", err, 500)
+		return
+	}
+
+	ctx := r.Context()
+	err = dao.PutSite(ctx, site)
 	if err != nil {
 		errorPage(w, "Datastore site put Error", err, 500)
 		return
