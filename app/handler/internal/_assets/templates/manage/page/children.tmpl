@@ -1,5 +1,7 @@
-{{define "title"}}
-Children Page Tool[<a href="/manage/page/{{ .Parent }}">Parent</a>]
+{{define "title"}}Page Children{{end}}
+
+{{define "header"}}
+Page Tool[<a href="/manage/page/{{ .Parent }}">Parent</a>]
         <button type="button" id="generateBtn" class="mdl-button mdl-js-button mdl-button--raised mdl-button--primary">
         Update sequence
         </button>
@@ -67,7 +69,7 @@ Children Page Tool[<a href="/manage/page/{{ .Parent }}">Parent</a>]
     </tr>
 {{ end }}
   </tbody>
-  <form id="sequenceForm" name="sequenceForm" method="post" action="/manage/page/tool/sequence">
+  <form id="sequenceForm" name="sequenceForm" method="post" action="/manage/page/update/sequence">
     <input type="hidden" name="id" value="{{.Parent}}" />
     <input type="hidden" name="ids" id="ids" value="" />
     <input type="hidden" name="versions" id="versions" value="" />

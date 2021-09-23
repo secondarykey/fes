@@ -3,7 +3,6 @@ package manage
 import (
 	"app/datastore"
 	. "app/handler/internal"
-	"app/logic"
 
 	"net/http"
 
@@ -14,8 +13,10 @@ import (
 func viewRootPageHandler(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
+	dao := datastore.NewDao()
+	defer dao.Close()
 
-	page, err := datastore.SelectRootPage(ctx)
+	page, err := dao.SelectRootPage(ctx)
 	if err != nil {
 		if err == datastore.SiteNotFoundError {
 			http.Redirect(w, r, "/manage/site/", 302)
@@ -49,6 +50,8 @@ func addPageHandler(w http.ResponseWriter, r *http.Request) {
 func viewPageHandler(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
+	dao := datastore.NewDao()
+	defer dao.Close()
 
 	if POST(r) {
 
@@ -81,7 +84,7 @@ func viewPageHandler(w http.ResponseWriter, r *http.Request) {
 
 		ctx := r.Context()
 
-		err = datastore.PutPage(ctx, &ps)
+		err = dao.PutPage(ctx, &ps)
 		if err != nil {
 			errorPage(w, "Error Put Page", err, 500)
 			return
@@ -92,7 +95,7 @@ func viewPageHandler(w http.ResponseWriter, r *http.Request) {
 	id := vars["key"]
 
 	//ページ検索
-	page, err := datastore.SelectPage(ctx, id, -1)
+	page, err := dao.SelectPage(ctx, id, -1)
 	if err != nil {
 		errorPage(w, "Error Select Page", err, 500)
 		return
@@ -120,9 +123,11 @@ func view(w http.ResponseWriter, r *http.Request, page *datastore.Page) {
 	publish := false
 
 	ctx := r.Context()
+	dao := datastore.NewDao()
+	defer dao.Close()
 
 	//全件検索
-	templates, _, err := datastore.SelectTemplates(ctx, "all", datastore.NoLimitCursor)
+	templates, _, err := dao.SelectTemplates(ctx, "all", datastore.NoLimitCursor)
 	if err != nil {
 		errorPage(w, "Error Select Template", err, 500)
 		return
@@ -134,7 +139,7 @@ func view(w http.ResponseWriter, r *http.Request, page *datastore.Page) {
 
 	id := page.Key.Name
 
-	pageData, err = datastore.SelectPageData(ctx, id)
+	pageData, err = dao.SelectPageData(ctx, id)
 	if err != nil {
 		errorPage(w, "Error Select PageData", err, 500)
 		return
@@ -146,7 +151,7 @@ func view(w http.ResponseWriter, r *http.Request, page *datastore.Page) {
 	}
 
 	//全件でOK
-	children, _, err = datastore.SelectChildPages(ctx, id, datastore.NoLimitCursor, 0, true)
+	children, _, err = dao.SelectChildPages(ctx, id, datastore.NoLimitCursor, 0, true)
 	if err != nil {
 		errorPage(w, "Error Select Children page", err, 500)
 		return
@@ -180,7 +185,7 @@ func view(w http.ResponseWriter, r *http.Request, page *datastore.Page) {
 		if parent == "" || parent == datastore.ErrorPageID {
 			break
 		}
-		parentPage, err := datastore.SelectPage(ctx, parent, -1)
+		parentPage, err := dao.SelectPage(ctx, parent, -1)
 		if err != nil {
 			break
 		}
@@ -188,7 +193,7 @@ func view(w http.ResponseWriter, r *http.Request, page *datastore.Page) {
 		parent = parentPage.Parent
 	}
 
-	exist := datastore.ExistFile(ctx, id)
+	exist := dao.ExistFile(ctx, id)
 
 	breadcrumbs := make([]datastore.Page, len(wk))
 	for idx, _ := range wk {
@@ -215,98 +220,13 @@ func deletePageHandler(w http.ResponseWriter, r *http.Request) {
 	id := vars["key"]
 
 	ctx := r.Context()
+	dao := datastore.NewDao()
+	defer dao.Close()
 
-	err := datastore.RemovePage(ctx, id)
+	err := dao.RemovePage(ctx, id)
 	if err != nil {
 		errorPage(w, "Error Delete Page", err, 500)
 		return
 	}
 	http.Redirect(w, r, "/manage/page/", 302)
-}
-
-func changePublicPageHandler(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	id := vars["key"]
-
-	ctx := r.Context()
-
-	err := logic.PutHTML(ctx, id)
-	if err != nil {
-		errorPage(w, "Error Publish HTML", err, 500)
-		return
-	}
-	http.Redirect(w, r, "/manage/page/"+id, 302)
-}
-
-func changePrivatePageHandler(w http.ResponseWriter, r *http.Request) {
-
-	vars := mux.Vars(r)
-	id := vars["key"]
-
-	ctx := r.Context()
-
-	err := datastore.RemoveHTML(ctx, id)
-	if err != nil {
-		errorPage(w, "Error Private HTML", err, 500)
-		return
-	}
-	http.Redirect(w, r, "/manage/page/"+id, 302)
-}
-
-func toolPageHandler(w http.ResponseWriter, r *http.Request) {
-
-	vars := mux.Vars(r)
-	id := vars["key"]
-
-	ctx := r.Context()
-
-	children, _, err := datastore.SelectChildPages(ctx, id, datastore.NoLimitCursor, 0, true)
-	if err != nil {
-		errorPage(w, "Error Select Children page", err, 500)
-		return
-	}
-
-	dto := struct {
-		Parent string
-		Pages  []datastore.Page
-	}{id, children}
-	viewManage(w, "page/tool.tmpl", dto)
-}
-
-func changeSequencePageHandler(w http.ResponseWriter, r *http.Request) {
-
-	id := r.FormValue("id")
-	idCsv := r.FormValue("ids")
-	enablesCsv := r.FormValue("enables")
-	versionsCsv := r.FormValue("versions")
-
-	ctx := r.Context()
-
-	err := datastore.PutPageSequence(ctx, idCsv, enablesCsv, versionsCsv)
-	if err != nil {
-		errorPage(w, "Error Page sequence update", err, 500)
-		return
-	}
-
-	http.Redirect(w, r, "/manage/page/tool/"+id, 302)
-}
-
-type Tree struct {
-	Page     *datastore.Page
-	Children []*datastore.Tree
-}
-
-func treePageHandler(w http.ResponseWriter, r *http.Request) {
-
-	tree, err := datastore.CreatePagesTree(r.Context())
-	if err != nil {
-		errorPage(w, "Error Page Tree", err, 500)
-		return
-	}
-
-	dto := struct {
-		Tree *datastore.Tree
-	}{tree}
-
-	viewManage(w, "page/tree.tmpl", dto)
 }

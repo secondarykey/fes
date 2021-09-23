@@ -16,7 +16,10 @@ func viewVariableHandler(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
 	cursor := q.Get("cursor")
 
-	data, next, err := datastore.SelectVariables(r.Context(), cursor)
+	dao := datastore.NewDao()
+	defer dao.Close()
+
+	data, next, err := dao.SelectVariables(r.Context(), cursor)
 	if err != nil {
 		errorPage(w, "Error Select Variables", err, 500)
 		return
@@ -52,6 +55,9 @@ func editVariableHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Add("X-XSS-Protection", "1")
 
+	dao := datastore.NewDao()
+	defer dao.Close()
+
 	ctx := r.Context()
 	id := ""
 	//POST
@@ -64,7 +70,7 @@ func editVariableHandler(w http.ResponseWriter, r *http.Request) {
 		ver := r.FormValue("version")
 
 		if check == "true" {
-			vari, err := datastore.SelectVariable(ctx, id)
+			vari, err := dao.SelectVariable(ctx, id)
 			if err == nil && vari != nil {
 				//存在する場合
 				errorPage(w, "Error Exists Variable", err, 500)
@@ -74,7 +80,7 @@ func editVariableHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		//更新
-		err := datastore.PutVariable(ctx, id, val, ver)
+		err := dao.PutVariable(ctx, id, val, ver)
 		if err != nil {
 			errorPage(w, "Error Put Variable", err, 500)
 			return
@@ -86,7 +92,7 @@ func editVariableHandler(w http.ResponseWriter, r *http.Request) {
 		id = vars["key"]
 	}
 
-	vari, err := datastore.SelectVariable(ctx, id)
+	vari, err := dao.SelectVariable(ctx, id)
 	if err != nil {
 		errorPage(w, "Error SelectVariable", err, 500)
 		return
@@ -96,7 +102,7 @@ func editVariableHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	variData, err := datastore.SelectVariableData(ctx, id)
+	variData, err := dao.SelectVariableData(ctx, id)
 	if err != nil {
 		errorPage(w, "Not Found Variable Data", err, 500)
 		return
@@ -146,8 +152,10 @@ func deleteVariableHandler(w http.ResponseWriter, r *http.Request) {
 	id := vars["key"]
 
 	ctx := r.Context()
+	dao := datastore.NewDao()
+	defer dao.Close()
 
-	err := datastore.RemoveVariable(ctx, id)
+	err := dao.RemoveVariable(ctx, id)
 	if err != nil {
 		errorPage(w, "Remove Template Error", err, 500)
 		return

@@ -50,11 +50,11 @@ func init() {
 	gob.Register(HTML{})
 }
 
-func CreateBackupData(ctx context.Context) (BackupData, error) {
+func (dao *Dao) CreateBackupData(ctx context.Context) (BackupData, error) {
 
 	backup := make(BackupData)
 
-	cli, err := createClient(ctx, option.WithGRPCDialOption(grpc.WithMaxMsgSize(1024*1024*1000)))
+	cli, err := dao.createClient(ctx, option.WithGRPCDialOption(grpc.WithMaxMsgSize(1024*1024*1000)))
 	if err != nil {
 		return nil, xerrors.Errorf("createClient() error: %w", err)
 	}
@@ -240,7 +240,7 @@ func (k Kinds) String() string {
 	return fmt.Sprintf("%v(Multi:%t)", k.Names, k.Multi)
 }
 
-func PutBackupData(ctx context.Context, backup BackupData) error {
+func (dao *Dao) PutBackupData(ctx context.Context, backup BackupData) error {
 
 	ctx, cancel := context.WithTimeout(ctx, time.Second*10)
 	defer cancel()
@@ -248,7 +248,7 @@ func PutBackupData(ctx context.Context, backup BackupData) error {
 	grpc.MaxConcurrentStreams(math.MaxInt32)
 	grpc.MaxRecvMsgSize(1024 * 1024 * 20)
 
-	cli, err := createClient(ctx,
+	cli, err := dao.createClient(ctx,
 		option.WithGRPCDialOption(
 			grpc.WithDefaultCallOptions(
 				grpc.MaxCallRecvMsgSize(1024*1024*20),

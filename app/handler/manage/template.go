@@ -2,7 +2,7 @@ package manage
 
 import (
 	"app/datastore"
-	"app/logic"
+	. "app/handler/internal"
 
 	"fmt"
 	"net/http"
@@ -22,7 +22,10 @@ func viewTemplateHandler(w http.ResponseWriter, r *http.Request) {
 		t = "2"
 	}
 
-	data, next, err := datastore.SelectTemplates(r.Context(), t, cursor)
+	dao := datastore.NewDao()
+	defer dao.Close()
+
+	data, next, err := dao.SelectTemplates(r.Context(), t, cursor)
 	if err != nil {
 		errorPage(w, "Error Select Template", err, 500)
 		return
@@ -57,10 +60,22 @@ func addTemplateHandler(w http.ResponseWriter, r *http.Request) {
 func editTemplateHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Add("X-XSS-Protection", "1")
+
+	dao := datastore.NewDao()
+	defer dao.Close()
+
+	ctx := r.Context()
+
 	//POST
 	if POST(r) {
+		ts, err := CreateFormTemplate(r)
+		if err != nil {
+			errorPage(w, "Error CreateFormTemplate()", err, 500)
+			return
+		}
+
 		//更新
-		err := datastore.PutTemplate(r)
+		err = dao.PutTemplate(ctx, ts)
 		if err != nil {
 			errorPage(w, "Error Put Template", err, 500)
 			return
@@ -69,8 +84,8 @@ func editTemplateHandler(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 	id := vars["key"]
-	ctx := r.Context()
-	tmp, err := datastore.SelectTemplate(ctx, id)
+
+	tmp, err := dao.SelectTemplate(ctx, id)
 	if err != nil {
 		errorPage(w, "Error SelectTemplate", err, 500)
 		return
@@ -80,7 +95,7 @@ func editTemplateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tmpData, err := datastore.SelectTemplateData(ctx, id)
+	tmpData, err := dao.SelectTemplateData(ctx, id)
 	if err != nil {
 		errorPage(w, "Not Found Template Data", err, 500)
 		return
@@ -102,8 +117,10 @@ func deleteTemplateHandler(w http.ResponseWriter, r *http.Request) {
 	id := vars["key"]
 
 	ctx := r.Context()
+	dao := datastore.NewDao()
+	defer dao.Close()
 
-	if ok, err := datastore.UsingTemplate(ctx, id); err != nil {
+	if ok, err := dao.UsingTemplate(ctx, id); err != nil {
 		errorPage(w, "Using Template", xerrors.Errorf("datastore.UsingTemplate() error : %w", err), 500)
 		return
 	} else if ok {
@@ -111,7 +128,7 @@ func deleteTemplateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := datastore.RemoveTemplate(ctx, id)
+	err := dao.RemoveTemplate(ctx, id)
 	if err != nil {
 		errorPage(w, "Remove Template Error", err, 500)
 		return
@@ -124,29 +141,12 @@ func referenceTemplateHandler(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 	id := vars["key"]
+	t := vars["type"]
 
-	t := r.FormValue("type")
-
-	ctx := r.Context()
-
-	//参照しているページを取得
-	pages, err := datastore.SelectReferencePages(ctx, id, t)
-	if err != nil {
-		errorPage(w, "Reference template pages Error", err, 500)
-		return
+	typ := "site"
+	if t == "2" {
+		typ = "page"
 	}
 
-	if pages == nil || len(pages) <= 0 {
-		errorPage(w, "Reference template pages NotFound", fmt.Errorf(id), 404)
-		return
-	}
-
-	//ページからHTMLを更新
-	err = logic.PutHTMLs(ctx, pages)
-	if err != nil {
-		errorPage(w, "Put HTML data Error", err, 500)
-		return
-	}
-
-	http.Redirect(w, r, "/manage/template/edit/"+id, 302)
+	http.Redirect(w, r, "/manage/page/template/"+typ+"/"+id, 302)
 }

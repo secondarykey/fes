@@ -48,8 +48,11 @@ func CreateStaticSite(dir string) error {
 
 func createPageFiles(dir string) (map[string]string, error) {
 
+	dao := datastore.NewDao()
+	defer dao.Close()
+
 	//Pageをすべて検索
-	tree, err := datastore.CreatePagesTree(context.Background())
+	tree, err := dao.CreatePagesTree(context.Background())
 	if err != nil {
 		return nil, xerrors.Errorf("datastore.PageTree() error: %w", err)
 	}
@@ -136,7 +139,10 @@ func createAssetFiles(dir string) (map[string]string, error) {
 		return nil, xerrors.Errorf("assets make directory error: %w", err)
 	}
 
-	files, err := datastore.GetAllFiles(context.Background())
+	dao := datastore.NewDao()
+	defer dao.Close()
+
+	files, err := dao.GetAllFiles(context.Background())
 	if err != nil {
 		return nil, xerrors.Errorf("datastore.GetAllFiles() error: %w", err)
 	}
@@ -147,7 +153,7 @@ func createAssetFiles(dir string) (map[string]string, error) {
 
 		name := file.GetKey().Name
 		//FileData検索
-		data, err := datastore.GetFileData(context.Background(), name)
+		data, err := dao.GetFileData(context.Background(), name)
 		if err != nil {
 			return nil, xerrors.Errorf("datastore.GetFileData() error: %w", err)
 		}
@@ -176,8 +182,12 @@ func createAssetFiles(dir string) (map[string]string, error) {
 }
 
 func createPageFile(id string, name string) error {
+
+	dao := datastore.NewDao()
+	defer dao.Close()
+
 	//HTML検索
-	html, err := datastore.GetHTML(context.Background(), id)
+	html, err := dao.GetHTML(context.Background(), id)
 	if err != nil {
 		return xerrors.Errorf("datastore.GetHTML() error: %w", err)
 	}
@@ -289,7 +299,10 @@ func GenerateFiles(dir string) error {
 		return xerrors.Errorf("make directory error: %w", err)
 	}
 
-	files, err := datastore.GetAllFiles(context.Background())
+	dao := datastore.NewDao()
+	defer dao.Close()
+
+	files, err := dao.GetAllFiles(context.Background())
 	if err != nil {
 		return xerrors.Errorf("datastore.GetAllFiles() error: %w", err)
 	}
@@ -298,7 +311,7 @@ func GenerateFiles(dir string) error {
 
 		name := file.GetKey().Name
 		//FileData検索
-		data, err := datastore.GetFileData(context.Background(), name)
+		data, err := dao.GetFileData(context.Background(), name)
 		if err != nil {
 			return xerrors.Errorf("datastore.GetFileData() error: %w", err)
 		}

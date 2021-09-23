@@ -49,12 +49,12 @@ func createFileKey(name string) *datastore.Key {
 	return datastore.NameKey(KindFileName, name, createSiteKey())
 }
 
-func GetAllFiles(ctx context.Context) ([]*File, error) {
+func (dao *Dao) GetAllFiles(ctx context.Context) ([]*File, error) {
 
 	var dst []*File
 	q := datastore.NewQuery(KindFileName)
 
-	cli, err := createClient(ctx)
+	cli, err := dao.createClient(ctx)
 	if err != nil {
 		return nil, xerrors.Errorf("createClient() error: %w", err)
 	}
@@ -66,7 +66,7 @@ func GetAllFiles(ctx context.Context) ([]*File, error) {
 	return dst, nil
 }
 
-func SelectFiles(ctx context.Context, tBuf string, cur string) ([]File, string, error) {
+func (dao *Dao) SelectFiles(ctx context.Context, tBuf string, cur string) ([]File, string, error) {
 
 	var s []File
 
@@ -75,7 +75,7 @@ func SelectFiles(ctx context.Context, tBuf string, cur string) ([]File, string, 
 		typ, _ = strconv.Atoi(tBuf)
 	}
 
-	cli, err := createClient(ctx)
+	cli, err := dao.createClient(ctx)
 	if err != nil {
 		return nil, "", xerrors.Errorf("createClient() error: %w", err)
 	}
@@ -120,9 +120,9 @@ func SelectFiles(ctx context.Context, tBuf string, cur string) ([]File, string, 
 	return s, cursor.String(), nil
 }
 
-func SelectFile(ctx context.Context, name string) (*File, error) {
+func (dao *Dao) SelectFile(ctx context.Context, name string) (*File, error) {
 
-	cli, err := createClient(ctx)
+	cli, err := dao.createClient(ctx)
 	if err != nil {
 		return nil, xerrors.Errorf("createClient() error: %w", err)
 	}
@@ -141,9 +141,9 @@ func SelectFile(ctx context.Context, name string) (*File, error) {
 	return &rtn, nil
 }
 
-func SaveFile(ctx context.Context, fs *FileSet) error {
+func (dao *Dao) SaveFile(ctx context.Context, fs *FileSet) error {
 
-	cli, err := createClient(ctx)
+	cli, err := dao.createClient(ctx)
 	if err != nil {
 		return xerrors.Errorf("createClient() error: %w", err)
 	}
@@ -180,9 +180,9 @@ func SaveFile(ctx context.Context, fs *FileSet) error {
 	return nil
 }
 
-func PutFileData(ctx context.Context, id string, data []byte, mime string) error {
+func (dao *Dao) PutFileData(ctx context.Context, id string, data []byte, mime string) error {
 
-	cli, err := createClient(ctx)
+	cli, err := dao.createClient(ctx)
 	if err != nil {
 		return xerrors.Errorf("createClient() error: %w", err)
 	}
@@ -222,12 +222,12 @@ func PutFileData(ctx context.Context, id string, data []byte, mime string) error
 	return nil
 }
 
-func ExistFile(ctx context.Context, id string) bool {
+func (dao *Dao) ExistFile(ctx context.Context, id string) bool {
 
 	file := &File{}
 	file.Key = createFileKey(id)
 
-	cli, err := createClient(ctx)
+	cli, err := dao.createClient(ctx)
 	if err != nil {
 		return false
 	}
@@ -245,9 +245,9 @@ func ExistFile(ctx context.Context, id string) bool {
 	return true
 }
 
-func RemoveFile(ctx context.Context, id string) error {
+func (dao *Dao) RemoveFile(ctx context.Context, id string) error {
 
-	cli, err := createClient(ctx)
+	cli, err := dao.createClient(ctx)
 	if err != nil {
 		return xerrors.Errorf("createClient() error: %w", err)
 	}
@@ -290,12 +290,12 @@ func createFileDataKey(name string) *datastore.Key {
 	return datastore.NameKey(KindFileDataName, name, createSiteKey())
 }
 
-func GetFileData(ctx context.Context, name string) (*FileData, error) {
+func (dao *Dao) GetFileData(ctx context.Context, name string) (*FileData, error) {
 
 	var rtn FileData
 	key := createFileDataKey(name)
 
-	cli, err := createClient(ctx)
+	cli, err := dao.createClient(ctx)
 	if err != nil {
 		return nil, xerrors.Errorf("createClient error: %w", err)
 	}
@@ -311,8 +311,8 @@ func GetFileData(ctx context.Context, name string) (*FileData, error) {
 	return &rtn, nil
 }
 
-func GetFavicon(ctx context.Context) ([]byte, error) {
-	d, err := GetFileData(ctx, SystemFaviconID)
+func (dao *Dao) GetFavicon(ctx context.Context) ([]byte, error) {
+	d, err := dao.GetFileData(ctx, SystemFaviconID)
 	if err != nil {
 		return nil, xerrors.Errorf("GetFileData() error: %w", err)
 	}
@@ -363,11 +363,7 @@ func CreateDraftPageImageID(id string) string {
 
 func PublishPageImage(tx *datastore.Transaction, id string) error {
 
-	fmt.Println("PublishPageImage()")
-
 	draftId := CreateDraftPageImageID(id)
-
-	fmt.Println("DraftID", draftId)
 
 	fs, err := GetFileSet(tx, draftId)
 	if err != nil {
@@ -375,7 +371,6 @@ func PublishPageImage(tx *datastore.Transaction, id string) error {
 	}
 
 	if fs == nil {
-		fmt.Println("fs is nil")
 		return nil
 	}
 
@@ -389,19 +384,16 @@ func PublishPageImage(tx *datastore.Transaction, id string) error {
 	f.LoadKey(createFileKey(id))
 	fd.LoadKey(createFileDataKey(id))
 
-	fmt.Println("delete multi", ids)
 	err = tx.DeleteMulti(ids)
 	if err != nil {
 		return xerrors.Errorf("DeleteMulti() error: %w", err)
 	}
 
-	fmt.Println("file put", f.GetKey())
 	_, err = tx.Put(f.GetKey(), f)
 	if err != nil {
 		return xerrors.Errorf("File Put() error: %w", err)
 	}
 
-	fmt.Println("filedata put", fd.GetKey())
 	_, err = tx.Put(fd.GetKey(), fd)
 	if err != nil {
 		return xerrors.Errorf("FileData Put() error: %w", err)

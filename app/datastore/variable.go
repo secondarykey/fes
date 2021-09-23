@@ -29,7 +29,7 @@ func createVariableKey(id string) *datastore.Key {
 	return datastore.NameKey(KindVariableName, id, createSiteKey())
 }
 
-func SelectVariables(ctx context.Context, cur string) ([]Variable, string, error) {
+func (dao *Dao) SelectVariables(ctx context.Context, cur string) ([]Variable, string, error) {
 
 	var rtn []Variable
 
@@ -46,7 +46,7 @@ func SelectVariables(ctx context.Context, cur string) ([]Variable, string, error
 		}
 	}
 
-	cli, err := createClient(ctx)
+	cli, err := dao.createClient(ctx)
 	if err != nil {
 		return nil, "", xerrors.Errorf("createClient() error: %w", err)
 	}
@@ -74,10 +74,10 @@ func SelectVariables(ctx context.Context, cur string) ([]Variable, string, error
 	return rtn, cursor.String(), nil
 }
 
-func SelectVariable(ctx context.Context, id string) (*Variable, error) {
+func (dao *Dao) SelectVariable(ctx context.Context, id string) (*Variable, error) {
 
 	key := createVariableKey(id)
-	cli, err := createClient(ctx)
+	cli, err := dao.createClient(ctx)
 	if err != nil {
 		return nil, xerrors.Errorf("createClient() error: %w", err)
 	}
@@ -115,10 +115,10 @@ func createVariableDataKey(id string) *datastore.Key {
 	return datastore.NameKey(KindVariableDataName, id, createSiteKey())
 }
 
-func SelectVariableData(ctx context.Context, id string) (*VariableData, error) {
+func (dao *Dao) SelectVariableData(ctx context.Context, id string) (*VariableData, error) {
 
 	key := createVariableDataKey(id)
-	cli, err := createClient(ctx)
+	cli, err := dao.createClient(ctx)
 	if err != nil {
 		return nil, xerrors.Errorf("createClient() error: %w", err)
 	}
@@ -136,11 +136,11 @@ func SelectVariableData(ctx context.Context, id string) (*VariableData, error) {
 	return &vari, nil
 }
 
-func RemoveVariable(ctx context.Context, id string) error {
+func (dao *Dao) RemoveVariable(ctx context.Context, id string) error {
 
 	var err error
 
-	cli, err := createClient(ctx)
+	cli, err := dao.createClient(ctx)
 	if err != nil {
 		return xerrors.Errorf("createClient() error: %w", err)
 	}
@@ -168,7 +168,7 @@ func RemoveVariable(ctx context.Context, id string) error {
 	return nil
 }
 
-func PutVariable(ctx context.Context, id string, value string, version string) error {
+func (dao *Dao) PutVariable(ctx context.Context, id string, value string, version string) error {
 
 	var err error
 
@@ -178,7 +178,7 @@ func PutVariable(ctx context.Context, id string, value string, version string) e
 	vari := Variable{}
 	variData := VariableData{}
 
-	cli, err := createClient(ctx)
+	cli, err := dao.createClient(ctx)
 	if err != nil {
 		return xerrors.Errorf("createClient() error: %w", err)
 	}
@@ -210,9 +210,9 @@ func PutVariable(ctx context.Context, id string, value string, version string) e
 	return nil
 }
 
-func GetVariable(ctx context.Context, key string) (string, error) {
+func (dao *Dao) GetVariable(ctx context.Context, key string) (string, error) {
 
-	data, err := SelectVariableData(ctx, key)
+	data, err := dao.SelectVariableData(ctx, key)
 	if err != nil {
 		return "", xerrors.Errorf("SelectVariableData() error: %w", err)
 	}

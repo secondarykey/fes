@@ -21,12 +21,14 @@ type URL struct {
 
 func GenerateSitemap(ctx context.Context, root string, w http.ResponseWriter) error {
 
+	dao := datastore.NewDao()
+	defer dao.Close()
 	//Page全体でアクセス
-	pages, err := datastore.SelectPages(ctx)
+	pages, err := dao.SelectAllPages(ctx)
 	if err != nil {
 		return xerrors.Errorf("datastore.SelectPages() error: %w", err)
 	}
-	site, err := datastore.SelectSite(ctx, -1)
+	site, err := dao.SelectSite(ctx, -1)
 	if err != nil {
 		return xerrors.Errorf("datastore.SelectSite() error: %w", err)
 	}

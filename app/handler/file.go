@@ -15,8 +15,11 @@ func fileHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["key"]
 
+	dao := datastore.NewDao()
+	defer dao.Close()
+
 	//表示
-	fileData, err := datastore.GetFileData(r.Context(), id)
+	fileData, err := dao.GetFileData(r.Context(), id)
 	if err != nil {
 		errorPage(w, r, "Datastore:FileData Search Error", err, 500)
 		return

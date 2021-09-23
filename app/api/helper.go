@@ -20,8 +20,10 @@ type Helper struct {
 }
 
 func (p Helper) list(id string, num int) []datastore.Page {
+
+	var dao datastore.Dao
 	//TODO 1ページ目固定
-	pages, _, err := datastore.SelectChildPages(p.Ctx, id, "", num, p.Manage)
+	pages, _, err := dao.SelectChildPages(p.Ctx, id, "", num, p.Manage)
 	if err != nil {
 		return make([]datastore.Page, 0)
 	}
@@ -33,29 +35,32 @@ var privateMark = `data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAAC
 func (p Helper) mark() template.HTML {
 	src := ""
 	if p.Manage {
-		src = `<a href="/manage/page/` + p.ID + `"><img src="` + privateMark + `" style="position: fixed; display: block; right: 0; bottom: 0; margin-right: 40px; margin-bottom: 40px; z-index: 900;" /></a>`
+		if p.ID != datastore.ErrorPageID {
+			src = `<a href="/manage/page/` + p.ID + `"><img src="` + privateMark + `" style="position: fixed; display: block; right: 0; bottom: 0; margin-right: 40px; margin-bottom: 40px; z-index: 900;" /></a>`
+		}
 	}
 	return template.HTML(src)
 }
 
 func (p Helper) FuncMap() template.FuncMap {
 	return template.FuncMap{
-		"html":              ConvertHTML,
-		"eraseBR":           EraseBR,
-		"plane":             ConvertString,
-		"fileURL":           p.GetFileURL,
-		"pageImageURL":      p.GetPageImageURL,
-		"convertDate":       ConvertDate,
-		"convertDateFormat": ConvertDateFormat,
 		"list":              p.list,
 		"mark":              p.mark,
+		"html":              ConvertHTML,
+		"plane":             ConvertString,
 		"templateContent":   p.ConvertTemplate,
+		"eraseBR":           EraseBR,
+		"link":              p.GetPageLink,
+		"fileURL":           p.GetFileURL,
+		"pageImageURL":      p.GetPageImageURL,
 		"variable":          p.getVariable,
 		"variableHTML":      p.getVariableHTML,
 		"variableCSS":       p.getVariableCSS,
 		"variableJS":        p.getVariableJS,
 		"variableJSStr":     p.getVariableJSStr,
 		"env":               os.Getenv,
+		"convertDate":       ConvertDate,
+		"convertDateFormat": ConvertDateFormat,
 	}
 }
 
@@ -75,6 +80,7 @@ func (p Helper) ConvertTemplate(data string) template.HTML {
 
 	return template.HTML(buf.String())
 }
+
 func (p Helper) GetFileURL(id string) string {
 	return p.getFileURL(id, false)
 }
@@ -83,10 +89,11 @@ func (p Helper) getFileURL(id string, draft bool) string {
 
 	targetID := ""
 	d := time.Now()
+	var dao datastore.Dao
 
 	if draft && p.Manage {
 		draftId := datastore.CreateDraftPageImageID(id)
-		f, err := datastore.SelectFile(p.Ctx, draftId)
+		f, err := dao.SelectFile(p.Ctx, draftId)
 		if err != nil {
 			return err.Error()
 		}
@@ -97,7 +104,7 @@ func (p Helper) getFileURL(id string, draft bool) string {
 	}
 
 	if targetID == "" {
-		f, err := datastore.SelectFile(p.Ctx, id)
+		f, err := dao.SelectFile(p.Ctx, id)
 		if err != nil {
 			return err.Error()
 		}
@@ -119,7 +126,8 @@ func (p Helper) GetPageImageURL(id string) string {
 }
 
 func (p Helper) getVariable(key string) string {
-	val, err := datastore.GetVariable(p.Ctx, key)
+	var dao datastore.Dao
+	val, err := dao.GetVariable(p.Ctx, key)
 	if err != nil {
 		return err.Error()
 	}
@@ -140,4 +148,13 @@ func (p Helper) getVariableJS(key string) template.JS {
 
 func (p Helper) getVariableJSStr(key string) template.JSStr {
 	return template.JSStr(p.getVariable(key))
+}
+
+func (p Helper) GetPageLink(key string) string {
+	dir := "/page"
+	if p.Manage {
+		dir = "/manage/page/view"
+	}
+	link := fmt.Sprintf("%s/%s", dir, key)
+	return link
 }

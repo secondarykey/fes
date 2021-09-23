@@ -58,10 +58,31 @@ func CreatePageKey(id string) *datastore.Key {
 	return datastore.NameKey(KindPageName, id, createSiteKey())
 }
 
-func SelectPages(ctx context.Context) ([]*Page, error) {
+func (dao *Dao) SelectPages(ctx context.Context, ids ...string) ([]Page, error) {
+	cli, err := dao.createClient(ctx)
+	if err != nil {
+		return nil, xerrors.Errorf("createClient() error: %w", err)
+	}
+
+	keys := make([]*datastore.Key, 0, len(ids))
+	for _, id := range ids {
+		key := CreatePageKey(id)
+		keys = append(keys, key)
+	}
+
+	pages := make([]Page, len(keys))
+	err = cli.GetMulti(ctx, keys, pages)
+	if err != nil {
+		return nil, xerrors.Errorf("client.GetAll() error: %w", err)
+	}
+
+	return pages, nil
+}
+
+func (dao *Dao) SelectAllPages(ctx context.Context) ([]*Page, error) {
 
 	var pages []*Page
-	cli, err := createClient(ctx)
+	cli, err := dao.createClient(ctx)
 	if err != nil {
 		return nil, xerrors.Errorf("createClient() error: %w", err)
 	}
@@ -73,6 +94,8 @@ func SelectPages(ctx context.Context) ([]*Page, error) {
 		_, err := t.Next(&page)
 		if errors.Is(err, iterator.Done) {
 			break
+
+			return pages, nil
 		}
 		if err != nil {
 			return nil, err
@@ -82,11 +105,11 @@ func SelectPages(ctx context.Context) ([]*Page, error) {
 	return pages, nil
 }
 
-func SelectChildPages(ctx context.Context, id string, cur string, limit int, mng bool) ([]Page, string, error) {
+func (dao *Dao) SelectChildPages(ctx context.Context, id string, cur string, limit int, mng bool) ([]Page, string, error) {
 
 	var pages []Page
 
-	cli, err := createClient(ctx)
+	cli, err := dao.createClient(ctx)
 	if err != nil {
 		return nil, "", xerrors.Errorf("createClient() error: %w", err)
 	}
@@ -133,20 +156,20 @@ func SelectChildPages(ctx context.Context, id string, cur string, limit int, mng
 	return pages, cursor.String(), nil
 }
 
-func SelectRootPage(ctx context.Context) (*Page, error) {
-	site, err := SelectSite(ctx, -1)
+func (dao *Dao) SelectRootPage(ctx context.Context) (*Page, error) {
+	site, err := dao.SelectSite(ctx, -1)
 	if err != nil {
 		return nil, xerrors.Errorf("SelectSite() error: %w", err)
 	}
-	return SelectPage(ctx, site.Root, -1)
+	return dao.SelectPage(ctx, site.Root, -1)
 }
 
-func SelectPage(ctx context.Context, id string, version int) (*Page, error) {
+func (dao *Dao) SelectPage(ctx context.Context, id string, version int) (*Page, error) {
 
 	page := Page{}
 
 	key := CreatePageKey(id)
-	cli, err := createClient(ctx)
+	cli, err := dao.createClient(ctx)
 	if err != nil {
 		return nil, xerrors.Errorf("createClient() error: %w", err)
 	}
@@ -167,8 +190,8 @@ func SelectPage(ctx context.Context, id string, version int) (*Page, error) {
 	return &page, nil
 }
 
-func GetErrorPage(ctx context.Context) (*Page, error) {
-	p, err := SelectPage(ctx, ErrorPageID, -1)
+func (dao *Dao) GetErrorPage(ctx context.Context) (*Page, error) {
+	p, err := dao.SelectPage(ctx, ErrorPageID, -1)
 	if err != nil {
 		return nil, xerrors.Errorf("SelectPage() error: %w", err)
 	}
@@ -182,14 +205,14 @@ type PageSet struct {
 	FileSet  *FileSet
 }
 
-func PutPage(ctx context.Context, p *PageSet) error {
+func (dao *Dao) PutPage(ctx context.Context, p *PageSet) error {
 
 	id := p.ID
 
 	p.Page.LoadKey(CreatePageKey(id))
 	p.PageData.LoadKey(CreatePageDataKey(id))
 
-	cli, err := createClient(ctx)
+	cli, err := dao.createClient(ctx)
 	if err != nil {
 		return xerrors.Errorf("createClient() error: %w", err)
 	}
@@ -207,7 +230,7 @@ func PutPage(ctx context.Context, p *PageSet) error {
 		}
 
 		if p.FileSet != nil {
-			err = SaveFile(ctx, p.FileSet)
+			err = dao.SaveFile(ctx, p.FileSet)
 			if err != nil {
 				//ファイル指定なしの場合の動作
 			}
@@ -226,10 +249,10 @@ func PutPage(ctx context.Context, p *PageSet) error {
 	return nil
 }
 
-func UsingTemplate(ctx context.Context, id string) (bool, error) {
+func (dao *Dao) UsingTemplate(ctx context.Context, id string) (bool, error) {
 
 	var err error
-	cli, err := createClient(ctx)
+	cli, err := dao.createClient(ctx)
 	if err != nil {
 		return true, xerrors.Errorf("createClient() error: %w", err)
 	}
@@ -261,11 +284,11 @@ func UsingTemplate(ctx context.Context, id string) (bool, error) {
 	return false, nil
 }
 
-func RemovePage(ctx context.Context, id string) error {
+func (dao *Dao) RemovePage(ctx context.Context, id string) error {
 
 	var err error
 
-	children, _, err := SelectChildPages(ctx, id, NoLimitCursor, 0, false)
+	children, _, err := dao.SelectChildPages(ctx, id, NoLimitCursor, 0, false)
 	if err != nil {
 		return fmt.Errorf("Datastore Error SelectChildPages child page[%v]", err)
 	}
@@ -274,7 +297,7 @@ func RemovePage(ctx context.Context, id string) error {
 		return fmt.Errorf("Exist child page[%s]", id)
 	}
 
-	cli, err := createClient(ctx)
+	cli, err := dao.createClient(ctx)
 	if err != nil {
 		return xerrors.Errorf("createClient() error: %w", err)
 	}
@@ -293,8 +316,8 @@ func RemovePage(ctx context.Context, id string) error {
 			return err
 		}
 
-		if ExistFile(ctx, id) {
-			return RemoveFile(ctx, id)
+		if dao.ExistFile(ctx, id) {
+			return dao.RemoveFile(ctx, id)
 		}
 
 		//TODO HTMLを削除
@@ -307,7 +330,7 @@ func RemovePage(ctx context.Context, id string) error {
 	return nil
 }
 
-func PutPageSequence(ctx context.Context, ids string, enables string, verCsv string) error {
+func (dao *Dao) PutPageSequence(ctx context.Context, ids string, enables string, verCsv string) error {
 
 	idArray := strings.Split(ids, ",")
 	enableArray := strings.Split(enables, ",")
@@ -332,7 +355,7 @@ func PutPageSequence(ctx context.Context, ids string, enables string, verCsv str
 		versions[idx] = verBuf
 	}
 
-	cli, err := createClient(ctx)
+	cli, err := dao.createClient(ctx)
 	if err != nil {
 		return xerrors.Errorf("createClient() error: %w", err)
 	}
@@ -360,16 +383,16 @@ func PutPageSequence(ctx context.Context, ids string, enables string, verCsv str
 	return nil
 }
 
-func SelectReferencePages(ctx context.Context, id string, typ string) ([]Page, error) {
+func (dao *Dao) SelectReferencePages(ctx context.Context, id string, typ int) ([]Page, error) {
 
-	cli, err := createClient(ctx)
+	cli, err := dao.createClient(ctx)
 	if err != nil {
 		return nil, xerrors.Errorf("createClient() error: %w", err)
 	}
 
 	var pages []Page
 	filter := "SiteTemplate="
-	if typ == "2" {
+	if typ == 2 {
 		filter = "PageTemplate="
 	}
 
@@ -402,12 +425,12 @@ func CreatePageDataKey(id string) *datastore.Key {
 	return datastore.NameKey(KindPageDataName, id, createSiteKey())
 }
 
-func SelectPageData(ctx context.Context, id string) (*PageData, error) {
+func (dao *Dao) SelectPageData(ctx context.Context, id string) (*PageData, error) {
 
 	page := PageData{}
 	key := CreatePageDataKey(id)
 
-	cli, err := createClient(ctx)
+	cli, err := dao.createClient(ctx)
 	if err != nil {
 		return nil, xerrors.Errorf("createClient() error: %w", err)
 	}
@@ -423,15 +446,36 @@ func SelectPageData(ctx context.Context, id string) (*PageData, error) {
 	return &page, nil
 }
 
+func (dao *Dao) GetPageData(ctx context.Context, ids ...string) ([]PageData, error) {
+
+	cli, err := dao.createClient(ctx)
+	if err != nil {
+		return nil, xerrors.Errorf("createClient() error: %w", err)
+	}
+
+	keys := make([]*datastore.Key, 0, len(ids))
+	for _, id := range ids {
+		key := CreatePageDataKey(id)
+		keys = append(keys, key)
+	}
+
+	data := make([]PageData, len(keys))
+	err = cli.GetMulti(ctx, keys, data)
+	if err != nil {
+		return nil, xerrors.Errorf("client.GetAll() error: %w", err)
+	}
+	return data, nil
+}
+
 type Tree struct {
 	Page     *Page
 	Children []*Tree
 	Indent   int
 }
 
-func CreatePagesTree(ctx context.Context) (*Tree, error) {
+func (dao *Dao) CreatePagesTree(ctx context.Context) (*Tree, error) {
 
-	cli, err := createClient(ctx)
+	cli, err := dao.createClient(ctx)
 	if err != nil {
 		return nil, xerrors.Errorf("createClient() error: %w", err)
 	}

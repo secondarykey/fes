@@ -12,8 +12,11 @@ import (
 
 func CreateFormPage(r *http.Request, id string) (*datastore.Page, *datastore.PageData, error) {
 
+	dao := datastore.NewDao()
+	defer dao.Close()
+
 	ctx := r.Context()
-	p, err := datastore.SelectPage(ctx, id, -1)
+	p, err := dao.SelectPage(ctx, id, -1)
 	if err != nil {
 		return nil, nil, xerrors.Errorf("SelectPage() error: %w", err)
 	}

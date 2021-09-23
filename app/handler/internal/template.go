@@ -2,15 +2,19 @@ package internal
 
 import (
 	"app/api"
-	"io"
-	"os"
+	"app/datastore"
+	"fmt"
+	"strconv"
 
 	"embed"
 	"html/template"
+	"io"
 	"io/fs"
 	"log"
 	"net/http"
+	"os"
 
+	"github.com/gorilla/mux"
 	"golang.org/x/xerrors"
 )
 
@@ -45,7 +49,11 @@ func ViewManage(w http.ResponseWriter, dto interface{}, name string) error {
 	}
 
 	tmpl := template.New(api.SiteTemplateName).Funcs(funcMap)
-	return writeTemplate(w, tmpl, dto, "manage/layout.tmpl", "manage/"+name)
+	err := writeTemplate(w, tmpl, dto, "manage/layout.tmpl", "manage/"+name)
+	if err != nil {
+		return xerrors.Errorf("writeTemplate() error: %w", err)
+	}
+	return nil
 }
 
 func writeTemplate(w io.Writer, root *template.Template, dto interface{}, names ...string) error {
@@ -65,4 +73,44 @@ func writeTemplate(w io.Writer, root *template.Template, dto interface{}, names 
 func WriteTemplate(w io.Writer, dto interface{}, names ...string) error {
 	root := template.New(names[0])
 	return writeTemplate(w, root, dto, names...)
+}
+
+func CreateFormTemplate(r *http.Request) (*datastore.TemplateSet, error) {
+
+	vars := mux.Vars(r)
+	id := vars["key"]
+
+	tmpKey := datastore.SetTemplateKey(id)
+	tmpDataKey := datastore.CreateTemplateDataKey(id)
+
+	template := datastore.Template{}
+	templateData := datastore.TemplateData{}
+
+	ver := r.FormValue("version")
+	version, err := strconv.Atoi(ver)
+	if err != nil {
+		return nil, xerrors.Errorf("version strconv.Atoi() error: %w", err)
+	}
+
+	if version > 0 {
+		template.TargetVersion = fmt.Sprintf("%d", version)
+	}
+
+	template.LoadKey(tmpKey)
+	templateData.LoadKey(tmpDataKey)
+
+	template.Name = r.FormValue("name")
+	template.Type, err = strconv.Atoi(r.FormValue("templateType"))
+	if err != nil {
+		return nil, xerrors.Errorf("TemplateType Atoi() error: %w", err)
+	}
+
+	templateData.Content = []byte(r.FormValue("template"))
+
+	var ts datastore.TemplateSet
+
+	ts.Template = &template
+	ts.TemplateData = &templateData
+
+	return &ts, nil
 }

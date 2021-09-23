@@ -4,9 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"net/http"
-	"strconv"
-	"strings"
 
 	uuid "github.com/satori/go.uuid"
 	"golang.org/x/xerrors"
@@ -50,31 +47,10 @@ func createSiteKey() *datastore.Key {
 	return datastore.NameKey(KindSiteName, SiteEntityKey, nil)
 }
 
-func PutSite(r *http.Request) error {
-
-	ver := r.FormValue("version")
-	version, err := strconv.Atoi(ver)
-	if err != nil {
-		return err
-	}
-
-	ctx := r.Context()
-
-	site, foundErr := SelectSite(ctx, version)
-	if foundErr != nil {
-		if foundErr != SiteNotFoundError {
-			return foundErr
-		}
-		site = &Site{}
-	}
-
-	site.Name = r.FormValue("name")
-	site.Description = r.FormValue("description")
-	site.Root = r.FormValue("rootPage")
-	site.Managers = strings.Split(r.FormValue("manager"), ",")
+func (dao *Dao) PutSite(ctx context.Context, site *Site) error {
 
 	var page *Page
-	if foundErr != nil {
+	if site.Version == 0 {
 		page = &Page{
 			Name:   "最初のページ",
 			Parent: "",
@@ -84,7 +60,7 @@ func PutSite(r *http.Request) error {
 		page.LoadKey(CreatePageKey(uid.String()))
 	}
 
-	cli, err := createClient(ctx)
+	cli, err := dao.createClient(ctx)
 	if err != nil {
 		return xerrors.Errorf("createClient() error: %w", err)
 	}
@@ -106,7 +82,6 @@ func PutSite(r *http.Request) error {
 			return xerrors.Errorf("site put error: %w", err)
 		}
 		cacheSite = site
-		setDatastoreCache(cacheSite)
 
 		return nil
 	})
@@ -120,7 +95,7 @@ func PutSite(r *http.Request) error {
 
 var cacheSite *Site
 
-func SelectSite(ctx context.Context, version int) (*Site, error) {
+func (dao *Dao) SelectSite(ctx context.Context, version int) (*Site, error) {
 
 	//バージョン指定がない場合
 	if version < 0 {
@@ -129,7 +104,7 @@ func SelectSite(ctx context.Context, version int) (*Site, error) {
 		}
 	}
 
-	cli, err := createClient(ctx)
+	cli, err := dao.createClient(ctx)
 	if err != nil {
 		return nil, xerrors.Errorf("createClient() error: %w", err)
 	}
@@ -153,10 +128,5 @@ func SelectSite(ctx context.Context, version int) (*Site, error) {
 	}
 
 	cacheSite = &site
-	setDatastoreCache(cacheSite)
 	return &site, nil
-}
-
-func setDatastoreCache(site *Site) {
-	return
 }

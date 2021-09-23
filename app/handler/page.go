@@ -11,9 +11,14 @@ import (
 )
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
+
 	w.Header().Set("Cache-Control", "public, max-age=3600")
+
 	ctx := r.Context()
-	site, err := datastore.SelectSite(ctx, -1)
+	dao := datastore.NewDao()
+	defer dao.Close()
+
+	site, err := dao.SelectSite(ctx, -1)
 	if err != nil {
 		errorPage(w, r, "Not Found", fmt.Errorf("サイトにトップページが指定されていません。"), 404)
 		return
@@ -37,7 +42,11 @@ func pageView(w http.ResponseWriter, r *http.Request, id string) {
 		id += "?page=" + page
 	}
 
-	html, err := datastore.GetHTML(r.Context(), id)
+	ctx := r.Context()
+	dao := datastore.NewDao()
+	defer dao.Close()
+
+	html, err := dao.GetHTML(ctx, id)
 	if err != nil {
 		errorPage(w, r, "datastore.GetHTML() error", err, 500)
 		return
