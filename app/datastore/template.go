@@ -34,11 +34,15 @@ func (t *Template) Load(props []datastore.Property) error {
 }
 
 func (t *Template) Save() ([]datastore.Property, error) {
-	t.update(t.TargetVersion)
+	err := t.update()
+	if err != nil {
+		return nil, xerrors.Errorf("Meta update() error: %w", err)
+	}
 	return datastore.SaveStruct(t)
 }
 
 type TemplateSet struct {
+	ID           string
 	Template     *Template
 	TemplateData *TemplateData
 }

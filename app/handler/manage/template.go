@@ -2,7 +2,7 @@ package manage
 
 import (
 	"app/datastore"
-	. "app/handler/internal"
+	"app/handler/manage/form"
 
 	"fmt"
 	"net/http"
@@ -65,10 +65,26 @@ func editTemplateHandler(w http.ResponseWriter, r *http.Request) {
 	defer dao.Close()
 
 	ctx := r.Context()
+	vars := mux.Vars(r)
+	id := vars["key"]
 
 	//POST
 	if POST(r) {
-		ts, err := CreateFormTemplate(r)
+
+		tm, err := dao.SelectTemplate(ctx, id)
+		if err != nil {
+			errorPage(w, "Error SelectTemplate", err, 500)
+			return
+		}
+
+		ts := new(datastore.TemplateSet)
+		ts.Template = tm
+		if tm == nil {
+			ts.Template = new(datastore.Template)
+		}
+		ts.TemplateData = new(datastore.TemplateData)
+
+		err = form.SetTemplate(r, ts)
 		if err != nil {
 			errorPage(w, "Error CreateFormTemplate()", err, 500)
 			return
@@ -81,9 +97,6 @@ func editTemplateHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-
-	vars := mux.Vars(r)
-	id := vars["key"]
 
 	tmp, err := dao.SelectTemplate(ctx, id)
 	if err != nil {

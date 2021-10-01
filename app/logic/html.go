@@ -5,7 +5,6 @@ import (
 	"app/datastore"
 	"context"
 	"io"
-	"log"
 	"sync"
 
 	"bytes"
@@ -189,9 +188,6 @@ func newGenerator() *Generator {
 
 func (gen *Generator) createHTMLs(ctx context.Context, mng bool, ve *ErrorDto, ids ...string) ([]*datastore.HTML, *datastore.Page, error) {
 
-	log.Println("createHTMLs() start")
-	defer log.Println("createHTMLs() end")
-
 	pages, err := gen.dao.SelectPages(ctx, ids...)
 	if err != nil {
 		return nil, nil, xerrors.Errorf("datasore.SelectPages() error: %w", err)
@@ -253,8 +249,6 @@ func (gen *Generator) createHTMLs(ctx context.Context, mng bool, ve *ErrorDto, i
 		htmls[idx].LoadKey(datastore.CreateHTMLKey(keys[idx]))
 		htmls[idx].Content = htmlData[idx]
 	}
-
-	log.Println("HTML Num", len(htmls))
 
 	return htmls, page, nil
 }

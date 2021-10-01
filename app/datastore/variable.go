@@ -12,7 +12,6 @@ import (
 const KindVariableName = "Variable"
 
 type Variable struct {
-	TargetVersion string `datastore:"-"`
 	Meta
 }
 
@@ -21,7 +20,10 @@ func (t *Variable) Load(props []datastore.Property) error {
 }
 
 func (t *Variable) Save() ([]datastore.Property, error) {
-	t.update(t.TargetVersion)
+	err := t.update()
+	if err != nil {
+		return nil, xerrors.Errorf("Meta update() error: %w", err)
+	}
 	return datastore.SaveStruct(t)
 }
 
@@ -168,36 +170,38 @@ func (dao *Dao) RemoveVariable(ctx context.Context, id string) error {
 	return nil
 }
 
-func (dao *Dao) PutVariable(ctx context.Context, id string, value string, version string) error {
+type VariableSet struct {
+	ID           string
+	Variable     *Variable
+	VariableData *VariableData
+}
+
+func (dao *Dao) PutVariable(ctx context.Context, vs *VariableSet) error {
 
 	var err error
 
-	variKey := createVariableKey(id)
-	variDataKey := createVariableDataKey(id)
+	variKey := createVariableKey(vs.ID)
+	variDataKey := createVariableDataKey(vs.ID)
 
-	vari := Variable{}
-	variData := VariableData{}
+	vari := vs.Variable
+	variData := vs.VariableData
+
+	vari.LoadKey(variKey)
+	variData.LoadKey(variDataKey)
 
 	cli, err := dao.createClient(ctx)
 	if err != nil {
 		return xerrors.Errorf("createClient() error: %w", err)
 	}
 
-	//TODO Version
-
-	vari.LoadKey(variKey)
-	variData.LoadKey(variDataKey)
-
-	variData.Content = []byte(value)
-
 	_, err = cli.RunInTransaction(ctx, func(tx *datastore.Transaction) error {
 
-		_, err = tx.Put(vari.GetKey(), &vari)
+		_, err = tx.Put(vari.GetKey(), vari)
 		if err != nil {
 			return xerrors.Errorf("Variable Put() error: %w", err)
 		}
 
-		_, err = tx.Put(variData.GetKey(), &variData)
+		_, err = tx.Put(variData.GetKey(), variData)
 		if err != nil {
 			return xerrors.Errorf("VariableData Put() error: %w", err)
 		}

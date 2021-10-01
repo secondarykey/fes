@@ -262,7 +262,7 @@ Edit Page[
     var generateBtn = document.querySelector('#generateBtn');
     generateBtn.addEventListener('click', function() {
       confirmFes(function() {
-        window.location.href = "/manage/page/publish/{{ .Page.Key.Name }}";
+        window.location.href = "/manage/html/publish/{{ .Page.Key.Name }}";
       });
     });
 {{ end }}

@@ -6,46 +6,46 @@ fes is Festival Edit System.
 
 # Issue
 
-- URL機能
-
-- キャッシュ機能
-
-- Archive機能をGUIで可能に
+- アーティスト機能
+- タイムテーブル機能
 
 - ログイン後にリダイレクト
 
-- アーティスト機能
+- Archive機能をGUIで可能に
+
+  URLを作成
+  ローカルで作成してデプロイ
+
+- キャッシュ機能
+
+  どの程度キャッシュするか
+
+- APIを再度形成
+
+  - マニュアルにまとめる
+
+- Pagingの見直し
+
+- Form作成部分の見直し
+
+   dialの共通化
+   Version の扱い
 
 - 管理用のURLを変更できるようにする
-
-- 以下をマニュアルに記載
-
-- reference 更新
-
-  - 一覧ページを表示するようにする
-  - キャッシュ可能な部分は可能にする
-  - トランザクションを効くようにする
-  - ログをしっかり出す
 
 ## データの扱い
 
 - Site
-
 - Page
-
 - PageData
-
-- Content
-
+- Content →見直し
 - Children
 
-- Top
+- Top Deprecated
+- Dir Deprecated
 
-- Dir
-
-- Prev
-
-- Next
+- Prev NotImplemented
+- Next NotImplemented
 
 ## テンプレート
 

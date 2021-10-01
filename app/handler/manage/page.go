@@ -2,7 +2,7 @@ package manage
 
 import (
 	"app/datastore"
-	. "app/handler/internal"
+	"app/handler/manage/form"
 
 	"net/http"
 
@@ -58,15 +58,30 @@ func viewPageHandler(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		id := vars["key"]
 
-		var ps datastore.PageSet
-
-		p, pd, err := CreateFormPage(r, id)
+		p, err := dao.SelectPage(ctx, id, -1)
 		if err != nil {
 			errorPage(w, "Error CreateFormPage", err, 500)
 			return
 		}
 
-		fs, err := CreateFormFile(r, datastore.FileTypePageImage)
+		ps := new(datastore.PageSet)
+		ps.Page = p
+		if p == nil {
+			ps.Page = &datastore.Page{}
+		}
+		ps.PageData = new(datastore.PageData)
+
+		err = form.SetPage(r, ps, id)
+		if err != nil {
+			errorPage(w, "Error CreateFormPage", err, 500)
+			return
+		}
+
+		fs := new(datastore.FileSet)
+		fs.File = new(datastore.File)
+		fs.FileData = new(datastore.FileData)
+
+		err = form.SetFile(r, fs, datastore.FileTypePageImage)
 		if err != nil {
 			errorPage(w, "Error CreateFormFile", err, 500)
 			return
@@ -78,13 +93,11 @@ func viewPageHandler(w http.ResponseWriter, r *http.Request) {
 			fs.ID = draftID
 		}
 
-		ps.Page = p
-		ps.PageData = pd
 		ps.FileSet = fs
 
 		ctx := r.Context()
 
-		err = dao.PutPage(ctx, &ps)
+		err = dao.PutPage(ctx, ps)
 		if err != nil {
 			errorPage(w, "Error Put Page", err, 500)
 			return

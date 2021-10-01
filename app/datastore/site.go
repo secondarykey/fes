@@ -22,6 +22,7 @@ type Site struct {
 	Name        string
 	Description string
 	Root        string
+	ManageURL   string
 	Managers    []string
 
 	TargetVersion string `datastore:"-"`
@@ -39,7 +40,10 @@ func (s *Site) Load(props []datastore.Property) error {
 }
 
 func (s *Site) Save() ([]datastore.Property, error) {
-	s.update(s.TargetVersion)
+	err := s.update()
+	if err != nil {
+		return nil, xerrors.Errorf("Meta update() error: %w", err)
+	}
 	return datastore.SaveStruct(s)
 }
 

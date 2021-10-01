@@ -2,7 +2,7 @@ package manage
 
 import (
 	"app/datastore"
-	. "app/handler/internal"
+	"app/handler/manage/form"
 
 	"bytes"
 	"fmt"
@@ -49,16 +49,20 @@ func viewFileHandler(w http.ResponseWriter, r *http.Request) {
 //URL = /manage/file/add
 func addFileHandler(w http.ResponseWriter, r *http.Request) {
 
-	fs, err := CreateFormFile(r, datastore.FileTypeData)
-	if err != nil {
-		errorPage(w, "CreateFormFile Error", err, 500)
-		return
-	}
+	fs := new(datastore.FileSet)
 
 	ctx := r.Context()
-
 	dao := datastore.NewDao()
 	defer dao.Close()
+
+	fs.File = &datastore.File{}
+	fs.FileData = &datastore.FileData{}
+
+	err := form.SetFile(r, fs, datastore.FileTypeData)
+	if err != nil {
+		errorPage(w, "SetFile() Error", err, 500)
+		return
+	}
 
 	err = dao.SaveFile(ctx, fs)
 	if err != nil {
@@ -70,17 +74,23 @@ func addFileHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func faviconUploadHandler(w http.ResponseWriter, r *http.Request) {
-	fs, err := CreateFormFile(r, datastore.FileTypeSystem)
-	if err != nil {
-		errorPage(w, "CreateFormFile Error", err, 500)
-		return
-	}
-	ctx := r.Context()
-	fs.ID = datastore.SystemFaviconID
-	fs.Name = datastore.SystemFaviconID
 
+	ctx := r.Context()
 	dao := datastore.NewDao()
 	defer dao.Close()
+
+	fs := new(datastore.FileSet)
+	fs.File = &datastore.File{}
+	fs.FileData = &datastore.FileData{}
+
+	err := form.SetFile(r, fs, datastore.FileTypeSystem)
+	if err != nil {
+		errorPage(w, "SetFile() Error", err, 500)
+		return
+	}
+
+	fs.ID = datastore.SystemFaviconID
+	fs.Name = datastore.SystemFaviconID
 
 	err = dao.SaveFile(ctx, fs)
 	if err != nil {
@@ -93,6 +103,7 @@ func faviconUploadHandler(w http.ResponseWriter, r *http.Request) {
 
 //URL = /manage/file/delete
 func deleteFileHandler(w http.ResponseWriter, r *http.Request) {
+
 	//リダイレクト
 	id := r.FormValue("fileName")
 	ctx := r.Context()

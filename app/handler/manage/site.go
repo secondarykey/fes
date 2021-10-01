@@ -3,6 +3,9 @@ package manage
 import (
 	"app/datastore"
 	. "app/handler/internal"
+	"app/handler/manage/form"
+
+	"errors"
 	"fmt"
 
 	"net/http"
@@ -47,16 +50,30 @@ func viewSiteHandler(w http.ResponseWriter, r *http.Request) {
 
 //settingの更新
 func editSiteHandler(w http.ResponseWriter, r *http.Request) {
+
 	dao := datastore.NewDao()
 	defer dao.Close()
 
-	site, err := CreateFormSite(r)
+	ctx := r.Context()
+
+	site, err := dao.SelectSite(ctx, -1)
+	if err != nil {
+		if !errors.Is(err, datastore.SiteNotFoundError) {
+			errorPage(w, "dao SelectSite() Error", err, 500)
+			return
+		}
+	}
+
+	if site == nil {
+		site = new(datastore.Site)
+	}
+
+	err = form.SetSite(r, site)
 	if err != nil {
 		errorPage(w, "CreateFormSite() Error", err, 500)
 		return
 	}
 
-	ctx := r.Context()
 	err = dao.PutSite(ctx, site)
 	if err != nil {
 		errorPage(w, "Datastore site put Error", err, 500)
