@@ -5,7 +5,6 @@ import (
 	"app/datastore"
 	"context"
 	"io"
-	"sync"
 
 	"bytes"
 	"fmt"
@@ -42,6 +41,7 @@ func WriteManageHTML(w io.Writer, r *http.Request, id string, page int, ve *Erro
 
 func PutHTMLs(ctx context.Context, ids ...string) error {
 	gen := newGenerator()
+	defer gen.dao.Close()
 
 	htmls, page, err := gen.createHTMLs(ctx, false, nil, ids...)
 	if err != nil {
@@ -79,6 +79,7 @@ type ErrorDto struct {
 func (gen *Generator) createHTMLDto(ctx context.Context, page *datastore.Page, pData *datastore.PageData, view bool, ve *ErrorDto) ([]*HTMLDto, error) {
 
 	id := page.Key.Name
+
 	site, err := gen.dao.SelectSite(ctx, -1)
 	if err != nil {
 		return nil, xerrors.Errorf("SelectSite() error: %w", err)
@@ -161,6 +162,7 @@ func (gen *Generator) createTemplate(ctx context.Context, page *datastore.Page, 
 		Ctx:         ctx,
 		ID:          page.GetKey().Name,
 		Manage:      mng,
+		Dao:         gen.dao,
 		TemplateDto: dto,
 	}
 
@@ -207,7 +209,6 @@ func (gen *Generator) createHTMLs(ctx context.Context, mng bool, ve *ErrorDto, i
 	htmlData := make([][]byte, 0)
 	keys := make([]string, 0)
 
-	var wg sync.WaitGroup
 	for idx, elm := range pages {
 
 		if elm.Deleted {
@@ -225,23 +226,15 @@ func (gen *Generator) createHTMLs(ctx context.Context, mng bool, ve *ErrorDto, i
 			return nil, nil, xerrors.Errorf("createTemplate() error: %w", err)
 		}
 
-		wg.Add(1)
-		go func(tmpl *template.Template, v interface{}) error {
-
-			defer wg.Done()
-			var buf []byte
-			w := bytes.NewBuffer(buf)
-			err = tmpl.Execute(w, v)
-			if err != nil {
-				return xerrors.Errorf("Reference createTemplate() error: %w", err)
-			}
-			htmlData = append(htmlData, w.Bytes())
-			keys = append(keys, elm.Key.Name)
-
-			return nil
-		}(tmpl, dtos[0])
+		var buf []byte
+		w := bytes.NewBuffer(buf)
+		err = tmpl.Execute(w, dtos[0])
+		if err != nil {
+			return nil, nil, xerrors.Errorf("Reference createTemplate() error: %w", err)
+		}
+		htmlData = append(htmlData, w.Bytes())
+		keys = append(keys, elm.Key.Name)
 	}
-	wg.Wait()
 
 	htmls := make([]*datastore.HTML, len(keys))
 	for idx, _ := range htmls {

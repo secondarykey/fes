@@ -68,38 +68,47 @@ func (dao *Dao) PutHTML(ctx context.Context, htmls []*HTML, page *Page) error {
 		return xerrors.Errorf("createClient() error: %w", err)
 	}
 
-	data := make([]HasKey, 0, len(htmls))
+	dsts := make([][]HasKey, 0)
+	data := make([]HasKey, 0)
 
-	for _, html := range htmls {
+	sz := 0
+	for idx, html := range htmls {
 		data = append(data, html)
+		sz += len(html.Content)
+		if sz > MB4 || idx+1 == len(htmls) {
+			dsts = append(dsts, data)
+			data = make([]HasKey, 0)
+			sz = 0
+		}
 	}
 
-	_, err = cli.RunInTransaction(ctx, func(tx *datastore.Transaction) error {
+	for _, dst := range dsts {
+		_, err = cli.RunInTransaction(ctx, func(tx *datastore.Transaction) error {
 
-		if page != nil {
-			err = PublishPageImage(tx, page.GetKey().Name)
-			if err != nil {
-				return xerrors.Errorf("PublishPageImage() error: %w", err)
-			}
-			if page.Publish.IsZero() {
-				page.Publish = time.Now()
-				err = Put(tx, page)
+			if page != nil {
+				err = PublishPageImage(tx, page.GetKey().Name)
 				if err != nil {
-					return xerrors.Errorf("Page(Publish) Put() error: %w", err)
+					return xerrors.Errorf("PublishPageImage() error: %w", err)
+				}
+				if page.Publish.IsZero() {
+					page.Publish = time.Now()
+					err = Put(tx, page)
+					if err != nil {
+						return xerrors.Errorf("Page(Publish) Put() error: %w", err)
+					}
 				}
 			}
-		}
 
-		err = PutMulti(tx, data)
+			err = PutMulti(tx, dst)
+			if err != nil {
+				return xerrors.Errorf("HTML PutMulti() error: %w", err)
+			}
+
+			return nil
+		})
 		if err != nil {
-			return xerrors.Errorf("HTML PutMulti() error: %w", err)
+			return xerrors.Errorf("PutHTML() transaction error: %w", err)
 		}
-
-		return nil
-	})
-
-	if err != nil {
-		return xerrors.Errorf("PutHTML() transaction error: %w", err)
 	}
 
 	return nil
