@@ -421,7 +421,7 @@ func createEntity(kind string, id string, data []byte) (HasKey, error) {
 
 	err = decoder.Decode(dst)
 	if err != nil {
-		return nil, err
+		return nil, xerrors.Errorf("gob Decode() error: %w", err)
 	}
 	dst.LoadKey(key)
 	return dst, nil

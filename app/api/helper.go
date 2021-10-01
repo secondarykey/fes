@@ -14,6 +14,7 @@ import (
 //Public template object
 type Helper struct {
 	Ctx         context.Context
+	Dao         *datastore.Dao
 	ID          string
 	Manage      bool
 	TemplateDto interface{}
@@ -21,9 +22,8 @@ type Helper struct {
 
 func (p Helper) list(id string, num int) []datastore.Page {
 
-	var dao datastore.Dao
 	//TODO 1ページ目固定
-	pages, _, err := dao.SelectChildPages(p.Ctx, id, "", num, p.Manage)
+	pages, _, err := p.Dao.SelectChildPages(p.Ctx, id, "", num, p.Manage)
 	if err != nil {
 		return make([]datastore.Page, 0)
 	}
@@ -89,11 +89,10 @@ func (p Helper) getFileURL(id string, draft bool) string {
 
 	targetID := ""
 	d := time.Now()
-	var dao datastore.Dao
 
 	if draft && p.Manage {
 		draftId := datastore.CreateDraftPageImageID(id)
-		f, err := dao.SelectFile(p.Ctx, draftId)
+		f, err := p.Dao.SelectFile(p.Ctx, draftId)
 		if err != nil {
 			return err.Error()
 		}
@@ -104,7 +103,7 @@ func (p Helper) getFileURL(id string, draft bool) string {
 	}
 
 	if targetID == "" {
-		f, err := dao.SelectFile(p.Ctx, id)
+		f, err := p.Dao.SelectFile(p.Ctx, id)
 		if err != nil {
 			return err.Error()
 		}
@@ -126,8 +125,7 @@ func (p Helper) GetPageImageURL(id string) string {
 }
 
 func (p Helper) getVariable(key string) string {
-	var dao datastore.Dao
-	val, err := dao.GetVariable(p.Ctx, key)
+	val, err := p.Dao.GetVariable(p.Ctx, key)
 	if err != nil {
 		return err.Error()
 	}
