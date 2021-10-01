@@ -37,7 +37,6 @@ type Page struct {
 	SiteTemplate string
 	PageTemplate string
 
-	TargetVersion string `datastore:"-"`
 	Meta
 }
 
@@ -50,7 +49,10 @@ func (p *Page) Load(props []datastore.Property) error {
 }
 
 func (p *Page) Save() ([]datastore.Property, error) {
-	p.update(p.TargetVersion)
+	err := p.update()
+	if err != nil {
+		return nil, xerrors.Errorf("Meta update() error: %w", err)
+	}
 	return datastore.SaveStruct(p)
 }
 
@@ -174,12 +176,7 @@ func (dao *Dao) SelectPage(ctx context.Context, id string, version int) (*Page, 
 		return nil, xerrors.Errorf("createClient() error: %w", err)
 	}
 
-	if version >= 0 {
-		//TODO 調べる
-		page.TargetVersion = fmt.Sprintf("%d", version)
-	}
 	err = cli.Get(ctx, key, &page)
-
 	if err != nil {
 		if !errors.Is(err, datastore.ErrNoSuchEntity) {
 			return nil, err
@@ -367,9 +364,8 @@ func (dao *Dao) PutPageSequence(ctx context.Context, ids string, enables string,
 		return err
 	}
 
-	// TODO これでいいか確認
 	for idx, page := range pages {
-		page.TargetVersion = versions[idx]
+		page.SetTargetVersion(versions[idx])
 	}
 
 	for idx, page := range pages {

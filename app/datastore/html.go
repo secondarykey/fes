@@ -15,10 +15,9 @@ import (
 const KindHTMLName = "HTML"
 
 type HTML struct {
-	Content       []byte `datastore:",noindex"`
-	Children      int    //ignore
-	PageKey       string //added
-	TargetVersion string `datastore:"-"`
+	Content  []byte `datastore:",noindex"`
+	Children int    //ignore
+	PageKey  string //added
 	Meta
 }
 
@@ -27,7 +26,10 @@ func (h *HTML) Load(props []datastore.Property) error {
 }
 
 func (h *HTML) Save() ([]datastore.Property, error) {
-	h.update(h.TargetVersion)
+	err := h.update()
+	if err != nil {
+		return nil, xerrors.Errorf("Meta update() error: %w", err)
+	}
 	return datastore.SaveStruct(h)
 }
 

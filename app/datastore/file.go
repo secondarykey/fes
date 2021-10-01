@@ -32,7 +32,6 @@ type File struct {
 	Size int64
 	Type int
 
-	TargetVersion string `datastore:"-"`
 	Meta
 }
 
@@ -41,7 +40,10 @@ func (f *File) Load(props []datastore.Property) error {
 }
 
 func (f *File) Save() ([]datastore.Property, error) {
-	f.update(f.TargetVersion)
+	err := f.update()
+	if err != nil {
+		return nil, xerrors.Errorf("File.Save() error: %w", err)
+	}
 	return datastore.SaveStruct(f)
 }
 
