@@ -31,6 +31,9 @@ func WriteManageHTML(w io.Writer, r *http.Request, id string, page int, ve *Erro
 		page = len(htmls) - 1
 	}
 
+	fmt.Println("Len", len(htmls))
+	fmt.Println("page", page)
+
 	_, err = w.Write(htmls[page].Content)
 	if err != nil {
 		return xerrors.Errorf("writer Write() error: %w", err)
@@ -107,7 +110,7 @@ func (gen *Generator) createHTMLDto(ctx context.Context, page *datastore.Page, p
 		Dir:      dir,
 	}
 
-	children, _, err := gen.dao.SelectChildPages(ctx, id, "", page.Paging, view)
+	children, _, err := gen.dao.SelectChildrenPage(ctx, id, "", page.Paging, view)
 	if err != nil {
 		return nil, xerrors.Errorf("SelectChildPages() error: %w", err)
 	}

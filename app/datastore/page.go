@@ -107,7 +107,7 @@ func (dao *Dao) SelectAllPages(ctx context.Context) ([]*Page, error) {
 	return pages, nil
 }
 
-func (dao *Dao) SelectChildPages(ctx context.Context, id string, cur string, limit int, mng bool) ([]Page, string, error) {
+func (dao *Dao) SelectChildrenPage(ctx context.Context, id string, cur string, limit int, mng bool) ([]Page, string, error) {
 
 	var pages []Page
 
@@ -218,18 +218,19 @@ func (dao *Dao) PutPage(ctx context.Context, p *PageSet) error {
 
 		_, err = tx.Put(p.Page.GetKey(), p.Page)
 		if err != nil {
-			return err
+			return xerrors.Errorf("File Put() error: %w", err)
 		}
 
 		_, err = tx.Put(p.PageData.GetKey(), p.PageData)
 		if err != nil {
-			return err
+			return xerrors.Errorf("FileData Put() error: %w", err)
 		}
 
-		if p.FileSet != nil {
+		//ファイル指定なしの場合の動作
+		if p.FileSet.File != nil {
 			err = dao.SaveFile(ctx, p.FileSet)
 			if err != nil {
-				//ファイル指定なしの場合の動作
+				return xerrors.Errorf("SaveFile() error: %w", err)
 			}
 		}
 
@@ -285,7 +286,7 @@ func (dao *Dao) RemovePage(ctx context.Context, id string) error {
 
 	var err error
 
-	children, _, err := dao.SelectChildPages(ctx, id, NoLimitCursor, 0, false)
+	children, _, err := dao.SelectChildrenPage(ctx, id, NoLimitCursor, 0, false)
 	if err != nil {
 		return fmt.Errorf("Datastore Error SelectChildPages child page[%v]", err)
 	}
@@ -317,7 +318,7 @@ func (dao *Dao) RemovePage(ctx context.Context, id string) error {
 			return dao.RemoveFile(ctx, id)
 		}
 
-		//TODO HTMLを削除
+		//TODO すべてを削除
 		return nil
 	})
 

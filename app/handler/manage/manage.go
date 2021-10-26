@@ -57,6 +57,7 @@ func Register() error {
 	s.HandleFunc("/file/resize/{key}", resizeFileHandler).Methods("GET")
 	s.HandleFunc("/file/resize/commit", resizeCommitFileHandler).Methods("POST")
 	s.HandleFunc("/file/resize/view/{key}", resizeFileViewHandler).Methods("GET")
+	s.HandleFunc("/file/view/{key}", fileViewHandler).Methods("GET")
 
 	//Template
 	s.HandleFunc("/template/", viewTemplateHandler).Methods("GET")

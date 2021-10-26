@@ -1,7 +1,8 @@
 package handler
 
 import (
-	"app/datastore"
+	"app/handler/manage"
+
 	"fmt"
 	"net/http"
 
@@ -11,30 +12,12 @@ import (
 func fileHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Cache-Control", "public, max-age=3600")
-	//ファイルを検索
-	vars := mux.Vars(r)
-	id := vars["key"]
 
-	dao := datastore.NewDao()
-	defer dao.Close()
-
-	//表示
-	fileData, err := dao.GetFileData(r.Context(), id)
+	err := manage.FileViewHandler(w, r)
 	if err != nil {
-		errorPage(w, r, "Datastore:FileData Search Error", err, 500)
-		return
-	}
-
-	if fileData == nil {
+		vars := mux.Vars(r)
+		id := vars["key"]
 		errorPage(w, r, "Datastore:Not Found FileData Error", fmt.Errorf("指定したIDのデータが存在しません。%s", id), 404)
-		return
-	}
-
-	w.Header().Set("Content-Type", fileData.Mime)
-	_, err = w.Write(fileData.Content)
-	if err != nil {
-		errorPage(w, r, "Writing FileData Error", err, 500)
-		return
 	}
 	return
 }

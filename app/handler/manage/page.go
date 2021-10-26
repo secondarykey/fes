@@ -33,11 +33,11 @@ func addPageHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	parent := vars["key"]
 
-	//新規ページなので
 	page := datastore.Page{}
 
 	page.Parent = parent
-	page.Deleted = true
+	//削除は一覧に表示されない仕様に変更されました
+	page.Deleted = false
 
 	uid := uuid.NewV4()
 	id := uid.String()
@@ -78,8 +78,6 @@ func viewPageHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		fs := new(datastore.FileSet)
-		fs.File = new(datastore.File)
-		fs.FileData = new(datastore.FileData)
 
 		err = form.SetFile(r, fs, datastore.FileTypePageImage)
 		if err != nil {
@@ -164,7 +162,7 @@ func view(w http.ResponseWriter, r *http.Request, page *datastore.Page) {
 	}
 
 	//全件でOK
-	children, _, err = dao.SelectChildPages(ctx, id, datastore.NoLimitCursor, 0, true)
+	children, _, err = dao.SelectChildrenPage(ctx, id, datastore.NoLimitCursor, 0, true)
 	if err != nil {
 		errorPage(w, "Error Select Children page", err, 500)
 		return
@@ -207,6 +205,7 @@ func view(w http.ResponseWriter, r *http.Request, page *datastore.Page) {
 	}
 
 	exist := dao.ExistFile(ctx, id)
+	existDraft := dao.ExistFile(ctx, datastore.CreateDraftPageImageID(id))
 
 	breadcrumbs := make([]datastore.Page, len(wk))
 	for idx, _ := range wk {
@@ -219,11 +218,14 @@ func view(w http.ResponseWriter, r *http.Request, page *datastore.Page) {
 		Children         []datastore.Page
 		Breadcrumbs      []datastore.Page
 		Templates        []datastore.Template
-		ExistFile        bool
-		Publish          bool
 		SiteTemplateName string
 		PageTemplateName string
-	}{page, pageData, children, breadcrumbs, templates, exist, publish, siteTemplateName, pageTemplateName}
+		ExistFile        bool
+		ExistDraftFile   bool
+		Publish          bool
+	}{page, pageData, children, breadcrumbs,
+		templates, siteTemplateName, pageTemplateName,
+		exist, existDraft, publish}
 
 	viewManage(w, "page/edit.tmpl", dto)
 }
