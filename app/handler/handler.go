@@ -66,7 +66,7 @@ func Register() error {
 
 	r.HandleFunc("/sitemap.xml", sitemap).Methods("GET")
 	r.HandleFunc("/sitemap/", sitemap).Methods("GET")
-	r.HandleFunc("/robot.txt", robotTxt).Methods("GET")
+	r.HandleFunc("/robots.txt", robotTxt).Methods("GET")
 	r.HandleFunc("/favicon.ico", favicon).Methods("GET")
 	r.HandleFunc("/", indexHandler).Methods("GET")
 

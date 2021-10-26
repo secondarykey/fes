@@ -28,19 +28,31 @@ Edit Page[
           <span style="font-size:10px;color:#999999;">{{.Page.Key.Name}}</span>
 
         </div>
+
+        <span class="material-icons" style="vertical-align:middle;width:24px;"> </span>
+
         <a href="/manage/page/view/{{ .Page.Key.Name }}" target="private"><button type="button" class="mdl-button"><span class="material-icons">preview</span></button></a>
         <a href="/page/{{ .Page.Key.Name }}" target="public"><button type="button" class="mdl-button"><span class="material-icons">public</span></button></a>
-        <br>
+      </td>
+    </tr>
+
+    <tr>
+      <td class="mdl-data-table__cell--non-numeric">
         <!-- Image upload-->
-        <button type="button" id="uploadBtn" class="mdl-button mdl-js-button mdl-button--raised">
+        <button type="button" id="uploadBtn" class="mdl-button mdl-js-button mdl-button--raised" style="width:300px;">
           <span class="material-icons">image</span>
         </button>
 
-        <span id="attache" class="material-icons" style="color:red;display:none;vertical-align:middle;">attachment</span>
+        <span id="attache" class="material-icons" style="color:white;vertical-align:middle;">attachment</span>
 
-        {{ if .ExistFile }}
-        <a href="/file/{{ .Page.Key.Name }}" target="_blank">Page Image</a>
+        {{ if .ExistDraftFile }}
+        <a href="/manage/file/view/{{ .Page.Key.Name }}-DRAFT" target="_blank"><button type="button" class="mdl-button"><span class="material-icons">preview</span></button></a>
+
         {{ end }}
+        {{ if .ExistFile }}
+        <a href="/manage/file/view/{{ .Page.Key.Name }}" target="_blank"><button type="button" class="mdl-button"><span class="material-icons">public</span></button></a>
+        {{ end }}
+
 
         <input type="file" name="file" id="file" value="" style="display:none;"/>
 
@@ -298,7 +310,7 @@ Edit Page[
     var file = document.querySelector('#file');
     file.addEventListener('change', function() {
       var attache = document.querySelector('#attache');
-      attache.style.display = "inline";
+      attache.style.color = "red";
     });
 
     var siteTemplateBtn = document.querySelector('#siteTemplateBtn');

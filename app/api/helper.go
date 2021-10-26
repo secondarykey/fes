@@ -21,9 +21,8 @@ type Helper struct {
 }
 
 func (p Helper) list(id string, num int) []datastore.Page {
-
 	//TODO 1ページ目固定
-	pages, _, err := p.Dao.SelectChildPages(p.Ctx, id, "", num, p.Manage)
+	pages, _, err := p.Dao.SelectChildrenPage(p.Ctx, id, "", num, false)
 	if err != nil {
 		return make([]datastore.Page, 0)
 	}

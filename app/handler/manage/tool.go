@@ -17,7 +17,7 @@ func childrenPageHandler(w http.ResponseWriter, r *http.Request) {
 	dao := datastore.NewDao()
 	defer dao.Close()
 
-	children, _, err := dao.SelectChildPages(ctx, id, datastore.NoLimitCursor, 0, true)
+	children, _, err := dao.SelectChildrenPage(ctx, id, datastore.NoLimitCursor, 0, true)
 	if err != nil {
 		errorPage(w, "Error Select Children page", err, 500)
 		return
