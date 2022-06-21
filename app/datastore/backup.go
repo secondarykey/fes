@@ -269,8 +269,9 @@ func (dao *Dao) PutBackupData(ctx context.Context, backup BackupData) error {
 		NewKinds(KindFileName, KindFileDataName).NonMulti(),
 		NewKinds(KindVariableName, KindVariableDataName),
 		NewKinds(KindTemplateName, KindTemplateDataName),
-		NewKinds(KindPageName, KindPageDataName),
-		NewKinds(KindHTMLName),
+		NewKinds(KindPageName),
+		NewKinds(KindPageDataName),
+		NewKinds(KindHTMLName).NonMulti(),
 	}
 
 	fmt.Println("******** Restore Start")
@@ -284,6 +285,8 @@ func (dao *Dao) PutBackupData(ctx context.Context, backup BackupData) error {
 		if err != nil {
 			return xerrors.Errorf("getKeys() error: %w", err)
 		}
+
+		fmt.Println(len(keys))
 
 		if kinds.Multi {
 			_, err = cli.RunInTransaction(ctx, func(tx *datastore.Transaction) error {
@@ -336,6 +339,7 @@ func (dao *Dao) PutBackupData(ctx context.Context, backup BackupData) error {
 			if err != nil {
 				return xerrors.Errorf("cli DeleteMulti() error: %w", err)
 			}
+
 			for _, kind := range kinds.Names {
 				elm := backup[kind]
 				fmt.Println("Kind:", kind, len(elm))

@@ -85,14 +85,13 @@ func sessionHandler(w http.ResponseWriter, r *http.Request) {
 	if !flag {
 		errorPage(w, r, "認証エラー", err, 403)
 		return
-	} else {
-		//Cookieの作成
-		u := manage.NewLoginUser(email, tokenString)
-		err = manage.SetSession(w, r, u)
-		if err != nil {
-			errorPage(w, r, "セッション作成エラー", err, 500)
-			return
-		}
+	}
+	//Cookieの作成
+	u := manage.NewLoginUser(email, tokenString)
+	err = manage.SetSession(w, r, u)
+	if err != nil {
+		errorPage(w, r, "セッション作成エラー", err, 500)
+		return
 	}
 	http.Redirect(w, r, "/manage/", 302)
 }

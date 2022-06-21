@@ -50,6 +50,26 @@ func changeSequencePageHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/manage/page/children/"+id, 302)
 }
 
+func movePageHandler(w http.ResponseWriter, r *http.Request) {
+
+	fmt.Println("movePageHandler()")
+
+	id := r.FormValue("id")
+	targetId := r.FormValue("targetId")
+
+	ctx := r.Context()
+	dao := datastore.NewDao()
+	defer dao.Close()
+
+	err := dao.MovePage(ctx, id, targetId)
+	if err != nil {
+		errorPage(w, "Error Page move", err, 500)
+		return
+	}
+
+	http.Redirect(w, r, "/manage/page/children/"+id, 302)
+}
+
 func referencePageTemplateHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["key"]

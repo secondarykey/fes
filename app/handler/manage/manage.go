@@ -35,6 +35,7 @@ func Register() error {
 	//Tool
 	s.HandleFunc("/page/children/{key}", childrenPageHandler).Methods("GET")
 	s.HandleFunc("/page/update/sequence", changeSequencePageHandler).Methods("POST")
+	s.HandleFunc("/page/update/move", movePageHandler).Methods("POST")
 	s.HandleFunc("/page/template/page/{key}", referencePageTemplateHandler).Methods("GET")
 	s.HandleFunc("/page/template/site/{key}", referenceSiteTemplateHandler).Methods("GET")
 	s.HandleFunc("/page/tree/", treePageHandler).Methods("GET")
@@ -161,6 +162,8 @@ func pageView(w http.ResponseWriter, r *http.Request, id string) {
 			page = p
 		}
 	}
+
+	logic.ClearTemplateCache()
 
 	//管理用の書き出し
 	err := logic.WriteManageHTML(w, r, id, page, nil)

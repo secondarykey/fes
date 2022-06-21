@@ -9,12 +9,12 @@ fes is Festival Edit System.
 - アーティスト機能
 - タイムテーブル機能
 
-- ログイン後にリダイレクト
-
-- Archive機能をGUIで可能に
+- Archive機能を一部GUIで可能に
 
   URLを作成
   ローカルで作成してデプロイ
+  ヘッドレスモードにも対応する
+
 
 - キャッシュ機能
 
@@ -32,6 +32,15 @@ fes is Festival Edit System.
    Version の扱い
 
 - 管理用のURLを変更できるようにする
+
+- マークダウン機能
+
+- 非公開データ一括管理
+
+  Datastoreにするか、検索にするか
+
+- ツリーの見直し
+
 
 ## データの扱い
 

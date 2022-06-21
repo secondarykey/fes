@@ -380,6 +380,44 @@ func (dao *Dao) PutPageSequence(ctx context.Context, ids string, enables string,
 	return nil
 }
 
+func (dao *Dao) MovePage(ctx context.Context, id string, targetId string) error {
+
+	cli, err := dao.createClient(ctx)
+	if err != nil {
+		return xerrors.Errorf("createClient() error: %w", err)
+	}
+
+	//新しい親を検索
+	root, err := dao.SelectPage(ctx, targetId, -1)
+	if err != nil {
+		return xerrors.Errorf("SelectPage(new parent page) error: %w", err)
+	}
+	if root == nil {
+		return xerrors.Errorf("SelectPage(new parent page) error: %w", err)
+	}
+
+	//IDを親に持つページを検索
+	children, _, err := dao.SelectChildrenPage(ctx, id, NoLimitCursor, 0, false)
+
+	//TODO 排他チェック
+	_, err = cli.RunInTransaction(ctx, func(tx *datastore.Transaction) error {
+		for _, p := range children {
+			p.Parent = targetId
+			_, err = tx.Put(p.GetKey(), &p)
+			if err != nil {
+				return xerrors.Errorf("File Put() error: %w", err)
+			}
+		}
+		return nil
+	})
+
+	if err != nil {
+		return xerrors.Errorf("children page update error: %w", err)
+	}
+
+	return nil
+}
+
 func (dao *Dao) SelectReferencePages(ctx context.Context, id string, typ int) ([]Page, error) {
 
 	cli, err := dao.createClient(ctx)
