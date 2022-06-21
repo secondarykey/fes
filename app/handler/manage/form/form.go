@@ -42,6 +42,7 @@ func SetFile(r *http.Request, fs *datastore.FileSet, ft int) error {
 	if flg {
 		mime = "image/jpeg"
 	}
+
 	fd.Content = b
 	fd.Mime = mime
 

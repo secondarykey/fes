@@ -42,7 +42,7 @@ func Register() error {
 	//TODO
 	// アーカイブの自動化
 
-	err := RegisterArchive("2020")
+	err := RegisterArchive("2020", "2021", "2022-Spring")
 	if err != nil {
 		return xerrors.Errorf("RegisterArchive() error: %w", err)
 	}

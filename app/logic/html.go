@@ -122,6 +122,10 @@ func (gen *Generator) createHTMLDto(ctx context.Context, page *datastore.Page, p
 	return dtos, nil
 }
 
+func ClearTemplateCache() {
+	startTemplateCache()
+}
+
 var (
 	cacheTemplateData = make(map[string]string)
 )

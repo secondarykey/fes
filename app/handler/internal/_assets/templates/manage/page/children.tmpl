@@ -18,8 +18,21 @@ Page Tool[<a href="/manage/page/{{ .Parent }}">Parent</a>]
       <th style="width:50px;"> </th>
       <th style="width:50px;"> </th>
     </tr>
+    <tr>
+      <td></td>
+      <td>
+        <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect">
+          <input type="checkbox" id="allPage" class="mdl-switch__input" checked>
+        </label>
+      </td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
   </thead>
   <tbody id="seqBody">
+
 {{ range $i, $v := .Pages}}
     <tr class="seqRow" data-index="{{$i}}" data-id="{{.Key.Name}}" data-version="{{.Version}}">
 
@@ -31,7 +44,7 @@ Page Tool[<a href="/manage/page/{{ .Parent }}">Parent</a>]
 
       <td class="mdl-data-table__cell--non-numeric">
         <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect">
-          <input type="checkbox" id="{{.Key.Name}}" class="mdl-switch__input" {{if not .Deleted}}checked{{end}}>
+          <input type="checkbox" id="{{.Key.Name}}" class="mdl-switch__input page-check" {{if not .Deleted}}checked{{end}}>
         </label>
       </td>
 
@@ -69,6 +82,7 @@ Page Tool[<a href="/manage/page/{{ .Parent }}">Parent</a>]
     </tr>
 {{ end }}
   </tbody>
+
   <form id="sequenceForm" name="sequenceForm" method="post" action="/manage/page/update/sequence">
     <input type="hidden" name="id" value="{{.Parent}}" />
     <input type="hidden" name="ids" id="ids" value="" />
@@ -76,6 +90,24 @@ Page Tool[<a href="/manage/page/{{ .Parent }}">Parent</a>]
     <input type="hidden" name="enables" id="enables" value="" />
   </form>
 </table>
+
+<div class="space"></div>
+<div class="mdl-list">
+  <div class="mdl-list__item mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect accordion">
+      Advanced<i class="material-icons">settings_applications</i>
+  </div>
+  <div class="panel">
+    <form id="moveForm" name="moveForm" method="post" action="/manage/page/update/move" onsubmit="return confirm('realy?');">
+      <input type="hidden" name="id" value="{{.Parent}}" />
+      <div class="mdl-textfield mdl-js-textfield">
+        <input class="mdl-textfield__input" type="text" id="targetId" name="targetId" value="">
+      </div>
+      <button type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-button--primary">
+        Move
+      </button>
+    </form>
+  </div>
+</div>
 
 <!-- view template -->
 <button type="button" id="add-content" class="mdl-button mdl-js-button mdl-button--fab mdl-button--primary">
@@ -90,6 +122,20 @@ Page Tool[<a href="/manage/page/{{ .Parent }}">Parent</a>]
       var name = "_page_editor";
       window.open(url,name);
       return false;
+    });
+
+    var allBtn = document.querySelector('#allPage');
+    allBtn.addEventListener('change', function() {
+      var pageCheckes = document.querySelectorAll('input.page-check');
+      for (var i=0 ; i<pageCheckes.length; i++) {
+        var check = pageCheckes[i];
+        var label = check.parentElement;
+        if ( allBtn.checked ) {
+          label.MaterialSwitch.on();
+        } else {
+          label.MaterialSwitch.off();
+        }
+      }
     });
 
     var upList = document.querySelectorAll('button.upBtn');

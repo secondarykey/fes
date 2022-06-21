@@ -2,6 +2,7 @@ package logic
 
 import (
 	"app/datastore"
+	"errors"
 	"io"
 	"log"
 	"os"
@@ -26,6 +27,7 @@ func CreateStaticSite(dir string) error {
 	fmt.Println("Pages create.")
 	//ディレクトリの作成
 	renameP, err := createPageFiles(dir)
+
 	if err != nil {
 		return xerrors.Errorf("createPageFiles() error: %w", err)
 	}
@@ -94,6 +96,8 @@ func setRenameMap(urlPath string, realPath string, trees []*datastore.Tree, rtn 
 		}
 	}
 
+	fmt.Printf("URL[%s],REAL[%s]:Length:%d\n", urlPath, realPath, len(trees))
+
 	for idx, tree := range trees {
 
 		p := tree.Page
@@ -101,12 +105,17 @@ func setRenameMap(urlPath string, realPath string, trees []*datastore.Tree, rtn 
 		id := p.GetKey().Name
 		num := fmt.Sprintf("%d", idx+1)
 
+		fmt.Printf("%05d[%s]\n", idx+1, id)
+
 		name := num + ".html"
 		url := urlPath + name
 		rtn["/page/"+id] = url
 
 		err = createPageFile(id, filepath.Join(realPath, name))
 		if err != nil {
+			if errors.Is(err, HTMLisNil) {
+				continue
+			}
 			return xerrors.Errorf("createPageFile() error: %w", err)
 		}
 
@@ -117,7 +126,6 @@ func setRenameMap(urlPath string, realPath string, trees []*datastore.Tree, rtn 
 		if err != nil {
 			return xerrors.Errorf("setRenameMap() error: %w", err)
 		}
-
 	}
 
 	return nil
@@ -126,6 +134,7 @@ func setRenameMap(urlPath string, realPath string, trees []*datastore.Tree, rtn 
 var exts = map[string]string{
 	"image/png":       "png",
 	"image/jpeg":      "jpg",
+	"image/webp":      "webp",
 	"text/css":        "css",
 	"image/x-icon":    "ico",
 	"application/pdf": "pdf",
@@ -165,7 +174,7 @@ func createAssetFiles(dir string) (map[string]string, error) {
 			if v, ok := exts[mime]; ok {
 				rename = fmt.Sprintf("%d.%s", idx, v)
 			} else {
-				log.Printf("Not Found mime[%s]", mime)
+				log.Printf("Not Found mime[%s] = %s", mime, name)
 			}
 		}
 
@@ -181,6 +190,8 @@ func createAssetFiles(dir string) (map[string]string, error) {
 	return rtn, nil
 }
 
+var HTMLisNil = fmt.Errorf("HTML is nil")
+
 func createPageFile(id string, name string) error {
 
 	dao := datastore.NewDao()
@@ -191,6 +202,12 @@ func createPageFile(id string, name string) error {
 	if err != nil {
 		return xerrors.Errorf("datastore.GetHTML() error: %w", err)
 	}
+
+	if html == nil {
+		fmt.Println("HTML is nil")
+		return HTMLisNil
+	}
+
 	//名称でファイルを作成
 	return createFile(name, html.Content)
 }

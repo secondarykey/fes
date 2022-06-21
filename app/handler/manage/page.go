@@ -92,7 +92,6 @@ func viewPageHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		ps.FileSet = fs
-
 		ctx := r.Context()
 
 		err = dao.PutPage(ctx, ps)

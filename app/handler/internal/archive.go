@@ -26,9 +26,9 @@ func RegisterArchive(dirs ...string) error {
 	archiveHandle.SetFS(http.FS(archiveFs), 86400)
 
 	for _, dir := range dirs {
+		fmt.Printf("Archives[%s]\n", dir)
 		url := fmt.Sprintf("/%s/", dir)
 		http.Handle(url, archiveHandle)
 	}
 	return nil
 }
-
