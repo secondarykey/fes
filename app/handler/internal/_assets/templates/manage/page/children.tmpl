@@ -100,6 +100,7 @@ Page Tool[<a href="/manage/page/{{ .Parent }}">Parent</a>]
   <div class="mdl-list__item mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect accordion">
       Advanced<i class="material-icons">settings_applications</i>
   </div>
+
   <div class="panel">
     <form id="moveForm" name="moveForm" method="post" action="/manage/page/update/move" onsubmit="return confirm('realy?');">
       <input type="hidden" name="id" value="{{.Parent}}" />
@@ -110,7 +111,16 @@ Page Tool[<a href="/manage/page/{{ .Parent }}">Parent</a>]
         Move
       </button>
     </form>
+
+  <textarea class="mdl-textfield__input" rows="20",cols="80">
+{{ range $i, $v := .Pages}}<li><a href="{{ "{{ .Dir }}" }}{{.Key.Name}}">{{.Name}}</a></li>
+{{ end }}
+  </textarea>
   </div>
+
+  <div class="panel">
+  </div>
+
 </div>
 
 <!-- view template -->
