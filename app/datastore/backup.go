@@ -374,7 +374,7 @@ func getKeys(ctx context.Context, cli *datastore.Client, kinds ...string) ([]*da
 	var rtn []*datastore.Key
 	for _, kind := range kinds {
 		if kind == KindSiteName {
-			rtn = append(rtn, createSiteKey())
+			rtn = append(rtn, getSiteKey())
 		} else {
 			keys, err := getKindKeys(ctx, cli, kind)
 			if err != nil {
@@ -390,7 +390,7 @@ func createEntity(kind string, id string, data []byte) (HasKey, error) {
 
 	key := datastore.NameKey(kind, id, nil)
 	if kind != KindSiteName {
-		key = datastore.NameKey(kind, id, createSiteKey())
+		key = datastore.NameKey(kind, id, getSiteKey())
 	}
 
 	reader := bytes.NewBuffer(data)

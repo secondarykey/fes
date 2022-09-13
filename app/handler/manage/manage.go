@@ -49,6 +49,14 @@ func Register() error {
 	s.HandleFunc("/page/view/{key}", privatePageHandler).Methods("GET")
 	s.HandleFunc("/page/view/", privateHandler).Methods("GET")
 
+	//Draft
+	s.HandleFunc("/draft/", viewDraftHandler).Methods("GET")
+	s.HandleFunc("/draft/add", addDraftHandler).Methods("GET")
+	s.HandleFunc("/draft/publish/{key}", publishDraftHandler)
+	s.HandleFunc("/draft/current/{key}", currentDraftHandler)
+	s.HandleFunc("/draft/edit/{key}", editDraftHandler)
+	s.HandleFunc("/draft/delete/{key}", deleteDraftHandler)
+
 	//File
 	s.HandleFunc("/file/", viewFileHandler).Methods("GET")
 	s.HandleFunc("/file/type/{type}", viewFileHandler).Methods("GET")
