@@ -193,3 +193,9 @@ div.panel.show {
     max-height: 500px;
 }
 
+.drags {
+    cursor:grab;
+}
+.drags:active {
+    cursor:grabbing;
+}
