@@ -246,7 +246,7 @@ func (gen *Generator) createHTMLs(ctx context.Context, mng bool, ve *ErrorDto, i
 	htmls := make([]*datastore.HTML, len(keys))
 	for idx, _ := range htmls {
 		htmls[idx] = &datastore.HTML{}
-		htmls[idx].LoadKey(datastore.CreateHTMLKey(keys[idx]))
+		htmls[idx].LoadKey(datastore.GetHTMLKey(keys[idx]))
 		htmls[idx].Content = htmlData[idx]
 	}
 

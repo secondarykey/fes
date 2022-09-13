@@ -120,8 +120,8 @@ func SetTemplate(r *http.Request, ts *datastore.TemplateSet) error {
 
 	template := ts.Template
 	templateData := ts.TemplateData
-	tmpKey := datastore.SetTemplateKey(id)
-	tmpDataKey := datastore.CreateTemplateDataKey(id)
+	tmpKey := datastore.GetTemplateKey(id)
+	tmpDataKey := datastore.GetTemplateDataKey(id)
 
 	ver := r.FormValue("version")
 	template.SetTargetVersion(ver)

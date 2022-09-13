@@ -35,3 +35,8 @@ indexes:
     - name: Type
     - name: UpdatedAt
       direction: desc
+
+- kind: DraftPage
+  properties:
+    - name: DraftID
+    - name: Seq

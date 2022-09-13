@@ -6,11 +6,17 @@ Edit Page[
 &gt; <a href="/manage/page/{{ .Key.Name }}">{{ .Name }}</a>
 {{ end }}
 ]
+
+<button type="button" id="draftAdd" class="mdl-button mdl-js-button mdl-button--raised mdl-button--primary">
+  <span class="material-icons">playlist_add</span>
+</button>
+
 {{ if .Publish }}
 <button type="button" id="generateBtn" class="mdl-button mdl-js-button mdl-button--raised mdl-button--primary">
   <span class="material-icons">publish</span>
 </button>
 {{ end }}
+
 {{end}}
 
 {{define "page_template"}}
@@ -268,6 +274,14 @@ Edit Page[
       var fileBtn = document.querySelector('#file');
       fileBtn.click();
       return false;
+    });
+
+
+    var draftAdd = document.querySelector('#draftAdd');
+    generateBtn.addEventListener('click', function() {
+      confirmFes(function() {
+        window.location.href = "/manage/draft/{{ .Page.Key.Name }}";
+      });
     });
 
 {{ if .Publish }}

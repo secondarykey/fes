@@ -7,7 +7,6 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	uuid "github.com/satori/go.uuid"
 )
 
 func viewRootPageHandler(w http.ResponseWriter, r *http.Request) {
@@ -39,10 +38,7 @@ func addPageHandler(w http.ResponseWriter, r *http.Request) {
 	//削除は一覧に表示されない仕様に変更されました
 	page.Deleted = false
 
-	uid := uuid.NewV4()
-	id := uid.String()
-
-	page.LoadKey(datastore.CreatePageKey(id))
+	page.LoadKey(datastore.CreatePageKey())
 
 	view(w, r, &page)
 }
@@ -116,7 +112,7 @@ func viewPageHandler(w http.ResponseWriter, r *http.Request) {
 			page = &datastore.Page{}
 			page.Deleted = true
 			page.Parent = ""
-			page.LoadKey(datastore.CreatePageKey(id))
+			page.LoadKey(datastore.CreatePageKey())
 		} else {
 			//TODO ありえないけどどうしよう
 		}
@@ -157,7 +153,7 @@ func view(w http.ResponseWriter, r *http.Request, page *datastore.Page) {
 
 	if pageData == nil {
 		pageData = &datastore.PageData{}
-		pageData.LoadKey(datastore.CreatePageDataKey(id))
+		pageData.LoadKey(datastore.GetPageDataKey(id))
 	}
 
 	//全件でOK
