@@ -11,6 +11,7 @@ Page Tool[<a href="/manage/page/{{ .Parent }}">Parent</a>]
 <table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
   <thead>
     <tr>
+      <th style="width:20px;"></th>
       <th class="mdl-data-table__cell--non-numeric">Name</th>
       <th style="width:80px;" class="mdl-data-table__cell--non-numeric">Enabled</th>
       <th style="width:160px;">Create / Update</th>
@@ -19,6 +20,7 @@ Page Tool[<a href="/manage/page/{{ .Parent }}">Parent</a>]
       <th style="width:50px;"> </th>
     </tr>
     <tr>
+      <td></td>
       <td></td>
       <td>
         <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect">
@@ -34,8 +36,10 @@ Page Tool[<a href="/manage/page/{{ .Parent }}">Parent</a>]
   <tbody id="seqBody">
 
 {{ range $i, $v := .Pages}}
-    <tr class="seqRow" data-index="{{$i}}" data-id="{{.Key.Name}}" data-version="{{.Version}}">
-
+    <tr dragable="true" class="seqRow" data-index="{{$i}}" data-id="{{.Key.Name}}" data-version="{{.Version}}">
+      <td class="mdl-data-table__cell--non-numeric">
+        <span class="material-icons drags"> drag_handle </span>
+      </td>
       <td class="mdl-data-table__cell--non-numeric">
         <a href="/manage/page/{{ .Key.Name}}" target="_page_editor" {{if .Deleted}}style="color:red;"{{end}}>{{ .Name }}</a>
         <br>
@@ -290,6 +294,11 @@ Page Tool[<a href="/manage/page/{{ .Parent }}">Parent</a>]
       });
     });
 
+    var dragList = document.querySelectorAll('span.drags');
+    for (var i=0 ; i<dragList.length; i++) {
+      var item = dragList[i];
+      var tr = item.parentElement.parentElement;
+    }
 </script>
 
 {{ end }}
