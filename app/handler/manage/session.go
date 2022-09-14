@@ -71,3 +71,30 @@ func SetSession(w http.ResponseWriter, r *http.Request, u *LoginUser) error {
 func ClearSession(w http.ResponseWriter, r *http.Request) error {
 	return SetSession(w, r, nil)
 }
+
+func SetDraftId(w http.ResponseWriter, r *http.Request, id string) error {
+
+	sess, err := store.Get(r, sessionName)
+	if err != nil {
+		return xerrors.Errorf("store.Get() error: %w", err)
+	}
+
+	age := 86400 * 7
+	sess.Options = getSessionOptions(age)
+	sess.Values["DraftId"] = id
+
+	return sess.Save(r, w)
+}
+
+func GetDraftId(r *http.Request) (string, error) {
+	sess, err := store.Get(r, sessionName)
+	if err != nil {
+		return "", xerrors.Errorf("store.Get() error: %w", err)
+	}
+
+	obj := sess.Values["DraftId"]
+	if id, ok := obj.(string); ok {
+		return id, nil
+	}
+	return "", fmt.Errorf("下書きのID取得失敗")
+}

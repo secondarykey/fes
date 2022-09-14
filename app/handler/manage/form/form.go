@@ -153,3 +153,41 @@ func SetVariable(r *http.Request, vs *datastore.VariableSet) error {
 
 	return nil
 }
+
+func SetDraftSet(r *http.Request, set *datastore.DraftSet) error {
+
+	draft := set.Draft
+
+	vars := mux.Vars(r)
+	id := vars["key"]
+
+	ver := r.FormValue("version")
+	draft.SetTargetVersion(ver)
+
+	draft.LoadKey(datastore.GetDraftKey(id))
+	draft.Name = r.FormValue("name")
+
+	ids := r.FormValue("ids")
+	versions := r.FormValue("versions")
+
+	if ids == "" {
+		return nil
+	}
+
+	idSlice := strings.Split(ids, ",")
+	verSlice := strings.Split(versions, ",")
+
+	pages := make([]*datastore.DraftPage, len(idSlice))
+	for idx, id := range idSlice {
+
+		var page datastore.DraftPage
+		page.LoadKey(datastore.GetDraftPageKey(id))
+		page.Seq = idx + 1
+		page.SetTargetVersion(verSlice[idx])
+		pages[idx] = &page
+	}
+
+	set.Pages = pages
+
+	return nil
+}

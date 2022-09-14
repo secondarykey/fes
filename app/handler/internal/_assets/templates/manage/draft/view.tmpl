@@ -21,22 +21,20 @@ Draft
 {{ range .Drafts}}
     <tr>
       <td>
-        <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent publishBtn" data-id="{{ .Key.Name }}">
+        <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--primary publishBtn" data-id="{{ .Key.Name }}">
           <span class="material-icons">publish</span>
         </button>
       </td>
 
-      <td>
+      <td style="text-align:center;">
 {{ if .Current }}
         <span class="material-icons">radio_button_checked</span>
 {{ else }}
-        <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent currentBtn" data-id="{{ .Key.Name }}">
-          <span class="material-icons">radio_button_unchecked</span>
-        </button>
+        <span style="cursor:pointer;" class="material-icons currentBtn" data-id="{{.Key.Name}}">radio_button_unchecked</span>
 {{ end }}
       </td>
 
-      <td class="mdl-data-table__cell--non-numeric"><a href="/manage/template/edit/{{ .Key.Name}}">{{ .Name }}</a></td>
+      <td class="mdl-data-table__cell--non-numeric"><a href="/manage/draft/edit/{{ .Key.Name}}">{{ .Name }}</a></td>
       <td>{{convertDate .CreatedAt}} <br> {{convertDate .UpdatedAt}}</td>
       <td>
         <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent removeBtn" data-id="{{ .Key.Name }}">
@@ -81,10 +79,10 @@ Draft
 
 
 <script>
-    var currents = document.querySelectorAll('button.currentBtn');
+    var currents = document.querySelectorAll('span.currentBtn');
     for (var i=0; i< currents.length; i++) {
         currents[i].addEventListener('click', function(e) {
-          var id = e.target.parentElement.getAttribute('data-id');
+          var id = e.target.getAttribute('data-id');
           window.location.href = "/manage/draft/current/" + id;
         });
     }

@@ -11,7 +11,7 @@ const KindDraftName = "Draft"
 
 type Draft struct {
 	Name    string
-	Current bool
+	Current bool `datastore:"-"`
 	Meta
 }
 
@@ -64,5 +64,5 @@ func CreateDraftPageKey() *datastore.Key {
 }
 
 func GetDraftPageKey(id string) *datastore.Key {
-	return datastore.NameKey(KindDraftName, id, getSiteKey())
+	return datastore.NameKey(KindDraftPageName, id, getSiteKey())
 }

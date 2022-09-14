@@ -7,7 +7,8 @@ Edit Page[
 {{ end }}
 ]
 
-<button type="button" id="draftAdd" class="mdl-button mdl-js-button mdl-button--raised mdl-button--primary">
+&nbsp;
+<button type="button" id="draftAdd" class="mdl-button mdl-js-button mdl-button--raised">
   <span class="material-icons">playlist_add</span>
 </button>
 
@@ -278,9 +279,9 @@ Edit Page[
 
 
     var draftAdd = document.querySelector('#draftAdd');
-    generateBtn.addEventListener('click', function() {
+    draftAdd.addEventListener('click', function() {
       confirmFes(function() {
-        window.location.href = "/manage/draft/{{ .Page.Key.Name }}";
+        window.location.href = "/manage/draft/page/add/{{ .Page.Key.Name }}";
       });
     });
 
