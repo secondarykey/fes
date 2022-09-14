@@ -3,12 +3,12 @@ package manage
 import (
 	"app/datastore"
 	"app/handler/manage/form"
+	"app/logic"
 
 	"fmt"
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"golang.org/x/xerrors"
 )
 
 func viewDraftHandler(w http.ResponseWriter, r *http.Request) {
@@ -29,6 +29,15 @@ func viewDraftHandler(w http.ResponseWriter, r *http.Request) {
 		data = make([]datastore.Draft, 0)
 	}
 
+	current, err := GetDraftId(r)
+	if err == nil && current != "" {
+		for idx := range data {
+			if current == data[idx].Key.Name {
+				data[idx].Current = true
+			}
+		}
+	}
+
 	dto := struct {
 		Drafts []datastore.Draft
 		Now    string
@@ -39,16 +48,19 @@ func viewDraftHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func addDraftHandler(w http.ResponseWriter, r *http.Request) {
-	tmp := &datastore.Template{}
-	tmpData := &datastore.TemplateData{}
-	tmp.LoadKey(datastore.CreateTemplateKey())
+
+	draft := &datastore.Draft{}
+	draft.LoadKey(datastore.CreateDraftKey())
+
+	draftPages := make([]*datastore.DraftPage, 0)
+
 	//新規作成用のテンプレート
 	dto := struct {
-		Template     *datastore.Template
-		TemplateData *datastore.TemplateData
-	}{tmp, tmpData}
+		Draft      *datastore.Draft
+		DraftPages []*datastore.DraftPage
+	}{draft, draftPages}
 
-	viewManage(w, "template/edit.tmpl", dto)
+	viewManage(w, "draft/edit.tmpl", dto)
 }
 
 func editDraftHandler(w http.ResponseWriter, r *http.Request) {
@@ -65,58 +77,50 @@ func editDraftHandler(w http.ResponseWriter, r *http.Request) {
 	//POST
 	if POST(r) {
 
-		tm, err := dao.SelectTemplate(ctx, id)
+		set := datastore.DraftSet{}
+
+		draft, err := dao.SelectDraft(ctx, id)
 		if err != nil {
-			errorPage(w, "Error SelectTemplate", err, 500)
+			errorPage(w, "Error SelectDraft", err, 500)
 			return
 		}
 
-		ts := new(datastore.TemplateSet)
-		ts.Template = tm
-		if tm == nil {
-			ts.Template = new(datastore.Template)
+		if draft == nil {
+			draft = &datastore.Draft{}
 		}
-		ts.TemplateData = new(datastore.TemplateData)
 
-		err = form.SetTemplate(r, ts)
+		set.Draft = draft
+
+		err = form.SetDraftSet(r, &set)
 		if err != nil {
-			errorPage(w, "Error CreateFormTemplate()", err, 500)
+			errorPage(w, "Error SetDraft()", err, 500)
 			return
 		}
 
 		//更新
-		err = dao.PutTemplate(ctx, ts)
+		err = dao.PutDraftSet(ctx, &set)
 		if err != nil {
-			errorPage(w, "Error Put Template", err, 500)
+			errorPage(w, "Error Put Draft", err, 500)
 			return
 		}
 	}
 
-	tmp, err := dao.SelectTemplate(ctx, id)
+	set, err := dao.SelectDraftSet(ctx, id)
 	if err != nil {
-		errorPage(w, "Error SelectTemplate", err, 500)
+		errorPage(w, "Error SelectDraft", err, 500)
 		return
 	}
-	if tmp == nil {
-		errorPage(w, "NotFound Template", fmt.Errorf(id), 404)
-		return
-	}
-
-	tmpData, err := dao.SelectTemplateData(ctx, id)
-	if err != nil {
-		errorPage(w, "Not Found Template Data", err, 500)
-		return
-	}
-	if tmpData == nil {
-		errorPage(w, "NotFound Template Data", fmt.Errorf(id), 404)
+	if set == nil {
+		errorPage(w, "NotFound Draft", fmt.Errorf(id), 404)
 		return
 	}
 
 	dto := struct {
-		Template     *datastore.Template
-		TemplateData *datastore.TemplateData
-	}{tmp, tmpData}
-	viewManage(w, "template/edit.tmpl", dto)
+		Draft      *datastore.Draft
+		DraftPages []*datastore.DraftPage
+	}{set.Draft, set.Pages}
+
+	viewManage(w, "draft/edit.tmpl", dto)
 }
 
 func deleteDraftHandler(w http.ResponseWriter, r *http.Request) {
@@ -127,36 +131,116 @@ func deleteDraftHandler(w http.ResponseWriter, r *http.Request) {
 	dao := datastore.NewDao()
 	defer dao.Close()
 
-	if ok, err := dao.UsingTemplate(ctx, id); err != nil {
-		errorPage(w, "Using Template", xerrors.Errorf("datastore.UsingTemplate() error : %w", err), 500)
-		return
-	} else if ok {
-		errorPage(w, "Using Template", fmt.Errorf("Using template[%s]", id), 500)
-		return
-	}
-
-	err := dao.RemoveTemplate(ctx, id)
+	err := dao.RemoveDraft(ctx, id)
 	if err != nil {
-		errorPage(w, "Remove Template Error", err, 500)
+		errorPage(w, "Remove Draft Error", err, 500)
 		return
 	}
 	//リダイレクト
-	http.Redirect(w, r, "/manage/template/", 302)
+	http.Redirect(w, r, "/manage/draft/", 302)
 }
 
 func publishDraftHandler(w http.ResponseWriter, r *http.Request) {
+
+	vars := mux.Vars(r)
+	id := vars["key"]
+
+	ctx := r.Context()
+
+	dao := datastore.NewDao()
+	defer dao.Close()
+	pages, err := dao.SelectDraftPages(ctx, id)
+	if err != nil {
+		errorPage(w, "GetDraftPageKeys() Error", err, 500)
+		return
+	}
+
+	ids := make([]string, len(pages))
+	for idx, p := range pages {
+		ids[idx] = p.PageID
+	}
+
+	err = logic.PutHTMLs(ctx, ids...)
+	if err != nil {
+		errorPage(w, "logic.PutHTMLs() Error", err, 500)
+		return
+	}
+
+	err = dao.RemoveDraft(ctx, id)
+	if err != nil {
+		errorPage(w, "Remove Draft Error", err, 500)
+		return
+	}
+	//リダイレクト
+	http.Redirect(w, r, "/manage/draft/", 302)
 }
 
 func currentDraftHandler(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 	id := vars["key"]
-	t := vars["type"]
 
-	typ := "site"
-	if t == "2" {
-		typ = "page"
+	//クッキーに作業用の下書きを設定
+
+	err := SetDraftId(w, r, id)
+	if err != nil {
+		errorPage(w, "Set DraftId() Error", err, 500)
+		return
 	}
 
-	http.Redirect(w, r, "/manage/page/template/"+typ+"/"+id, 302)
+	http.Redirect(w, r, "/manage/draft/", 302)
+}
+
+func addDraftPageHandler(w http.ResponseWriter, r *http.Request) {
+
+	current, err := GetDraftId(r)
+	if err != nil || current == "" {
+		errorPage(w, "GetDraftId() Error(Draft select)", err, 500)
+		return
+	}
+
+	ctx := r.Context()
+	dao := datastore.NewDao()
+	defer dao.Close()
+
+	draft, err := dao.SelectDraft(ctx, current)
+	if err != nil {
+		errorPage(w, "SelectDraft() Error", err, 500)
+		return
+	}
+
+	if draft == nil {
+		errorPage(w, "SelectDraft(DraftSelect) Error", err, 404)
+		return
+	}
+
+	vars := mux.Vars(r)
+	id := vars["key"]
+
+	err = dao.AddDraftPage(ctx, current, id)
+	if err != nil {
+		errorPage(w, "AddDraftPage() Error", err, 500)
+		return
+	}
+
+	http.Redirect(w, r, "/manage/page/"+id, 302)
+}
+
+func deleteDraftPageHandler(w http.ResponseWriter, r *http.Request) {
+
+	vars := mux.Vars(r)
+	id := vars["key"]
+
+	dao := datastore.NewDao()
+	defer dao.Close()
+
+	ctx := r.Context()
+
+	draftId, err := dao.RemoveDraftPage(ctx, id)
+	if err != nil {
+		errorPage(w, "DeleteDraftPage() Error", err, 500)
+		return
+	}
+
+	http.Redirect(w, r, "/manage/draft/edit/"+draftId, 302)
 }

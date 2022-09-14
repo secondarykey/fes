@@ -56,6 +56,8 @@ func Register() error {
 	s.HandleFunc("/draft/current/{key}", currentDraftHandler)
 	s.HandleFunc("/draft/edit/{key}", editDraftHandler)
 	s.HandleFunc("/draft/delete/{key}", deleteDraftHandler)
+	s.HandleFunc("/draft/page/add/{key}", addDraftPageHandler)
+	s.HandleFunc("/draft/page/delete/{key}", deleteDraftPageHandler)
 
 	//File
 	s.HandleFunc("/file/", viewFileHandler).Methods("GET")
