@@ -247,7 +247,7 @@ func (dao *Dao) RemovePage(ctx context.Context, id string) error {
 
 	var err error
 
-	children, _, err := dao.SelectChildrenPage(ctx, id, NoLimitCursor, 0, false)
+	children, _, err := dao.SelectChildrenPage(ctx, id, NoLimitCursor, -1, true)
 	if err != nil {
 		return fmt.Errorf("Datastore Error SelectChildPages child page[%v]", err)
 	}
@@ -353,12 +353,16 @@ func (dao *Dao) MovePage(ctx context.Context, id string, targetId string) error 
 	if err != nil {
 		return xerrors.Errorf("SelectPage(new parent page) error: %w", err)
 	}
+
 	if root == nil {
 		return xerrors.Errorf("SelectPage(new parent page) error: %w", err)
 	}
 
 	//IDを親に持つページを検索
-	children, _, err := dao.SelectChildrenPage(ctx, id, NoLimitCursor, 0, false)
+	children, _, err := dao.SelectChildrenPage(ctx, id, NoLimitCursor, -1, true)
+
+	fmt.Println("ID", id)
+	fmt.Println("length", len(children))
 
 	//TODO 排他チェック
 	_, err = cli.RunInTransaction(ctx, func(tx *datastore.Transaction) error {
@@ -376,6 +380,42 @@ func (dao *Dao) MovePage(ctx context.Context, id string, targetId string) error 
 		return xerrors.Errorf("children page update error: %w", err)
 	}
 
+	return nil
+}
+
+func (dao *Dao) SortPage(ctx context.Context, id string) error {
+
+	cli, err := dao.createClient(ctx)
+	if err != nil {
+		return xerrors.Errorf("createClient() error: %w", err)
+	}
+	//IDを親に持つページを検索
+	children, _, err := dao.SelectChildrenPage(ctx, id, NoLimitCursor, -1, true)
+
+	sort.Slice(children, func(i, j int) bool {
+		p1 := children[i]
+		p2 := children[j]
+		if p1.Name == p2.Name {
+			return p1.CreatedAt.After(p2.CreatedAt)
+		}
+
+		return p1.Name < p2.Name
+	})
+
+	_, err = cli.RunInTransaction(ctx, func(tx *datastore.Transaction) error {
+		for idx, p := range children {
+			p.Seq = idx + 1
+			_, err = tx.Put(p.GetKey(), &p)
+			if err != nil {
+				return xerrors.Errorf("Page Put() error: %w", err)
+			}
+		}
+		return nil
+	})
+
+	if err != nil {
+		return xerrors.Errorf("children page update error: %w", err)
+	}
 	return nil
 }
 
@@ -511,4 +551,36 @@ func createTree(indent int, page *Page, key string, parentMap map[string][]*Page
 		}
 	}
 	return &tree
+}
+
+const TrashPageId = "Trash"
+
+func (dao *Dao) GetTrashPage(ctx context.Context) (*Page, error) {
+
+	cli, err := dao.createClient(ctx)
+	if err != nil {
+		return nil, xerrors.Errorf("createClient() error: %w", err)
+	}
+
+	key := GetPageKey(TrashPageId)
+
+	var p Page
+	err = cli.Get(ctx, key, &p)
+	if err != nil {
+		if errors.Is(err, datastore.ErrNoSuchEntity) {
+
+			p.Name = "Trash"
+			p.Seq = 0
+
+			//存在しない場合は作成
+			_, err = cli.Put(ctx, key, &p)
+			if err != nil {
+				return nil, xerrors.Errorf("Page(Trash) Put() error: %w", err)
+			}
+		} else {
+			return nil, xerrors.Errorf("Page(Trash) Get() error: %w", err)
+		}
+	}
+
+	return &p, nil
 }

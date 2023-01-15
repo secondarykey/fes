@@ -280,7 +280,7 @@ Edit Page[
 
     var draftAdd = document.querySelector('#draftAdd');
     draftAdd.addEventListener('click', function() {
-      confirmFes(function() {
+      confirmFes("Add Draft Page?",function() {
         window.location.href = "/manage/draft/page/add/{{ .Page.Key.Name }}";
       });
     });
@@ -288,7 +288,7 @@ Edit Page[
 {{ if .Publish }}
     var generateBtn = document.querySelector('#generateBtn');
     generateBtn.addEventListener('click', function() {
-      confirmFes(function() {
+      confirmFes("Publish Page?",function() {
         window.location.href = "/manage/html/publish/{{ .Page.Key.Name }}";
       });
     });
@@ -296,14 +296,14 @@ Edit Page[
 
     var privateBtn = document.querySelector('#privateBtn');
     privateBtn.addEventListener('click', function() {
-      confirmFes(function() {
+      confirmFes("Unpublish Page?",function() {
         window.location.href = "/manage/html/private/{{ .Page.Key.Name }}";
       });
     });
 
     var removeBtn = document.querySelector('#removeBtn');
     removeBtn.addEventListener('click', function() {
-      confirmFes(function() {
+      confirmFes("Delete Page?",function() {
         window.location.href = "/manage/page/delete/{{ .Page.Key.Name }}";
       });
     });
@@ -316,7 +316,7 @@ Edit Page[
         alertFes("select template");
         return;
       }
-      confirmFes(function() {
+      confirmFes("Save Page?",function() {
         var updateForm = document.querySelector('#editForm');
         updateForm.submit();
       });

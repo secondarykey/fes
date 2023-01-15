@@ -123,7 +123,7 @@ Edit Draft
       return;
     }
 
-    confirmFes(function() {
+    confirmFes("Save Order?",function() {
 
       var seqRows = document.querySelectorAll('tr.seqRow');
       var ids = "";
@@ -191,7 +191,7 @@ Edit Draft
 
       var id = tr.getAttribute("data-id");
 
-      confirmFes(function() {
+      confirmFes("Delete Draft Page?",function() {
         window.location.href = "/manage/draft/page/delete/" + id;
       });
 

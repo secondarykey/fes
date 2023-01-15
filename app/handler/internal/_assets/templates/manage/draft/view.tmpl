@@ -90,7 +90,7 @@ Draft
     var publishs = document.querySelectorAll('button.publishBtn');
     for (var i=0; i< publishs.length; i++) {
         publishs[i].addEventListener('click', function(e) {
-            confirmFes(function() {
+            confirmFes("Publish Draft?",function() {
               var id = e.target.parentElement.getAttribute('data-id');
               window.location.href = "/manage/draft/publish/" + id;
             });
@@ -100,7 +100,7 @@ Draft
     var removes = document.querySelectorAll('button.removeBtn');
     for (var i=0; i< removes.length; i++) {
         removes[i].addEventListener('click', function(e) {
-            confirmFes(function() {
+            confirmFes("Delete Draft?",function() {
               var id = e.target.parentElement.getAttribute('data-id');
               window.location.href = "/manage/draft/delete/" + id;
             });

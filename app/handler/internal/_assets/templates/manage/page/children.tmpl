@@ -1,7 +1,17 @@
 {{define "title"}}Page Children{{end}}
 
 {{define "header"}}
+
+{{ if ne .Parent "Trash" }}
 Page Tool[<a href="/manage/page/{{ .Parent }}">Parent</a>]
+{{ end }}
+{{ if eq .Parent "Trash" }}
+Trash
+{{ end }}
+        <button type="button" id="sortBtn" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">
+        Sort 
+        </button>
+
         <button type="button" id="generateBtn" class="mdl-button mdl-js-button mdl-button--raised mdl-button--primary">
         Update sequence
         </button>
@@ -87,6 +97,10 @@ Page Tool[<a href="/manage/page/{{ .Parent }}">Parent</a>]
 {{ end }}
   </tbody>
 
+  <form id="sortForm" name="sortForm" method="post" action="/manage/page/update/sort">
+    <input type="hidden" name="id" value="{{.Parent}}" />
+  </form>
+
   <form id="sequenceForm" name="sequenceForm" method="post" action="/manage/page/update/sequence">
     <input type="hidden" name="id" value="{{.Parent}}" />
     <input type="hidden" name="ids" id="ids" value="" />
@@ -97,6 +111,7 @@ Page Tool[<a href="/manage/page/{{ .Parent }}">Parent</a>]
 
 <div class="space"></div>
 <div class="mdl-list">
+
   <div class="mdl-list__item mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect accordion">
       Advanced<i class="material-icons">settings_applications</i>
   </div>
@@ -104,9 +119,11 @@ Page Tool[<a href="/manage/page/{{ .Parent }}">Parent</a>]
   <div class="panel">
     <form id="moveForm" name="moveForm" method="post" action="/manage/page/update/move" onsubmit="return confirm('realy?');">
       <input type="hidden" name="id" value="{{.Parent}}" />
+
       <div class="mdl-textfield mdl-js-textfield">
-        <input class="mdl-textfield__input" type="text" id="targetId" name="targetId" value="">
+        <input class="mdl-textfield__input" type="text" id="targetId" name="targetId" value="Trash">
       </div>
+
       <button type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-button--primary">
         Move
       </button>
@@ -123,13 +140,16 @@ Page Tool[<a href="/manage/page/{{ .Parent }}">Parent</a>]
 
 </div>
 
+{{ if ne .Parent "Trash" }}
 <!-- view template -->
 <button type="button" id="add-content" class="mdl-button mdl-js-button mdl-button--fab mdl-button--primary">
   <i class="material-icons">add</i>
 </button>
+{{ end }}
 
 <script>
 
+{{ if ne .Parent "Trash" }}
     var addBtn = document.querySelector('#add-content');
     addBtn.addEventListener('click', function() {
       var url = "/manage/page/add/{{.Parent}}";
@@ -137,6 +157,7 @@ Page Tool[<a href="/manage/page/{{ .Parent }}">Parent</a>]
       window.open(url,name);
       return false;
     });
+{{ end }}
 
     var allBtn = document.querySelector('#allPage');
     allBtn.addEventListener('change', function() {
@@ -264,9 +285,17 @@ Page Tool[<a href="/manage/page/{{ .Parent }}">Parent</a>]
         }
     }
 
+    var sortBtn = document.querySelector('#sortBtn');
+    sortBtn.addEventListener('click', function() {
+      confirmFes("Sort?",function() {
+        var sortForm = document.querySelector('#sortForm');
+        sortForm.submit();
+      })
+    });
+
     var generateBtn = document.querySelector('#generateBtn');
     generateBtn.addEventListener('click', function() {
-      confirmFes(function() {
+      confirmFes("Save Order?",function() {
         var seqRows = document.querySelectorAll('tr.seqRow');
         var ids = "";
         var enables = "";

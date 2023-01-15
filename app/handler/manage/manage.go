@@ -35,6 +35,7 @@ func Register() error {
 	//Tool
 	s.HandleFunc("/page/children/{key}", childrenPageHandler).Methods("GET")
 	s.HandleFunc("/page/update/sequence", changeSequencePageHandler).Methods("POST")
+	s.HandleFunc("/page/update/sort", changeSortPageHandler).Methods("POST")
 	s.HandleFunc("/page/update/move", movePageHandler).Methods("POST")
 	s.HandleFunc("/page/template/page/{key}", referencePageTemplateHandler).Methods("GET")
 	s.HandleFunc("/page/template/site/{key}", referenceSiteTemplateHandler).Methods("GET")

@@ -65,7 +65,7 @@ Template Type[<a href="/manage/template/type/2">Page</a>|<a href="/manage/templa
     var removes = document.querySelectorAll('button.removeBtn');
     for (var i=0; i< removes.length; i++) {
         removes[i].addEventListener('click', function(e) {
-            confirmFes(function() {
+            confirmFes("Delete Template?",function() {
               var id = e.target.parentElement.getAttribute('data-id');
               window.location.href = "/manage/template/delete/" + id;
             });
