@@ -79,7 +79,13 @@ func editSiteHandler(w http.ResponseWriter, r *http.Request) {
 		errorPage(w, "Datastore site put Error", err, 500)
 		return
 	}
-	//TODO redirect???
+
+	_, err = dao.GetTrashPage(ctx)
+	if err != nil {
+		errorPage(w, "Datastore trash Page Error", err, 500)
+		return
+	}
+
 	viewSiteHandler(w, r)
 }
 

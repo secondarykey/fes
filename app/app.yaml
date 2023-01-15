@@ -1,7 +1,6 @@
-runtime: go116
-main: _cmd
+runtime: go119
 
-app_engine_apis: true
+main: _cmd
 
 instance_class: F1
 automatic_scaling:

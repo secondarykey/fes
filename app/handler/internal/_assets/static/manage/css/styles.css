@@ -29,6 +29,16 @@ html, body {
     z-index: 900;
 }
 
+#sortBtn {
+    position: fixed;
+    display: block;
+    right: 200px;
+    top: 0;
+    margin-right: 40px;
+    margin-top: 10px;
+    z-index: 900;
+}
+
 #generateBtn {
     position: fixed;
     display: block;

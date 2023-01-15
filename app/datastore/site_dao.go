@@ -23,7 +23,6 @@ func (dao *Dao) PutSite(ctx context.Context, site *Site) error {
 		page.Deleted = true
 		pk := CreatePageKey()
 		page.LoadKey(pk)
-
 	}
 
 	cli, err := dao.createClient(ctx)
@@ -43,6 +42,7 @@ func (dao *Dao) PutSite(ctx context.Context, site *Site) error {
 
 		key := getSiteKey()
 		site.LoadKey(key)
+
 		_, err := tx.Put(key, site)
 		if err != nil {
 			return xerrors.Errorf("site put error: %w", err)

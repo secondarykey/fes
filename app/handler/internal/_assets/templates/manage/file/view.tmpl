@@ -96,7 +96,7 @@ File Type[<a href="/manage/file/type/1">File</a>|<a href="/manage/file/type/2">P
 
     for (var i=0; i< removes.length; i++) {
         removes[i].addEventListener('click', function(e) {
-            confirmFes(function() {
+            confirmFes("Delete File?",function() {
               var id = e.target.parentElement.getAttribute('data-id');
               fileName.value = id;
               deleteForm.submit();

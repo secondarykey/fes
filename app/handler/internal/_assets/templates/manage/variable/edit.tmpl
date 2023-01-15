@@ -75,7 +75,7 @@
         return;
       }
 {{ end }}
-      confirmFes(function() {
+      confirmFes("Save Variable?",function() {
         var form = document.forms.updateForm;
         form.submit();
       });

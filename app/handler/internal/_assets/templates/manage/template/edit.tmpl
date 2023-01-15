@@ -89,7 +89,7 @@ Edit Template
         return;
       }
 
-      confirmFes(function() {
+      confirmFes("Save Template?",function() {
         var form = document.forms.updateForm;
         var typeTag = document.querySelector('#templateTypeName');
         var typeName = typeTag.value;

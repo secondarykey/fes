@@ -50,9 +50,22 @@ func changeSequencePageHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/manage/page/children/"+id, 302)
 }
 
-func movePageHandler(w http.ResponseWriter, r *http.Request) {
+func changeSortPageHandler(w http.ResponseWriter, r *http.Request) {
+	id := r.FormValue("id")
+	ctx := r.Context()
+	dao := datastore.NewDao()
+	defer dao.Close()
 
-	fmt.Println("movePageHandler()")
+	err := dao.SortPage(ctx, id)
+	if err != nil {
+		errorPage(w, "Error Page sequence update", err, 500)
+		return
+	}
+
+	http.Redirect(w, r, "/manage/page/children/"+id, 302)
+}
+
+func movePageHandler(w http.ResponseWriter, r *http.Request) {
 
 	id := r.FormValue("id")
 	targetId := r.FormValue("targetId")
@@ -60,6 +73,8 @@ func movePageHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	dao := datastore.NewDao()
 	defer dao.Close()
+
+	fmt.Println(id, targetId)
 
 	err := dao.MovePage(ctx, id, targetId)
 	if err != nil {

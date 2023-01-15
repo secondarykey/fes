@@ -62,7 +62,7 @@
     var removes = document.querySelectorAll('button.removeBtn');
     for (var i=0; i< removes.length; i++) {
         removes[i].addEventListener('click', function(e) {
-            confirmFes(function() {
+            confirmFes("Delete Variable?",function() {
               var id = e.target.parentElement.getAttribute('data-id');
               window.location.href = "/manage/variable/delete/" + id;
             });
