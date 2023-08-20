@@ -169,6 +169,7 @@ func SetDraftSet(r *http.Request, set *datastore.DraftSet) error {
 
 	ids := r.FormValue("ids")
 	versions := r.FormValue("versions")
+	updateds := r.FormValue("updateds")
 
 	if ids == "" {
 		return nil
@@ -176,18 +177,27 @@ func SetDraftSet(r *http.Request, set *datastore.DraftSet) error {
 
 	idSlice := strings.Split(ids, ",")
 	verSlice := strings.Split(versions, ",")
+	upSlice := strings.Split(updateds, ",")
 
 	pages := make([]*datastore.DraftPage, len(idSlice))
 	for idx, id := range idSlice {
-
 		var page datastore.DraftPage
 		page.LoadKey(datastore.GetDraftPageKey(id))
 		page.Seq = idx + 1
 		page.SetTargetVersion(verSlice[idx])
+		page.PublishUpdate = parseBool(upSlice[idx])
+
 		pages[idx] = &page
 	}
 
 	set.Pages = pages
 
 	return nil
+}
+
+func parseBool(v string) bool {
+	if v == "true" {
+		return true
+	}
+	return false
 }

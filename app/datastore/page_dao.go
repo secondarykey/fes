@@ -43,7 +43,7 @@ func (dao *Dao) SelectPages(ctx context.Context, ids ...string) ([]Page, error) 
 	pages := make([]Page, len(keys))
 	err = cli.GetMulti(ctx, keys, pages)
 	if err != nil {
-		return nil, xerrors.Errorf("client.GetAll() error: %w", err)
+		return pages, xerrors.Errorf("client.GetMulti() error: %w", err)
 	}
 
 	return pages, nil
@@ -205,6 +205,33 @@ func (dao *Dao) PutPage(ctx context.Context, p *PageSet) error {
 		return xerrors.Errorf("transaction error: %w", err)
 	}
 
+	return nil
+}
+
+func (dao *Dao) PutPages(ctx context.Context, pages []*Page) error {
+
+	cli, err := dao.createClient(ctx)
+	if err != nil {
+		return xerrors.Errorf("createClient() error: %w", err)
+	}
+
+	_, err = cli.RunInTransaction(ctx, func(tx *datastore.Transaction) error {
+		for _, page := range pages {
+			err = PublishPageImage(tx, page.GetKey().Name)
+			if err != nil {
+				return xerrors.Errorf("PublishPageImage() error: %w", err)
+			}
+			err = Put(tx, page)
+			if err != nil {
+				return xerrors.Errorf("Page(Publish) Put() error: %w", err)
+			}
+		}
+		return nil
+	})
+
+	if err != nil {
+		return xerrors.Errorf("PutPages() transaction error: %w", err)
+	}
 	return nil
 }
 

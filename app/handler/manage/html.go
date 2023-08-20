@@ -18,7 +18,7 @@ func updateHTMLHandler(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 
-	err := logic.PutHTMLs(ctx, ids...)
+	err := logic.PutHTMLs(ctx, logic.NewPageInfos(ids...)...)
 	if err != nil {
 		errorPage(w, "Error SelectPages() error", err, 500)
 		return
@@ -33,7 +33,7 @@ func changePublishPageHandler(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 
-	err := logic.PutHTMLs(ctx, id)
+	err := logic.PutHTMLs(ctx, logic.NewPageInfo(id))
 	if err != nil {
 		errorPage(w, "Error Publish HTML", err, 500)
 		return

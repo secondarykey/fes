@@ -5,6 +5,7 @@ import (
 	"app/datastore"
 	"context"
 	"io"
+	"time"
 
 	"bytes"
 	"fmt"
@@ -20,7 +21,7 @@ func WriteManageHTML(w io.Writer, r *http.Request, id string, page int, ve *Erro
 	var err error
 	ctx := r.Context()
 
-	htmls, _, err := gen.createHTMLs(ctx, true, ve, id)
+	htmls, err := gen.createHTMLs(ctx, true, ve, id)
 	if err != nil {
 		return xerrors.Errorf("createHTMLs() error: %w", err)
 	}
@@ -31,9 +32,6 @@ func WriteManageHTML(w io.Writer, r *http.Request, id string, page int, ve *Erro
 		page = len(htmls) - 1
 	}
 
-	fmt.Println("Len", len(htmls))
-	fmt.Println("page", page)
-
 	_, err = w.Write(htmls[page].Content)
 	if err != nil {
 		return xerrors.Errorf("writer Write() error: %w", err)
@@ -42,16 +40,65 @@ func WriteManageHTML(w io.Writer, r *http.Request, id string, page int, ve *Erro
 	return nil
 }
 
-func PutHTMLs(ctx context.Context, ids ...string) error {
+type PageInfo struct {
+	ID      string
+	Publish bool
+}
+
+func NewPageInfo(id string) *PageInfo {
+	var info PageInfo
+	info.ID = id
+	return &info
+}
+
+func NewPageInfos(ids ...string) []*PageInfo {
+	infos := make([]*PageInfo, len(ids))
+	for idx, id := range ids {
+		infos[idx] = NewPageInfo(id)
+	}
+	return infos
+}
+
+func PutHTMLs(ctx context.Context, infos ...*PageInfo) error {
+
 	gen := newGenerator()
 	defer gen.dao.Close()
 
-	htmls, page, err := gen.createHTMLs(ctx, false, nil, ids...)
+	ids := make([]string, len(infos))
+	for idx, info := range infos {
+		ids[idx] = info.ID
+	}
+
+	//一旦公開日用にページに更新をかける
+	ps, err := gen.dao.SelectPages(ctx, ids...)
+	if err != nil {
+		return xerrors.Errorf("datasore.SelectPages() error: %w", err)
+	}
+
+	now := time.Now()
+	up := make([]*datastore.Page, 0)
+	for idx, page := range ps {
+		if page.Publish.IsZero() || infos[idx].Publish {
+			page.Publish = now
+		}
+		up = append(up, &page)
+	}
+
+	//TODO 下書きの画像があるので結局更新
+	if len(up) > 0 {
+		//ページを更新
+		err = gen.dao.PutPages(ctx, up)
+		if err != nil {
+			return xerrors.Errorf("datastore.PutPages(): %w", err)
+		}
+	}
+
+	htmls, err := gen.createHTMLs(ctx, false, nil, ids...)
 	if err != nil {
 		return xerrors.Errorf("datastore.PutHTML(): %w", err)
 	}
 
-	err = gen.dao.PutHTML(ctx, htmls, page)
+	err = gen.dao.PutHTML(ctx, htmls)
 	if err != nil {
 		return xerrors.Errorf("PutHTML() error: %w", err)
 	}
@@ -90,6 +137,7 @@ func (gen *Generator) createHTMLDto(ctx context.Context, page *datastore.Page, p
 
 	dir := "/manage/page/view/"
 	top := "/manage/page/view/"
+
 	//表示でない場合
 	if !view {
 		if page.Deleted {
@@ -195,50 +243,55 @@ func newGenerator() *Generator {
 	return &gen
 }
 
-func (gen *Generator) createHTMLs(ctx context.Context, mng bool, ve *ErrorDto, ids ...string) ([]*datastore.HTML, *datastore.Page, error) {
+func (gen *Generator) createHTMLs(ctx context.Context, mng bool, ve *ErrorDto, ids ...string) ([]*datastore.HTML, error) {
 
 	pages, err := gen.dao.SelectPages(ctx, ids...)
 	if err != nil {
-		return nil, nil, xerrors.Errorf("datasore.SelectPages() error: %w", err)
-	}
-
-	page := &pages[0]
-	if len(pages) > 1 {
-		page = nil
+		return nil, xerrors.Errorf("datasore.SelectPages() error: %w", err)
 	}
 
 	data, err := gen.dao.GetPageData(ctx, ids...)
 	if err != nil {
-		return nil, nil, xerrors.Errorf("datasore.GetPageData() error: %w", err)
+		return nil, xerrors.Errorf("datasore.GetPageData() error: %w", err)
 	}
 
-	//HTMLとを作成
+	//1 件の場合に同時に公開日付を設定する為に取得
+	//一旦検索をかけるが、親子関係を見て、子から処理を行う
+
+	//HTMLを作成
 	htmlData := make([][]byte, 0)
 	keys := make([]string, 0)
 
+	//Page数回繰り返す
 	for idx, elm := range pages {
 
 		if elm.Deleted {
 			continue
 		}
+
 		pData := data[idx]
 
+		//TODO dtos -> ページ数の仕様を確認
+		// 子の検索の時に、公開日を最新のものにする仕組みを考える
 		dtos, err := gen.createHTMLDto(ctx, &elm, &pData, mng, nil)
 		if err != nil {
-			return nil, nil, xerrors.Errorf("createHTMLDto() error: %w", err)
+			return nil, xerrors.Errorf("createHTMLDto() error: %w", err)
 		}
 
+		//テンプレートを作成
 		tmpl, err := gen.createTemplate(ctx, &elm, mng, dtos[0])
 		if err != nil {
-			return nil, nil, xerrors.Errorf("createTemplate() error: %w", err)
+			return nil, xerrors.Errorf("createTemplate() error: %w", err)
 		}
 
 		var buf []byte
 		w := bytes.NewBuffer(buf)
+		//テンプレートを作成
 		err = tmpl.Execute(w, dtos[0])
 		if err != nil {
-			return nil, nil, xerrors.Errorf("Reference createTemplate() error: %w", err)
+			return nil, xerrors.Errorf("Reference createTemplate() error: %w", err)
 		}
+
 		htmlData = append(htmlData, w.Bytes())
 		keys = append(keys, elm.Key.Name)
 	}
@@ -250,5 +303,5 @@ func (gen *Generator) createHTMLs(ctx context.Context, mng bool, ve *ErrorDto, i
 		htmls[idx].Content = htmlData[idx]
 	}
 
-	return htmls, page, nil
+	return htmls, nil
 }

@@ -47,16 +47,18 @@ Trash
 
 {{ range $i, $v := .Pages}}
     <tr dragable="true" class="seqRow" data-index="{{$i}}" data-id="{{.Key.Name}}" data-version="{{.Version}}">
+
       <td class="mdl-data-table__cell--non-numeric">
         <span class="material-icons drags"> drag_handle </span>
       </td>
+
       <td class="mdl-data-table__cell--non-numeric">
         <a href="/manage/page/{{ .Key.Name}}" target="_page_editor" {{if .Deleted}}style="color:red;"{{end}}>{{ .Name }}</a>
         <br>
         <span style="font-size:10px;color:#999999;">{{ .Key.Name }}</span>
       </td>
 
-      <td class="mdl-data-table__cell--non-numeric">
+      <td class="dl-data-table__cell--non-numeric">
         <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect">
           <input type="checkbox" id="{{.Key.Name}}" class="mdl-switch__input page-check" {{if not .Deleted}}checked{{end}}>
         </label>

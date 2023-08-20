@@ -25,6 +25,7 @@ Edit Draft
     <tr>
       <th class="mdl-data-table__cell--non-numeric">Name</th>
       <th style="width:240px;">Create</th>
+      <th style="width:100px;">Publish Update</th>
       <th style="width:50px;"> </th>
       <th style="width:50px;"> </th>
       <th style="width:100px;"> </th>
@@ -38,6 +39,12 @@ Edit Draft
         <a href="/manage/page/{{ .PageID}}" target="_page_editor">{{ .Name }}</a>
       </td>
       <td>{{convertDate .CreatedAt}}</td>
+
+      <td class="mdl-data-table__cell--non-numeric">
+        <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect">
+          <input type="checkbox" id="Update-{{.Key.Name}}" class="mdl-switch__input page-check" {{if .PublishUpdate}}checked{{end}}>
+        </label>
+      </td>
 
       <td>
         <button class="mdl-button mdl-js-button mdl-button--icon upBtn">
@@ -75,6 +82,7 @@ Edit Draft
   <input type="hidden" name="version" value="{{ .Draft.Version }}">
   <input type="hidden" id="ids" name="ids" value="">
   <input type="hidden" id="versions" name="versions" value="">
+  <input type="hidden" id="updateds" name="updateds" value="">
 
 </form>
 
@@ -128,25 +136,36 @@ Edit Draft
       var seqRows = document.querySelectorAll('tr.seqRow');
       var ids = "";
       var versions = "";
+      var updateds = "";
 
       for (var i=0; i< seqRows.length; i++) {
         var seqElm = seqRows[i];
         var id = seqElm.getAttribute("data-id");
         var version = seqElm.getAttribute("data-version");
+        var updated = document.querySelector("#Update-" + id);
+
+        console.log(updated);
+
         if ( ids != "" ) {
           ids += ",";
           versions += ",";
+          updateds += ",";
         }
 
         ids += id;
         versions += version;
+        updateds += updated.checked;
       }
+
+      console.log(updateds);
 
       var idsForm = document.querySelector('#ids');
       var versionsForm = document.querySelector('#versions');
+      var updatedForm = document.querySelector('#updateds');
 
       idsForm.value = ids;
       versionsForm.value = versions;
+      updatedForm.value = updateds;
 
       var form = document.forms.updateForm;
       form.submit();

@@ -89,6 +89,56 @@ func editSiteHandler(w http.ResponseWriter, r *http.Request) {
 	viewSiteHandler(w, r)
 }
 
+func cleanSiteHandler(w http.ResponseWriter, r *http.Request) {
+
+	//全HTMLを検索
+	dao := datastore.NewDao()
+	defer dao.Close()
+
+	ctx := r.Context()
+	ids, err := dao.GetHTMLs(ctx)
+	if err != nil {
+		errorPage(w, "HTML Page Error", err, 500)
+		return
+	}
+
+	fmt.Println("HTML", len(ids))
+
+	pages, err := dao.SelectPages(ctx, ids...)
+	newPage := make([]datastore.Page, 0, len(pages))
+
+	if err != nil {
+		for _, p := range pages {
+			if p.Key != nil {
+				newPage = append(newPage, p)
+			}
+		}
+	}
+
+	//HTMLがあるがページがない HTML削除
+	//浮いているページ全部のページとページツリーの突合
+
+	for _, id := range ids {
+		nf := true
+		for _, p := range newPage {
+			work := p.Key.Name
+			if id == work {
+				nf = false
+				break
+			}
+		}
+
+		if nf {
+			fmt.Println(id)
+		}
+	}
+
+	dto := struct {
+	}{}
+
+	viewManage(w, "site/clean.tmpl", dto)
+}
+
 func downloadSitemapHandler(w http.ResponseWriter, r *http.Request) {
 
 	scheme := r.URL.Scheme

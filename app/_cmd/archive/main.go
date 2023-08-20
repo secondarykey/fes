@@ -16,7 +16,7 @@ import (
 //
 func main() {
 	err := app.CreateStaticSite(
-		"2022-Fall",
+		"2023-Spring",
 		config.SetProjectID(),
 		config.SetDatastore())
 	if err != nil {
