@@ -96,6 +96,7 @@ func Register() error {
 	s.HandleFunc("/site/", viewSiteHandler).Methods("GET")
 	s.HandleFunc("/site/edit", editSiteHandler).Methods("POST")
 	s.HandleFunc("/site/map", downloadSitemapHandler).Methods("GET")
+	s.HandleFunc("/site/clean", cleanSiteHandler).Methods("POST")
 
 	s.HandleFunc("/system/gc", gc).Methods("GET")
 

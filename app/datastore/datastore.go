@@ -79,3 +79,11 @@ func getIDs(keys []*datastore.Key) []string {
 
 	return ids
 }
+
+func getKeys(metas []HasKey) []*datastore.Key {
+	keys := make([]*datastore.Key, len(metas))
+	for idx, meta := range metas {
+		keys[idx] = meta.GetKey()
+	}
+	return keys
+}

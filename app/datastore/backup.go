@@ -281,12 +281,11 @@ func (dao *Dao) PutBackupData(ctx context.Context, backup BackupData) error {
 
 		fmt.Println("**** Kind Group", kinds)
 
-		keys, err := getKeys(ctx, cli, kinds.Names...)
+		keys, err := getAllKeys(ctx, cli, kinds.Names...)
 		if err != nil {
-			return xerrors.Errorf("getKeys() error: %w", err)
+			return xerrors.Errorf("getAllKeys() error: %w", err)
 		}
-
-		fmt.Println(len(keys))
+		fmt.Println("Size:", len(keys))
 
 		if kinds.Multi {
 			_, err = cli.RunInTransaction(ctx, func(tx *datastore.Transaction) error {
@@ -334,10 +333,32 @@ func (dao *Dao) PutBackupData(ctx context.Context, backup BackupData) error {
 		} else {
 			//TODO gRPC cancel reson
 			// ServerOption 4MB over
-			fmt.Println("NonMulti Delete", len(keys))
-			err = cli.DeleteMulti(ctx, keys)
-			if err != nil {
-				return xerrors.Errorf("cli DeleteMulti() error: %w", err)
+			// cannot write more 500 entities in a single call
+			idx := 0
+			maxLen := 400
+
+			delKeys := keys
+			for {
+
+				leng := len(delKeys)
+				remain := idx + maxLen
+
+				fmt.Println(idx, remain)
+				if leng > maxLen {
+					delKeys = keys[idx:remain]
+				}
+
+				fmt.Println("NonMulti Delete", len(delKeys))
+				err = cli.DeleteMulti(ctx, delKeys)
+				if err != nil {
+					return xerrors.Errorf("cli DeleteMulti() error: %w", err)
+				}
+
+				if leng < maxLen {
+					break
+				}
+				idx = remain
+				delKeys = keys[remain:]
 			}
 
 			for _, kind := range kinds.Names {
@@ -360,7 +381,7 @@ func (dao *Dao) PutBackupData(ctx context.Context, backup BackupData) error {
 	return nil
 }
 
-func getKindKeys(c context.Context, cli *datastore.Client, name string) ([]*datastore.Key, error) {
+func getAllKindKeys(c context.Context, cli *datastore.Client, name string) ([]*datastore.Key, error) {
 	q := datastore.NewQuery(name).KeysOnly()
 	keys, err := cli.GetAll(c, q, nil)
 	if err != nil {
@@ -369,16 +390,16 @@ func getKindKeys(c context.Context, cli *datastore.Client, name string) ([]*data
 	return keys, nil
 }
 
-func getKeys(ctx context.Context, cli *datastore.Client, kinds ...string) ([]*datastore.Key, error) {
+func getAllKeys(ctx context.Context, cli *datastore.Client, kinds ...string) ([]*datastore.Key, error) {
 
 	var rtn []*datastore.Key
 	for _, kind := range kinds {
 		if kind == KindSiteName {
 			rtn = append(rtn, getSiteKey())
 		} else {
-			keys, err := getKindKeys(ctx, cli, kind)
+			keys, err := getAllKindKeys(ctx, cli, kind)
 			if err != nil {
-				return nil, xerrors.Errorf("getKindKeys(): %w", err)
+				return nil, xerrors.Errorf("getKindAllKeys(): %w", err)
 			}
 			rtn = append(rtn, keys...)
 		}

@@ -8,6 +8,8 @@ import (
 	"time"
 
 	"golang.org/x/xerrors"
+	"google.golang.org/api/option"
+	"google.golang.org/grpc"
 
 	"cloud.google.com/go/datastore"
 )
@@ -36,7 +38,7 @@ func (dao *Dao) GetHTML(ctx context.Context, id string) (*HTML, error) {
 
 const MB4 = 3_900_000
 
-func (dao *Dao) PutHTML(ctx context.Context, htmls []*HTML, page *Page) error {
+func (dao *Dao) PutHTML(ctx context.Context, htmls []*HTML) error {
 
 	cli, err := dao.createClient(ctx)
 	if err != nil {
@@ -45,6 +47,8 @@ func (dao *Dao) PutHTML(ctx context.Context, htmls []*HTML, page *Page) error {
 
 	dsts := make([][]HasKey, 0)
 	data := make([]HasKey, 0)
+
+	//TODO ループじゃなくてよい
 
 	sz := 0
 	for idx, html := range htmls {
@@ -57,28 +61,13 @@ func (dao *Dao) PutHTML(ctx context.Context, htmls []*HTML, page *Page) error {
 		}
 	}
 
+	//HTML数取得
 	for _, dst := range dsts {
 		_, err = cli.RunInTransaction(ctx, func(tx *datastore.Transaction) error {
-
-			if page != nil {
-				err = PublishPageImage(tx, page.GetKey().Name)
-				if err != nil {
-					return xerrors.Errorf("PublishPageImage() error: %w", err)
-				}
-				if page.Publish.IsZero() {
-					page.Publish = time.Now()
-					err = Put(tx, page)
-					if err != nil {
-						return xerrors.Errorf("Page(Publish) Put() error: %w", err)
-					}
-				}
-			}
-
 			err = PutMulti(tx, dst)
 			if err != nil {
 				return xerrors.Errorf("HTML PutMulti() error: %w", err)
 			}
-
 			return nil
 		})
 		if err != nil {
@@ -125,4 +114,26 @@ func (dao *Dao) RemoveHTML(ctx context.Context, id string) error {
 	}
 
 	return nil
+}
+
+func (dao *Dao) GetHTMLs(ctx context.Context) ([]string, error) {
+
+	cli, err := dao.createClient(ctx, option.WithGRPCDialOption(grpc.WithMaxMsgSize(1024*1024*1000)))
+	if err != nil {
+		return nil, xerrors.Errorf("createClient() error: %w", err)
+	}
+
+	var htmls []HTML
+
+	q := datastore.NewQuery(KindHTMLName)
+	_, err = cli.GetAll(ctx, q, &htmls)
+	if err != nil {
+		return nil, xerrors.Errorf("GetAll() error: %w", err)
+	}
+
+	ids := make([]string, len(htmls))
+	for idx, html := range htmls {
+		ids[idx] = html.Key.Name
+	}
+	return ids, nil
 }

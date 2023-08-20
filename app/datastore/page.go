@@ -21,11 +21,12 @@ var (
 const KindPageName = "Page"
 
 type Page struct {
-	Name        string
-	Seq         int
-	Description string
-	Parent      string
-	Publish     time.Time
+	Name           string
+	Seq            int
+	Description    string
+	Parent         string
+	Publish        time.Time
+	UpdatedPublish bool `datastore:"-"`
 
 	Paging       int
 	SiteTemplate string

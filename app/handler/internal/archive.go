@@ -8,7 +8,7 @@ import (
 	"net/http"
 )
 
-//go:embed _assets/archives
+//go:embed all:_assets/archives
 var embArchive embed.FS
 var archiveFs fs.FS
 

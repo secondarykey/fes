@@ -39,10 +39,11 @@ func GetDraftKey(id string) *datastore.Key {
 const KindDraftPageName = "DraftPage"
 
 type DraftPage struct {
-	DraftID string
-	Name    string
-	PageID  string
-	Seq     int
+	DraftID       string
+	Name          string
+	PageID        string
+	Seq           int
+	PublishUpdate bool
 	Meta
 }
 

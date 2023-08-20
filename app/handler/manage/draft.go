@@ -61,6 +61,7 @@ func addDraftHandler(w http.ResponseWriter, r *http.Request) {
 	}{draft, draftPages}
 
 	viewManage(w, "draft/edit.tmpl", dto)
+
 }
 
 func editDraftHandler(w http.ResponseWriter, r *http.Request) {
@@ -85,8 +86,10 @@ func editDraftHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		redirect := false
 		if draft == nil {
 			draft = &datastore.Draft{}
+			redirect = true
 		}
 
 		set.Draft = draft
@@ -102,6 +105,10 @@ func editDraftHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			errorPage(w, "Error Put Draft", err, 500)
 			return
+		}
+
+		if redirect {
+			http.Redirect(w, r, "/manage/draft/", 302)
 		}
 	}
 
@@ -149,18 +156,23 @@ func publishDraftHandler(w http.ResponseWriter, r *http.Request) {
 
 	dao := datastore.NewDao()
 	defer dao.Close()
+
 	pages, err := dao.SelectDraftPages(ctx, id)
 	if err != nil {
 		errorPage(w, "GetDraftPageKeys() Error", err, 500)
 		return
 	}
 
-	ids := make([]string, len(pages))
+	infos := make([]*logic.PageInfo, len(pages))
 	for idx, p := range pages {
-		ids[idx] = p.PageID
+		info := logic.NewPageInfo(p.PageID)
+		info.Publish = p.PublishUpdate
+		infos[idx] = info
 	}
 
-	err = logic.PutHTMLs(ctx, ids...)
+	//TODO トランザクション
+
+	err = logic.PutHTMLs(ctx, infos...)
 	if err != nil {
 		errorPage(w, "logic.PutHTMLs() Error", err, 500)
 		return

@@ -60,6 +60,7 @@ func (dao *Dao) SelectDrafts(ctx context.Context, cur string) ([]Draft, string, 
 }
 
 func (dao *Dao) PutDraftSet(ctx context.Context, set *DraftSet) error {
+
 	var err error
 
 	cli, err := dao.createClient(ctx)
@@ -69,37 +70,19 @@ func (dao *Dao) PutDraftSet(ctx context.Context, set *DraftSet) error {
 
 	existSet, err := dao.SelectDraftSet(ctx, set.Draft.Key.Name)
 	if err != nil {
-		return xerrors.Errorf("createClient() error: %w", err)
+		return xerrors.Errorf("selectDraftSet() error: %w", err)
 	}
 
-	existPages := existSet.Pages
-	pages := set.Pages
-
-	if len(existPages) != len(pages) {
-		return xerrors.Errorf("DraftPages length error[%d != %d]", len(existPages), len(pages))
+	pages, err := copyDraft(existSet.Pages, set.Pages)
+	if err != nil {
+		return xerrors.Errorf("copyDraft() error: %w", err)
 	}
 
-	var keys []*datastore.Key
-	var updates []*DraftPage
-
-	for _, p := range pages {
-		exist := false
-		for _, e := range existPages {
-			if p.Key.Name == e.Key.Name {
-				if e.Seq != p.Seq {
-					e.Seq = p.Seq
-					updates = append(updates, e)
-					keys = append(keys, e.GetKey())
-				}
-				exist = true
-				break
-			}
-		}
-
-		if !exist {
-			return xerrors.Errorf("DraftPages NotFound error[%s]", p.Key.Name)
-		}
+	has := make([]HasKey, len(pages))
+	for idx, elm := range pages {
+		has[idx] = elm
 	}
+	keys := getKeys(has)
 
 	_, err = cli.RunInTransaction(ctx, func(tx *datastore.Transaction) error {
 
@@ -110,7 +93,7 @@ func (dao *Dao) PutDraftSet(ctx context.Context, set *DraftSet) error {
 			return xerrors.Errorf("Draft Put() error: %w", err)
 		}
 
-		_, err = tx.PutMulti(keys, updates)
+		_, err = tx.PutMulti(keys, pages)
 		if err != nil {
 			return xerrors.Errorf("Draft Put() error: %w", err)
 		}
@@ -122,6 +105,31 @@ func (dao *Dao) PutDraftSet(ctx context.Context, set *DraftSet) error {
 		return xerrors.Errorf("transaction error: %w", err)
 	}
 	return nil
+}
+
+func copyDraft(exists []*DraftPage, forms []*DraftPage) ([]*DraftPage, error) {
+
+	if len(exists) != len(forms) {
+		return nil, xerrors.Errorf("DraftPages length error[%d != %d]", len(exists), len(forms))
+	}
+
+	//名寄せ
+	for _, p := range forms {
+		exist := false
+		for _, e := range exists {
+			if p.Key.Name == e.Key.Name {
+				exist = true
+				e.Seq = p.Seq
+				e.PublishUpdate = p.PublishUpdate
+				break
+			}
+		}
+
+		if !exist {
+			return nil, xerrors.Errorf("DraftPages NotFound error[%s]", p.Key.Name)
+		}
+	}
+	return exists, nil
 }
 
 func (dao *Dao) SelectDraft(ctx context.Context, id string) (*Draft, error) {
