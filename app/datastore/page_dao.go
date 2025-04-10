@@ -533,6 +533,9 @@ func (dao *Dao) CreatePagesTree(ctx context.Context) (*Tree, error) {
 		if key.Name == ErrorPageID {
 			continue
 		}
+		if key.Name == "Trash" {
+			continue
+		}
 		elm.LoadKey(key)
 		children, ok := parentMap[elm.Parent]
 		if !ok {

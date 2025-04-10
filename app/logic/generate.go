@@ -204,7 +204,7 @@ func createPageFile(id string, name string) error {
 	}
 
 	if html == nil {
-		fmt.Println("HTML is nil")
+		fmt.Println("HTML is nil:", id)
 		return HTMLisNil
 	}
 

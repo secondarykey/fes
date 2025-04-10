@@ -8,15 +8,13 @@ import (
 	"log"
 )
 
-//
 // このコマンドはローカルのデータから静的なサイトを出力します
 //
 // 指定されたディレクトリ名でURLにして切り替えます。
 // 対象はFileDataとHTMLになります。
-//
 func main() {
 	err := app.CreateStaticSite(
-		"2023-Spring",
+		"2024-Fall",
 		config.SetProjectID(),
 		config.SetDatastore())
 	if err != nil {
