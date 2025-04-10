@@ -4,7 +4,23 @@ fes is Festival Edit System.
 
 テンプレートを作成して、ツリー状にページを作成していきます。
 
+# Implement
+
+- 掃除機能
+
+  ごみ箱を準備
+
+- ページ移動のドラッグアンドドロップ
+
+- 公開日の更新方法
+
+  指定日付と自動日付
+  →  Draft機能における自動日付
+
+- 1.20化
+
 # Issue
+
 
 - アーティスト機能
 - タイムテーブル機能
@@ -40,14 +56,7 @@ fes is Festival Edit System.
 
 - ツリーの見直し
 
-- ページ移動のドラッグアンドドロップ
 
-- 編集したページの一括更新
-
-  親ページを更新する機構が必要
-  → 日付ではなく更新グループとして登録するイメージにしようかな、、、
-
-  → 他の承認者がその更新(公開)を行うイメージ？
 
 
 ## データの扱い
@@ -94,3 +103,12 @@ app/handler/internal/\_assets/environment.json の値を編集します。
 git update-index --skip-worktree app/handler/internal/\_assets/environment.json
 
 git update-index --no-skip-worktree 
+
+## デプロイ
+
+```
+> gcloud app deploy --project small-axe-fes --bucket gs://hummingbird-deploy --no-cache app.yaml
+```
+
+
+

@@ -12,7 +12,8 @@ import (
 func main() {
 	err := app.Listen(
 		config.SetProjectID(),
-		config.SetDatastore())
+		config.SetDatastore(),
+		config.SetPort())
 	if err != nil {
 		log.Fatalf("%+v", err)
 		os.Exit(1)

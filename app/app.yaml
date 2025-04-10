@@ -1,4 +1,5 @@
-runtime: go120
+runtime: go122
+app_engine_apis: true
 
 main: _cmd
 
