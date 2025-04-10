@@ -1,0 +1,21 @@
+body {
+    margin:0;
+    padding:0;
+    background-color: #ccffcc;
+    overflow: hidden;
+}
+
+#root {
+    margin:0;
+    padding:0;
+}
+
+.svgBtn {
+    border: 1px solid #555555;
+    border-radius: 5px;
+    padding:10px;
+}
+
+.svgBtn > object {
+    pointer-events: none;
+}
