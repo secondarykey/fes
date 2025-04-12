@@ -23,12 +23,13 @@
   white-space: pre-wrap;
 }
 
-
-
 #layer {
   margin:0;
   padding:0;
   height:100vh;
+
+  touch-action: pan-x;
+  overflow-x: auto;
 }
 
 #map {
@@ -45,26 +46,29 @@
 }
 
 #positionBtn {
-  position: absolute;
-  right: 10px;
-  bottom: 10px;
+  position: fixed;
+  background-color: #fafafa;
+  margin: 10px;
+  left: 0;
+  top: 0;
   opacity: 0.8;
 }
 
 #shops {
   margin:0;
-  position: absolute;
+  position: fixed;
   background-color: #f9fff1;
-  right: 0px;
-  top: 0px;
+  left: 100vw;
+  top: 0%;
   width:0px;
+  width:50%;
   height: 100vh;
   transition: 0.5s;
 }
 
 #shops.show {
+  left: 50%;
   transition: 0.5s;
-  width:500px;
 }
 
 #shops > img.thumb {
@@ -74,4 +78,8 @@
 
 #shops > div.info {
   padding:10px;
+}
+
+#backBtn {
+  position: absolute;
 }
