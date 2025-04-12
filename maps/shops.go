@@ -6,10 +6,13 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
 const fn = "hb_2025_spring_shops.csv"
+const od = "images"
+const of = "shops.csv"
 
 const code = `
 p = MapPoint.get(%s,%s);
@@ -39,13 +42,13 @@ func run() error {
 	}
 	defer in.Close()
 
-	out, err := os.Create("shops.csv")
+	out, err := os.Create(of)
 	if err != nil {
 		return err
 	}
 	defer out.Close()
 
-	os.Mkdir("images", 0666)
+	os.Mkdir(od, 0666)
 
 	scanner := bufio.NewScanner(in)
 
@@ -89,7 +92,7 @@ func write(w io.Writer, clm []string) error {
 		detail += "\n\n" + url
 	}
 
-	for i := 8; i <= 12; i++ {
+	for i := 8; i <= 8; i++ {
 		img := strings.Trim(clm[i], " ")
 		if img != "" {
 			fmt.Println(img)
@@ -103,7 +106,9 @@ func write(w io.Writer, clm []string) error {
 
 func download(drive string, key string, idx int) {
 
+	//ファイルIDを取得
 	id := drive[strings.Index(drive, "?id=")+4:]
+	//ダウンロードのURLを取得
 	url := fmt.Sprintf("https://drive.google.com/uc?id=%s", id)
 
 	resp, err := http.Get(url)
@@ -116,7 +121,7 @@ func download(drive string, key string, idx int) {
 	contentType := resp.Header.Get("Content-Type")
 	ext := getExtension(contentType)
 
-	out, err := os.Create("images/" + fmt.Sprintf("%s_%d.%s", key, idx, ext))
+	out, err := os.Create(filepath.Join(od, fmt.Sprintf("%s_%d.%s", key, idx, ext)))
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%v", err)
 		return

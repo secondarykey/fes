@@ -6,6 +6,7 @@ import './App.css'
 import SVGButton from './SVGButton';
 import MapPoint from './MapPoint';
 
+
 function App() {
 
   const shop = useRef(undefined);
@@ -59,6 +60,10 @@ function App() {
     navigator.geolocation.getCurrentPosition(handleSuccess, handleError);
   };
 
+const convertLinksWithText = (text) => {
+    return text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">Link</a>');
+}
+
   const handleShop = (x,y) => {
     if ( shop.current === null ) return;
     var hide = false;
@@ -69,6 +74,7 @@ function App() {
 
     var s = MapPoint.getShop(x,y);
     if ( s !== null ) {
+      s.detail = convertLinksWithText(s.detail);
       setInfo(s);
       shop.current.classList.add("show");
       hide = false;
@@ -83,21 +89,26 @@ function App() {
      e.target.src = "/maps/images/noimage.png"
   }
 
+  const handleBack = () => {
+      shop.current.classList.remove("show");
+  }
+
   return (
     <>
       <Experimental />
 
-      <div id="layer">
         <Map coords={coords} onShop={handleShop}/>
-      </div>
 
-      <SVGButton id="positionBtn" size="48px" onClick={handlePosition}/>
+      <SVGButton id="positionBtn" name="cross" size="48px" onClick={handlePosition}/>
 
       <div id="shops" ref={shop}>
+
+        <SVGButton className="icon" id="backBtn" name="back" size="48px" onClick={handleBack}/>
+
         <img className="thumb" src={info.image} onError={handleImageError}/>
         <div className="info">
           <h1>{info.key}:{info.name}</h1>
-          <p style={{whiteSpace:"pre-wrap"}}>{info.detail}</p>
+          <p style={{whiteSpace:"pre-wrap"}} dangerouslySetInnerHTML={{ __html: info.detail}} />
         </div>
       </div>
     </>
