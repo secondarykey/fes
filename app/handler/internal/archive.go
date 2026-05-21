@@ -6,6 +6,11 @@ import (
 	"io/fs"
 	"log"
 	"net/http"
+	"runtime"
+	"strings"
+	"time"
+
+	"github.com/secondarykey/zipfs"
 )
 
 //go:embed all:_assets/archives
@@ -20,15 +25,47 @@ func init() {
 	}
 }
 
-func RegisterArchive(dirs ...string) error {
+func RegisterArchive() error {
 
-	var archiveHandle CacheServer
-	archiveHandle.SetFS(http.FS(archiveFs), 86400)
-
-	for _, dir := range dirs {
-		fmt.Printf("Archives[%s]\n", dir)
-		url := fmt.Sprintf("/%s/", dir)
-		http.Handle(url, archiveHandle)
+	entries, err := fs.ReadDir(archiveFs, ".")
+	if err != nil {
+		return err
 	}
+
+	var zips []*zipfs.ZipFS
+	for _, entry := range entries {
+
+		if entry.IsDir() {
+			continue
+		}
+		n := entry.Name()
+		idx := strings.LastIndex(n, ".zip")
+		if idx == -1 {
+			continue
+		}
+
+		name := n[:idx]
+		zfs, err := zipfs.New(archiveFs, n)
+		if err != nil {
+			return err
+		}
+
+		pre := fmt.Sprintf("/%s/", name)
+
+		cs := newCacheServer(86400, zfs)
+		http.Handle(pre, http.StripPrefix(pre, cs))
+
+		fmt.Printf("Archive:[%s]\n", pre)
+		zips = append(zips, zfs)
+	}
+
+	go func() {
+		for range time.Tick(2 * time.Minute) {
+			for _, f := range zips {
+				f.Release()
+			}
+		}
+		runtime.GC()
+	}()
 	return nil
 }

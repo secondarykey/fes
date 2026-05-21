@@ -1,0 +1,541 @@
+body {
+  margin: 0;
+  background-color:#fafffa;
+}
+
+a {
+  color:#223a70 !important;
+}
+
+/* Disable ugly boxes around images in IE10 */
+a img{
+  border: 0px;
+}
+
+::-moz-selection {
+  background-color: #2222d3;
+  color: #fff;
+}
+
+::selection {
+  background-color: #2222d3;
+  color: #fff;
+}
+
+.axe-header .mdl-menu__container {
+  z-index: 50;
+  margin: 0 !important;
+}
+
+.mdl-textfield--expandable {
+  width: auto;
+}
+
+.axe-fab {
+  position: absolute;
+  right: 20%;
+  bottom: -26px;
+  z-index: 3;
+  background: #64ffda !important;
+  color: black !important;
+}
+
+.axe-mobile-title {
+  display: none !important;
+}
+
+.axe-logo-image {
+  height: 28px;
+  width: 140px;
+}
+
+
+.axe-header {
+  overflow: visible;
+  background-color: #fafffa;
+}
+
+  .axe-header .material-icons {
+    color: #767777 !important;
+  }
+
+  .axe-header .mdl-layout__drawer-button {
+    background: transparent;
+    color: #767777;
+  }
+
+  .axe-header .mdl-navigation__link {
+    color: #757575;
+    font-weight: 700;
+    font-size: 14px;
+  }
+
+  .axe-navigation-container {
+    /* Simple hack to make the overflow happen to the left instead... */
+    direction: rtl;
+    -webkit-order: 1;
+        -ms-flex-order: 1;
+            order: 1;
+    width: 500px;
+    transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+        width 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .axe-navigation {
+    /* ... and now make sure the content is actually LTR */
+    direction: ltr;
+    -webkit-justify-content: flex-end;
+        -ms-flex-pack: end;
+            justify-content: flex-end;
+    width: 800px;
+  }
+
+  .axe-navigation .mdl-navigation__link {
+    display: inline-block;
+    height: 60px;
+    line-height: 68px;
+    background-color: transparent !important;
+    border-bottom: 4px solid transparent;
+  }
+
+    .axe-navigation .mdl-navigation__link:hover {
+      border-bottom: 4px solid #33da33;
+    }
+
+.axe-drawer {
+  border-right: none;
+  background-color: #fafffa;
+}
+
+  .axe-drawer-separator {
+    height: 1px;
+    background-color: #dcdcdc;
+    margin: 8px 0;
+  }
+
+  .axe-drawer .mdl-navigation__link.mdl-navigation__link {
+    font-size: 14px;
+    color: #757575;
+  }
+
+  .axe-drawer span.mdl-navigation__link.mdl-navigation__link {
+    color: #8bc34a;
+  }
+
+  .axe-drawer .mdl-layout-title {
+    position: relative;
+    background: lightgreen;
+    height: 160px;
+  }
+
+    .axe-drawer .axe-logo-image {
+      position: absolute;
+      bottom: 16px;
+    }
+
+.top-section {
+  position: relative;
+  height: 800px;
+  width: auto;
+  background-color: #f3f3f3;
+  background: url('images/sea.jpg') center 100% no-repeat;
+  background-size: cover;
+}
+
+.logo-font {
+  font-family: 'Roboto', 'Helvetica', 'Arial', sans-serif;
+  line-height: 1;
+  color: #ffffff;
+  font-weight: 500;
+}
+
+.axe-slogan {
+  font-size: 60px;
+  padding-top: 160px;
+}
+
+.axe-sub-slogan {
+  font-size: 21px;
+  padding-top: 24px;
+}
+
+.axe-information {
+  font-size: 36px;
+  padding-top: 80px;
+}
+
+.axe-create-character {
+  font-size: 21px;
+  padding-top: 200px;
+}
+
+  .axe-create-character a {
+    text-decoration: none;
+    color: #ffffff;
+    font-weight: 300;
+  }
+
+.axe-screen-section {
+  position: relative;
+  padding-top: 60px;
+  padding-bottom: 80px;
+}
+
+.axe-screens {
+  text-align: right;
+  width: 100%;
+  white-space: nowrap;
+  overflow-x: auto;
+}
+
+.axe-screen {
+  text-align: center;
+}
+
+.axe-screen .axe-link {
+  margin-top: 16px;
+  display: block;
+  z-index: 2;
+}
+
+.axe-image-link {
+  text-decoration: none;
+}
+
+.axe-wear {
+  display: inline-block;
+  width: 160px;
+  margin-right: 32px;
+}
+
+  .axe-wear .axe-screen-image {
+    width: 40%;
+    z-index: 1;
+  }
+
+
+.axe-phone {
+  display: inline-block;
+  width: 64px;
+  margin-right: 48px;
+}
+
+  .axe-phone .axe-screen-image {
+    width: 100%;
+    z-index: 1;
+  }
+
+
+.axe-tablet {
+  display: inline-block;
+  width: 110px;
+  margin-right: 64px;
+}
+
+  .axe-tablet .axe-screen-image {
+    width: 100%;
+    z-index: 1;
+  }
+
+  .axe-tablet .axe-link {
+    display: block;
+    z-index: 2;
+  }
+
+
+.axe-tv {
+  display: inline-block;
+  width: 300px;
+  margin-right: 80px;
+}
+
+  .axe-tv .axe-screen-image {
+    width: 100%;
+    z-index: 1;
+  }
+
+
+.axe-auto {
+  display: inline-block;
+  width: 300px;
+  overflow: hidden;
+}
+
+  .axe-auto .axe-screen-image {
+    display: block;
+    height: 300px;
+    z-index: 1;
+  }
+
+
+.axe-wear-section {
+  position: relative;
+  background: url('images/wear.png') center top no-repeat;
+  background-size: cover;
+  height: 800px;
+}
+
+.axe-wear-band {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  text-align: center;
+  background-color: #37474f;
+}
+
+.axe-wear-band-text {
+  max-width: 800px;
+  margin-left: 25%;
+  padding: 24px;
+  text-align: left;
+  color: white;
+}
+
+  .axe-wear-band-text p {
+    padding-top: 8px;
+  }
+
+.axe-link {
+  text-decoration: none;
+  color: #6666ff !important;
+}
+
+  .axe-link:hover {
+    color: #2222d3 !important;
+  }
+
+  .axe-link .material-icons {
+    position: relative;
+    top: -1px;
+    vertical-align: middle;
+  }
+
+.axe-alt-link {
+  text-decoration: none;
+  color: #64ffda !important;
+  font-size: 16px;
+}
+
+  .axe-alt-link:hover {
+    color: #00bfa5 !important;
+  }
+
+  .axe-alt-link .material-icons {
+    position: relative;
+    top: 6px;
+  }
+
+.axe-customized-section {
+  text-align: center;
+}
+
+.axe-customized-section-text {
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 80px 16px 0 16px;
+}
+
+  .axe-customized-section-text p {
+    padding-top: 16px;
+  }
+
+.axe-customized-section-image {
+  background: url('images/devices.jpg') center top no-repeat;
+  background-size: cover;
+  height: 400px;
+}
+
+.axe-more-section {
+  padding: 80px 0;
+  max-width: 1044px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+  .axe-more-section .axe-section-title {
+    margin-left: 12px;
+    padding-bottom: 24px;
+  }
+
+.axe-card-container {
+}
+
+  .axe-card-container .mdl-card__media {
+    overflow: hidden;
+    background: transparent;
+  }
+
+    .axe-card-container .mdl-card__media img {
+      width: 100%;
+    }
+
+  .axe-card-container .mdl-card__title {
+    background: transparent;
+    height: auto;
+  }
+
+  .axe-card-container .mdl-card__title-text {
+    color: black;
+    height: auto;
+  }
+
+  .axe-card-container .mdl-card__supporting-text {
+    height: auto;
+    color: black;
+    padding-bottom: 56px;
+  }
+
+  .axe-card-container .mdl-card__actions {
+    position: absolute;
+    bottom: 0;
+  }
+
+  .axe-card-container .mdl-card__actions a {
+    border-top: none;
+    font-size: 16px;
+  }
+
+.axe-footer {
+  background-color: #fafafa;
+  position: relative;
+}
+
+  .axe-footer a:hover {
+    color: #8bc34a;
+  }
+
+  .axe-footer .mdl-mega-footer--top-section::after {
+    border-bottom: none;
+  }
+
+  .axe-footer .mdl-mega-footer--middle-section::after {
+    border-bottom: none;
+  }
+
+  .axe-footer .mdl-mega-footer--bottom-section {
+    position: relative;
+  }
+
+  .axe-footer .mdl-mega-footer--bottom-section a {
+    margin-right: 2em;
+  }
+
+  .axe-footer .mdl-mega-footer--right-section a .material-icons {
+    position: relative;
+    top: 6px;
+  }
+
+
+.axe-link-menu:hover {
+  cursor: pointer;
+}
+
+
+/**** Mobile layout ****/
+@media (max-width: 900px) {
+  .axe-navigation-container {
+    display: none;
+  }
+
+  .axe-title {
+    display: none !important;
+  }
+
+  .axe-mobile-title {
+    display: block !important;
+    position: absolute;
+    left: calc(50% - 70px);
+    top: 12px;
+    transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* WebViews in iOS 9 break the "~" operator, and WebViews in OS X 10.10 break
+     consecutive "+" operators in some cases. Therefore, we need to use both
+     here to cover all the bases. */
+  .axe.axe-search-box.is-focused ~ .axe-mobile-title,
+  .axe-search-box.is-focused + .axe-navigation-container + .axe-mobile-title {
+    opacity: 0;
+  }
+
+  .axe-more-button {
+    display: none;
+  }
+
+  .axe-search-box.is-focused {
+    width: calc(100% - 48px);
+  }
+
+  .axe-search-box .mdl-textfield__expandable-holder {
+    width: 100%;
+  }
+
+  .top-section {
+    height: 350px;
+  }
+
+  .axe-slogan {
+    font-size: 26px;
+    margin: 0 16px;
+    padding-top: 24px;
+  }
+
+  .axe-sub-slogan {
+    font-size: 16px;
+    margin: 0 16px;
+    padding-top: 8px;
+  }
+
+  .axe-information {
+    font-size: 20px;
+    padding-top: 30px;
+  }
+
+  .axe-create-character {
+    padding-top: 100px;
+    font-size: 16px;
+  }
+
+  .axe-create-character img {
+    height: 12px;
+  }
+
+  .axe-fab {
+    display: none;
+  }
+
+  .axe-wear-band-text {
+    margin-left: 0;
+    padding: 16px;
+  }
+
+  .axe-footer .mdl-mega-footer--bottom-section {
+    display: none;
+  }
+}
+
+#modified {
+    position: absolute;
+    display: block;
+    right: 0;
+    margin-right: 20px;
+    color: #bbbbbb;
+    font-size: 10px;
+}
+
+.imageTitle {
+    font-size: 24px;
+    text-shadow: 0px -1px #aaa, 1px 0px #555, 0px 1px #aaa, -1px 1px #555;
+}
+
+.imageHeader {
+    height: 300px;
+    padding: 10px;
+    display: flex;
+    align-items: flex-end;
+}
+
+
+.top-cell {
+  padding:24px;
+}

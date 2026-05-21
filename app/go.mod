@@ -1,6 +1,6 @@
 module app
 
-go 1.20
+go 1.24.0
 
 require (
 	cloud.google.com/go v0.110.7
@@ -11,7 +11,7 @@ require (
 	github.com/gorilla/sessions v1.2.1
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/satori/go.uuid v1.2.0
-	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2
+	golang.org/x/xerrors v0.0.0-20240903120638-7835f813f4da
 	google.golang.org/api v0.138.0
 	google.golang.org/grpc v1.57.0
 )
@@ -26,6 +26,7 @@ require (
 	github.com/googleapis/gax-go/v2 v2.12.0 // indirect
 	github.com/gorilla/securecookie v1.1.1 // indirect
 	github.com/jstemmer/go-junit-report v1.0.0 // indirect
+	github.com/secondarykey/zipfs v0.0.0-20250429005431-7ba2543c548b // indirect
 	go.opencensus.io v0.24.0 // indirect
 	golang.org/x/crypto v0.12.0 // indirect
 	golang.org/x/lint v0.0.0-20210508222113-6edffad5e616 // indirect

@@ -14,7 +14,7 @@ import (
 // 対象はFileDataとHTMLになります。
 func main() {
 	err := app.CreateStaticSite(
-		"2024-Fall",
+		"2025-Fall",
 		config.SetProjectID(),
 		config.SetDatastore())
 	if err != nil {
