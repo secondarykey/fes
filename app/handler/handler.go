@@ -39,10 +39,7 @@ func setEnvironment() {
 
 func Register() error {
 
-	//TODO
-	// アーカイブの自動化
-
-	err := RegisterArchive("2020", "2021", "2022-Spring", "2022-Fall", "2023-Spring", "2023-Fall", "2024-Spring", "2024-Fall")
+	err := RegisterArchive()
 	if err != nil {
 		return xerrors.Errorf("RegisterArchive() error: %w", err)
 	}

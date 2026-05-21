@@ -48,7 +48,15 @@ const Map = (props) => {
     fitAll();
   }, [winSize.height]);
 
+
+  /**
+   * 現在位置の描画
+   * @param {*} img 
+   * @param {*} pointer 
+   */
   const drawPointer = (img, pointer) => {
+
+    var layer = document.querySelector("#layer");
 
     const current = view.current;
     const ctx = current.getContext('2d', { willReadFrequently: true });
@@ -65,9 +73,13 @@ const Map = (props) => {
 
     if (p === null) {
       p = MapPoint.get(34.9248673, 138.3785824);
+    } else {
+      //TODO 広野公園内でしか動作しない
     }
 
     var back = ctx.getImageData(p.x, p.y, iconSize, iconSize);
+    //centering(layer,p.x);
+
     current.addEventListener("change.pointer", function (e) {
 
       ctx.globalAlpha = 1;
@@ -78,6 +90,9 @@ const Map = (props) => {
       if (wk !== null) {
         p = wk;
         back = ctx.getImageData(p.x, p.y, iconSize, iconSize);
+        //centering(layer,p.x);
+      } else {
+        //TODO 広野公園内でしか動作しない
       }
     });
 
@@ -121,6 +136,9 @@ const Map = (props) => {
 
   }, [props.coords]);
 
+  /**
+   * 表示切り替えイベント
+   */
   useEffect(() => {
     const current = view.current;
     if (current === null) return;
@@ -137,11 +155,24 @@ const Map = (props) => {
 
   }, [fit]);
 
+  /**
+   * マップクリック処理
+   * @param {*} e 
+   */
   const handleClick = (e) => {
     var dx = document.querySelector("#layer").scrollLeft;
     var x = (dx + e.pageX) / scale;
     var y = e.pageY / scale;
     props.onShop(Math.trunc(x), Math.trunc(y));
+  }
+
+  const centering = (elm,x) => {
+    
+    console.log("center",x);
+    console.log("scale",scale);
+
+    elm.scrollLeft = (x * scale) - (elm.clientWidth / 2);
+    //layer.scrollLeft = p.x + ( (layer.clientWidth) * scale / 2) + 100
   }
 
   return (

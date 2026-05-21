@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 
 import cross from "./assets/crosshair.svg"
 import back from "./assets/arrow-right-square-fill.svg"
+import update from "./assets/arrow-clockwise.svg"
+import terminal from "./assets/terminal.svg"
 
 const SVGButton = (props) => {
 
@@ -9,11 +11,14 @@ const SVGButton = (props) => {
 
     useEffect( () => {
       var icon = svg;
-      console.log("svgbutton")
       if ( props.name === "back" ) {
         icon = back;
       } else if ( props.name==="cross" ) {
         icon = cross;
+      } else if ( props.name==="update" ) {
+        icon = update;
+      } else if ( props.name==="terminal" ) {
+        icon = terminal;
       }
       setSVG(icon);
     },[])

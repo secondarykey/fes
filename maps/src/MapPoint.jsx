@@ -206,6 +206,10 @@ class MapPoint {
 
         //経度から定点を利用して、マップの上部、下部の点を算出
         var [p1, p2] = this.getLongitudePoint(lon)
+        if (p1 === null || p2 === null) {
+            return null;
+        }
+
         if (ctx !== undefined) {
             ctx.beginPath();
             ctx.arc(p1.x, p1.y, 4, 0, Math.PI * 2);
@@ -217,10 +221,6 @@ class MapPoint {
             ctx.fillStyle = "red";
             ctx.fill();
             ctx.stroke();
-        }
-
-        if (p1 === null || p2 === null) {
-            return null;
         }
 
         //上部と下部の線から緯度を割り出す
@@ -239,7 +239,20 @@ class MapPoint {
         })
         return shop;
     }
+    
+    static getBird = (coords) => {
+        if ( coords === undefined ) return null;
+      var p = MapPoint.get(coords.latitude,coords.longitude);
+      if ( p === null ) {
+        return null;
+      }
+      return new Shop("BIRD", "ハッち", `Humming Bird 非公式キャラ のハッちです。`,
+            new Rect(p.x, p.y, 100, 100))
+    }
 
+    /**
+     * 店舗情報の初期化
+     */
     static initShops() {
 
         var p;
@@ -343,7 +356,7 @@ https://lealea.crayonsite.com/`,
             new Rect(330, 460, 70, 40)));
 
         this.shops.push(new Shop("47", "いちご実　加藤農園", `いちごスイーツ
-ichigomi.com`,
+http://ichigomi.com`,
             new Rect(330, 510, 70, 50)));
 
         this.shops.push(new Shop("48", "48DINER", `スライダーバーガー、チキンオーバーライス、プルコギドッグ
@@ -357,10 +370,8 @@ https://www.instagram.com/48diner`,
 @y.nakajimayoho`,
             new Rect(495, 470, 40, 70)));
 
-
         this.shops.push(new Shop("51", "enwa縁和", `ローストビーフサンド・ローストポークサンド・スモーキーチキンサンド・ダブルハムチーズサンドのホットサンド フライドポテト かき氷 静岡県産レモンをじっくり煮込んだ レモネード&レモンスカッシュ クリーミーいちごミルク キャラメルマキアート ウインナーコーヒー等`,
             new Rect(540, 470, 40, 70)));
-
 
         this.shops.push(new Shop("52", "手羽先おおむら", `焼き鳥（手羽先、鶏もも焼き）モツ煮
 https://www.instagram.com/tebasaki_oomura/`,
@@ -425,6 +436,8 @@ https://ethnictokyo.com`,
         this.shops.push(new Shop("57", "Toko Ramai", `アウトドアウェア、アウトドアグッズ、雑貨、ガラポン
 https://www.instagram.com/tokoramai2`,
             new Rect(640, 345, 30, 55)));
+
+
 
 
         //D ブロック
@@ -720,6 +733,11 @@ KUKU (信州産りんごパイ、 焼き菓子、 三年番茶)
 HAPPY MONSTA (リサイクルペットボトル食器アート)
 お祭り【酒-sai-】 (射的、 型抜き、ふんどし販売)`,
             new Rect(1580, 225, 180, 90)));
+
+        this.shops.push(new Shop("SEA", "海岸", `ネイティブはここから見える伊豆をハワイだと思っているという噂も`,
+            new Rect(800, 160, 500, 50)));
+        this.shops.push(new Shop("SECRET", "隠れハッち", `19日限定ですが、これを見せるとドリンクを１杯サービスさせていただきます。`,
+            new Rect(1750, 460, 20, 20)));
     }
 }
 
