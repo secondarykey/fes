@@ -4,9 +4,11 @@ import (
 	"app/datastore"
 	"errors"
 	"io"
+	"io/fs"
 	"log"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"context"
@@ -229,17 +231,19 @@ func createFile(name string, data []byte) error {
 
 func convertHTML(dir string, htmlMap, fileMap map[string]string) error {
 
-	htmls, err := filepath.Glob(dir + "/*.html")
+	var htmls []string
+	err := filepath.WalkDir(dir, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if !d.IsDir() && strings.HasSuffix(path, ".html") {
+			htmls = append(htmls, path)
+		}
+		return nil
+	})
 	if err != nil {
-		return xerrors.Errorf("error: %w", err)
+		return xerrors.Errorf("WalkDir error: %w", err)
 	}
-
-	re, err := filepath.Glob(dir + "/**/*.html")
-	if err != nil {
-		return xerrors.Errorf("error: %w", err)
-	}
-
-	htmls = append(htmls, re...)
 
 	for _, v := range htmls {
 		fmt.Println("convert:" + v)
@@ -287,7 +291,11 @@ func createChangeFile(name string, htmlMap, fileMap map[string]string) (string, 
 	}
 
 	for key, v := range fileMap {
-		buf = strings.ReplaceAll(buf, key, v)
+		// /file/{key} および /file/{date}/{key} の両パターンを置換
+		// key = "/file/some-uuid"
+		name := strings.TrimPrefix(key, "/file/")
+		re := regexp.MustCompile(`/file(?:/[^/"'\s]*)?/` + regexp.QuoteMeta(name))
+		buf = re.ReplaceAllString(buf, v)
 	}
 
 	buf = strings.ReplaceAll(buf, `="/"`, fmt.Sprintf(`="%s"`, top))

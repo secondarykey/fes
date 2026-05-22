@@ -61,6 +61,8 @@ func NewPageInfos(ids ...string) []*PageInfo {
 
 func PutHTMLs(ctx context.Context, infos ...*PageInfo) error {
 
+	startTemplateCache()
+
 	gen := newGenerator()
 	defer gen.dao.Close()
 
@@ -77,10 +79,11 @@ func PutHTMLs(ctx context.Context, infos ...*PageInfo) error {
 
 	now := time.Now()
 	up := make([]*datastore.Page, 0)
-	for idx, page := range ps {
-		if page.Publish.IsZero() || infos[idx].Publish {
+	for _, page := range ps {
+		if page.Publish.IsZero() {
 			page.Publish = now
 		}
+		page.Republish = now
 		up = append(up, &page)
 	}
 

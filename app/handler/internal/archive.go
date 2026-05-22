@@ -4,7 +4,6 @@ import (
 	"embed"
 	"fmt"
 	"io/fs"
-	"log"
 	"net/http"
 	"runtime"
 	"strings"
@@ -13,16 +12,18 @@ import (
 	"github.com/secondarykey/zipfs"
 )
 
-//go:embed all:_assets/archives
+// 2026 ignore  //go:embed all:_assets/archives
 var embArchive embed.FS
 var archiveFs fs.FS
 
 func init() {
-	var err error
-	archiveFs, err = fs.Sub(embArchive, "_assets/archives")
-	if err != nil {
-		log.Printf("%+v", err)
-	}
+	/*
+		var err error
+		archiveFs, err = fs.Sub(embArchive, "_assets/archives")
+		if err != nil {
+			log.Printf("%+v", err)
+		}
+	*/
 }
 
 func RegisterArchive() error {
