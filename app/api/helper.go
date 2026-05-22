@@ -80,6 +80,8 @@ func (p Helper) ConvertTemplate(data string) template.HTML {
 	return template.HTML(buf.String())
 }
 
+// Deprecated: タイムスタンプ付き URL を生成します。既存テンプレートとの互換性のために残しています。
+// 新規テンプレートでは /file/{id} を直接使用してください。
 func (p Helper) GetFileURL(id string) string {
 	return p.getFileURL(id, false)
 }

@@ -26,6 +26,7 @@ type Page struct {
 	Description    string
 	Parent         string
 	Publish        time.Time
+	Republish      time.Time
 	UpdatedPublish bool `datastore:"-"`
 
 	Paging       int

@@ -18,6 +18,7 @@ const KindTemplateName = "Template"
 type Template struct {
 	Name string
 	Type int
+	Seq  int
 
 	TargetVersion string `datastore:"-"`
 	Meta

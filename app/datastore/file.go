@@ -17,7 +17,8 @@ const (
 
 const (
 	SystemFaviconID        = "system-favicon"
-	draftPageImageIDSuffix = "DRAFT"
+	DraftPageImageIDSuffix = "DRAFT"
+	draftPageImageIDSuffix = DraftPageImageIDSuffix
 )
 
 const KindFileName = "File"
