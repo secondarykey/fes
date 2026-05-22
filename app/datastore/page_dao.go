@@ -270,6 +270,76 @@ func (dao *Dao) UsingTemplate(ctx context.Context, id string) (bool, error) {
 	return false, nil
 }
 
+func (dao *Dao) TouchPage(ctx context.Context, id string) error {
+	page, err := dao.SelectPage(ctx, id, -1)
+	if err != nil {
+		return xerrors.Errorf("SelectPage() error: %w", err)
+	}
+	if page == nil {
+		return fmt.Errorf("page not found[%s]", id)
+	}
+	cli, err := dao.createClient(ctx)
+	if err != nil {
+		return xerrors.Errorf("createClient() error: %w", err)
+	}
+	_, err = cli.RunInTransaction(ctx, func(tx *datastore.Transaction) error {
+		return Put(tx, page)
+	})
+	return err
+}
+
+func (dao *Dao) RemovePages(ctx context.Context, ids []string) error {
+	type pageInfo struct {
+		id         string
+		existImage bool
+		existDraft bool
+	}
+
+	// トランザクション外で全件の事前チェック
+	infos := make([]pageInfo, 0, len(ids))
+	for _, id := range ids {
+		children, _, err := dao.SelectChildrenPage(ctx, id, NoLimitCursor, -1, true)
+		if err != nil {
+			return fmt.Errorf("SelectChildrenPage error[%s]: %v", id, err)
+		}
+		if children != nil {
+			return fmt.Errorf("child page exists[%s]", id)
+		}
+		infos = append(infos, pageInfo{
+			id:         id,
+			existImage: dao.ExistFile(ctx, id),
+			existDraft: dao.ExistFile(ctx, CreateDraftPageImageID(id)),
+		})
+	}
+
+	cli, err := dao.createClient(ctx)
+	if err != nil {
+		return xerrors.Errorf("createClient() error: %w", err)
+	}
+
+	_, err = cli.RunInTransaction(ctx, func(tx *datastore.Transaction) error {
+		for _, info := range infos {
+			tx.Delete(GetPageKey(info.id))
+			tx.Delete(GetPageDataKey(info.id))
+			tx.Delete(GetHTMLKey(info.id))
+			if info.existImage {
+				tx.Delete(getFileKey(info.id))
+				tx.Delete(getFileDataKey(info.id))
+			}
+			draftID := CreateDraftPageImageID(info.id)
+			if info.existDraft {
+				tx.Delete(getFileKey(draftID))
+				tx.Delete(getFileDataKey(draftID))
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		return xerrors.Errorf("RemovePages transaction error: %w", err)
+	}
+	return nil
+}
+
 func (dao *Dao) RemovePage(ctx context.Context, id string) error {
 
 	var err error
@@ -282,6 +352,11 @@ func (dao *Dao) RemovePage(ctx context.Context, id string) error {
 	if children != nil {
 		return fmt.Errorf("Exist child page[%s]", id)
 	}
+
+	// トランザクション外で存在確認
+	existImage := dao.ExistFile(ctx, id)
+	draftID := CreateDraftPageImageID(id)
+	existDraft := dao.ExistFile(ctx, draftID)
 
 	cli, err := dao.createClient(ctx)
 	if err != nil {
@@ -302,11 +377,21 @@ func (dao *Dao) RemovePage(ctx context.Context, id string) error {
 			return err
 		}
 
-		if dao.ExistFile(ctx, id) {
-			return dao.RemoveFile(ctx, id)
+		// HTML削除
+		tx.Delete(GetHTMLKey(id))
+
+		// 公開画像削除
+		if existImage {
+			tx.Delete(getFileKey(id))
+			tx.Delete(getFileDataKey(id))
 		}
 
-		//TODO すべてを削除
+		// 下書き画像削除
+		if existDraft {
+			tx.Delete(getFileKey(draftID))
+			tx.Delete(getFileDataKey(draftID))
+		}
+
 		return nil
 	})
 

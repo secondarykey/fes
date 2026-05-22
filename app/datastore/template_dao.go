@@ -4,12 +4,18 @@ import (
 	"context"
 	"errors"
 	"log"
+	"sort"
 	"strconv"
 
 	"cloud.google.com/go/datastore"
 	"golang.org/x/xerrors"
 	"google.golang.org/api/iterator"
 )
+
+type TemplateSeqItem struct {
+	ID      string
+	Version string
+}
 
 type TemplateSet struct {
 	ID           string
@@ -118,6 +124,21 @@ func (dao *Dao) SelectTemplates(ctx context.Context, ty string, cur string) ([]T
 		return nil, "", xerrors.Errorf("Template Cursor() error: %w", err)
 	}
 
+	// Seq > 0 のものを先頭に（Seq 昇順）、Seq=0 のものは末尾に（UpdatedAt 順を維持）
+	sort.SliceStable(rtn, func(i, j int) bool {
+		si, sj := rtn[i].Seq, rtn[j].Seq
+		if si == 0 && sj == 0 {
+			return false
+		}
+		if si == 0 {
+			return false
+		}
+		if sj == 0 {
+			return true
+		}
+		return si < sj
+	})
+
 	return rtn, cursor.String(), nil
 }
 
@@ -167,5 +188,41 @@ func (dao *Dao) RemoveTemplate(ctx context.Context, id string) error {
 		return xerrors.Errorf("transaction error: %w", err)
 	}
 
+	return nil
+}
+
+func (dao *Dao) PutTemplateSequence(ctx context.Context, items []TemplateSeqItem) error {
+	if len(items) == 0 {
+		return nil
+	}
+
+	keys := make([]*datastore.Key, len(items))
+	for i, item := range items {
+		keys[i] = GetTemplateKey(item.ID)
+	}
+
+	cli, err := dao.createClient(ctx)
+	if err != nil {
+		return xerrors.Errorf("createClient() error: %w", err)
+	}
+
+	templates := make([]*Template, len(keys))
+	for i := range templates {
+		templates[i] = &Template{}
+	}
+
+	if err := cli.GetMulti(ctx, keys, templates); err != nil {
+		return xerrors.Errorf("GetMulti() error: %w", err)
+	}
+
+	for i, t := range templates {
+		t.SetTargetVersion(items[i].Version)
+		t.Seq = i + 1
+	}
+
+	_, err = cli.PutMulti(ctx, keys, templates)
+	if err != nil {
+		return xerrors.Errorf("PutMulti() error: %w", err)
+	}
 	return nil
 }

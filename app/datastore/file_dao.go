@@ -242,6 +242,28 @@ func (dao *Dao) RemoveFile(ctx context.Context, id string) error {
 	return nil
 }
 
+func (dao *Dao) RemoveFiles(ctx context.Context, ids []string) error {
+	cli, err := dao.createClient(ctx)
+	if err != nil {
+		return xerrors.Errorf("createClient() error: %w", err)
+	}
+	_, err = cli.RunInTransaction(ctx, func(tx *datastore.Transaction) error {
+		for _, id := range ids {
+			if err := tx.Delete(getFileKey(id)); err != nil {
+				return err
+			}
+			if err := tx.Delete(getFileDataKey(id)); err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		return xerrors.Errorf("transaction error: %w", err)
+	}
+	return nil
+}
+
 func (dao *Dao) GetFileData(ctx context.Context, name string) (*FileData, error) {
 
 	var rtn FileData

@@ -306,6 +306,7 @@ func (dao *Dao) AddDraftPage(ctx context.Context, draftId string, pageId string)
 	page.PageID = pageId
 	page.Name = p.Name
 	page.Seq = seq
+	page.PublishUpdate = true
 
 	_, err = cli.RunInTransaction(ctx, func(tx *datastore.Transaction) error {
 		_, err = tx.Put(page.GetKey(), &page)

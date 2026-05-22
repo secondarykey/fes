@@ -102,6 +102,7 @@ func (dao *Dao) RemoveHTML(ctx context.Context, id string) error {
 		}
 
 		page.Publish = time.Time{}
+		page.Republish = time.Time{}
 		_, err = tx.Put(page.GetKey(), page)
 		if err != nil {
 			return err
@@ -113,6 +114,20 @@ func (dao *Dao) RemoveHTML(ctx context.Context, id string) error {
 		return xerrors.Errorf("transaction error: %w", err)
 	}
 
+	return nil
+}
+
+func (dao *Dao) RemoveOrphanHTML(ctx context.Context, id string) error {
+	cli, err := dao.createClient(ctx)
+	if err != nil {
+		return xerrors.Errorf("createClient() error: %w", err)
+	}
+	_, err = cli.RunInTransaction(ctx, func(tx *datastore.Transaction) error {
+		return tx.Delete(GetHTMLKey(id))
+	})
+	if err != nil {
+		return xerrors.Errorf("RemoveOrphanHTML() transaction error: %w", err)
+	}
 	return nil
 }
 

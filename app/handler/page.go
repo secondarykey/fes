@@ -11,9 +11,6 @@ import (
 )
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
-
-	w.Header().Set("Cache-Control", "public, max-age=3600")
-
 	ctx := r.Context()
 	dao := datastore.NewDao()
 	defer dao.Close()
@@ -27,15 +24,12 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func pageHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Cache-Control", "public, max-age=3600")
 	vars := mux.Vars(r)
 	id := vars["key"]
 	pageView(w, r, id)
 }
 
 func pageView(w http.ResponseWriter, r *http.Request, id string) {
-
-	//ページを取得してIDを作成
 	val := r.URL.Query()
 	page := val.Get("page")
 	if page != "" {
@@ -56,10 +50,15 @@ func pageView(w http.ResponseWriter, r *http.Request, id string) {
 		return
 	}
 
+	setCacheHeaders(w, html.UpdatedAt)
+	if checkNotModified(r, html.UpdatedAt) {
+		w.WriteHeader(http.StatusNotModified)
+		return
+	}
+
 	w.Header().Set("Content-Type", "text/html")
-	w.WriteHeader(200)
-	_, err = w.Write(html.Content)
-	if err != nil {
+	w.WriteHeader(http.StatusOK)
+	if _, err = w.Write(html.Content); err != nil {
 		log.Println("Write Error", err)
 	}
 }

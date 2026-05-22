@@ -5,10 +5,12 @@ import (
 	. "app/handler/internal"
 	"app/logic"
 
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gorilla/mux"
 	"golang.org/x/xerrors"
@@ -96,11 +98,16 @@ func Register() error {
 	s.HandleFunc("/site/", viewSiteHandler).Methods("GET")
 	s.HandleFunc("/site/edit", editSiteHandler).Methods("POST")
 	s.HandleFunc("/site/map", downloadSitemapHandler).Methods("GET")
-	s.HandleFunc("/site/clean", cleanSiteHandler).Methods("POST")
+	s.HandleFunc("/site/clean", cleanSiteHandler).Methods("GET", "POST")
 
 	s.HandleFunc("/system/gc", gc).Methods("GET")
 
 	s.HandleFunc("/", indexHandler).Methods("GET")
+
+	// v2 SPA + API (既存ルートの後に登録)
+	if err := registerV2(s); err != nil {
+		return xerrors.Errorf("registerV2() error: %w", err)
+	}
 
 	h := NewHandler(s)
 	http.Handle("/manage/", h)
@@ -122,17 +129,35 @@ func (h ManageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	u, err := GetSession(r)
 	if err != nil {
 		log.Printf("%+v", err)
+		if isV2APIPath(r.URL.Path) {
+			v2Unauthorized(w)
+			return
+		}
 		http.Redirect(w, r, "/login", 302)
 		return
 	}
 
 	if u == nil {
 		log.Println("ユーザがいない")
+		if isV2APIPath(r.URL.Path) {
+			v2Unauthorized(w)
+			return
+		}
 		http.Redirect(w, r, "/login", 302)
 		return
 	}
 
 	h.r.ServeHTTP(w, r)
+}
+
+func isV2APIPath(path string) bool {
+	return strings.HasPrefix(path, "/manage/v2/api/")
+}
+
+func v2Unauthorized(w http.ResponseWriter) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusUnauthorized)
+	json.NewEncoder(w).Encode(map[string]string{"error": "unauthorized"})
 }
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
