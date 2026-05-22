@@ -39,9 +39,17 @@ func setEnvironment() {
 
 func Register() error {
 
-	err := RegisterArchive()
+	//20260523 廃止
+	/*
+		err := RegisterArchive()
+		if err != nil {
+			return xerrors.Errorf("RegisterArchive() error: %w", err)
+		}
+	*/
+
+	err := RegisterGCSArchive()
 	if err != nil {
-		return xerrors.Errorf("RegisterArchive() error: %w", err)
+		log.Printf("RegisterGCSArchive() error: %+v", err)
 	}
 
 	err = RegisterMaps()

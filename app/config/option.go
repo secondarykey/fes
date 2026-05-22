@@ -29,7 +29,24 @@ const (
 	DatastoreEmulatorHost = "DATASTORE_EMULATOR_HOST"
 	DatastoreProjectID    = "DATASTORE_PROJECT_ID"
 	DatastoreDataset      = "DATASTORE_DATASET"
+
+	ArchiveBucket = "hummingbird-archives"
 )
+
+// ArchiveNames はアーカイブとして公開するディレクトリ名の一覧。
+// 追加した場合は再デプロイが必要。
+var ArchiveNames = []string{
+	"2020",
+	"2021",
+	"2022-Spring",
+	"2022-Fall",
+	"2023-Spring",
+	"2024-Spring",
+	"2024-Fall",
+	"2025-Spring",
+	"2025-Fall",
+	"2026-Spring",
+}
 
 func SetProjectID() Option {
 	return func(c *Config) error {
