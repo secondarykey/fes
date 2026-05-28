@@ -32,6 +32,9 @@ export const getDraft = (id) =>
 export const updateDraft = (id, body) =>
   apiFetch(`${BASE}/${encodeURIComponent(id)}`, { method: 'POST', ...json(body) })
 
+export const toggleDraftLock = (id) =>
+  apiFetch(`${BASE}/${encodeURIComponent(id)}/lock`, { method: 'POST' })
+
 export const deleteDraft = (id) =>
   apiFetch(`${BASE}/${encodeURIComponent(id)}`, { method: 'DELETE' })
 

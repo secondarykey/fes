@@ -14,7 +14,7 @@ import VariableList from './pages/VariableList'
 import VariableEdit from './pages/VariableEdit'
 import DraftList from './pages/DraftList'
 import DraftEdit from './pages/DraftEdit'
-import ToolsPage from './pages/ToolsPage'
+import PublishPage from './pages/PublishPage'
 import PageChildren from './pages/PageChildren'
 
 const STORAGE_KEY = 'fes-color-mode'
@@ -83,7 +83,7 @@ export default function App() {
               <Route path="variable/:key" element={<VariableEdit />} />
               <Route path="draft" element={<DraftList />} />
               <Route path="draft/:key" element={<DraftEdit />} />
-              <Route path="tools" element={<ToolsPage />} />
+              <Route path="publish" element={<PublishPage />} />
             </Route>
           </Routes>
         </BrowserRouter>

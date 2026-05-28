@@ -1,9 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Outlet, Link as RouterLink, useLocation } from 'react-router-dom'
 import {
   AppBar, Toolbar, IconButton, Typography, Drawer,
   List, ListItem, ListItemButton, ListItemIcon, ListItemText,
-  Box, Divider, Tooltip, useTheme,
+  Box, Divider, useTheme,
 } from '@mui/material'
 import MenuIcon from '@mui/icons-material/Menu'
 import ArticleIcon from '@mui/icons-material/Article'
@@ -12,21 +12,23 @@ import CodeIcon from '@mui/icons-material/Code'
 import SettingsIcon from '@mui/icons-material/Settings'
 import DataObjectIcon from '@mui/icons-material/DataObject'
 import DraftsIcon from '@mui/icons-material/Drafts'
-import BuildIcon from '@mui/icons-material/Build'
 import DeleteIcon from '@mui/icons-material/Delete'
-import DarkModeIcon from '@mui/icons-material/DarkMode'
-import LightModeIcon from '@mui/icons-material/LightMode'
-import { useColorMode } from '../context/ColorMode'
+import { getSite } from '../api/site'
 
-const DRAWER_WIDTH = 240
+const DRAWER_WIDTH = 160
 
 export default function Layout() {
-  const [open, setOpen] = useState(true)
   const location = useLocation()
+  const [open, setOpen] = useState(!location.pathname.startsWith('/publish'))
   const theme = useTheme()
-  const { mode, toggleColorMode } = useColorMode()
 
-  const isDark = mode === 'dark'
+  const [siteName, setSiteName] = useState('')
+
+  useEffect(() => {
+    getSite().then(s => { if (s?.name) setSiteName(s.name) }).catch(() => {})
+  }, [])
+
+  const isDark = theme.palette.mode === 'dark'
 
   return (
     <Box sx={{ display: 'flex' }}>
@@ -47,14 +49,8 @@ export default function Layout() {
           </IconButton>
 
           <Typography variant="h6" noWrap component="div" sx={{ fontWeight: 600, flexGrow: 1 }}>
-            FES 管理画面
+            FES{siteName ? `（${siteName}）` : ''}
           </Typography>
-
-          <Tooltip title={isDark ? 'ライトモードに切り替え' : 'ダークモードに切り替え'}>
-            <IconButton color="inherit" onClick={toggleColorMode} aria-label="テーマ切り替え">
-              {isDark ? <LightModeIcon /> : <DarkModeIcon />}
-            </IconButton>
-          </Tooltip>
         </Toolbar>
       </AppBar>
 
@@ -78,10 +74,11 @@ export default function Layout() {
           <List dense>
             {[
               { to: '/page', label: 'Pages', icon: <ArticleIcon fontSize="small" /> },
-              { to: '/file', label: 'Files', icon: <FolderIcon fontSize="small" /> },
               { to: '/template', label: 'Templates', icon: <CodeIcon fontSize="small" /> },
               { to: '/draft', label: 'Drafts', icon: <DraftsIcon fontSize="small" /> },
+              { to: '/file', label: 'Files', icon: <FolderIcon fontSize="small" /> },
               { to: '/variable', label: 'Variables', icon: <DataObjectIcon fontSize="small" /> },
+              { to: '/page/Trash/children', label: 'Trash', icon: <DeleteIcon fontSize="small" /> },
             ].map(({ to, label, icon }) => (
               <ListItem key={to} disablePadding>
                 <ListItemButton
@@ -112,31 +109,24 @@ export default function Layout() {
         <Divider sx={{ borderColor: isDark ? 'grey.700' : 'grey.400' }} />
         <Box sx={{ px: 1, pb: 1 }}>
           <List dense>
-            {[
-              { to: '/page/Trash/children', label: 'Trash', icon: <DeleteIcon fontSize="small" /> },
-              { to: '/tools', label: 'Tools', icon: <BuildIcon fontSize="small" /> },
-              { to: '/site', label: 'Site Settings', icon: <SettingsIcon fontSize="small" /> },
-            ].map(({ to, label, icon }) => (
-              <ListItem key={to} disablePadding>
-                <ListItemButton
-                  component={RouterLink}
-                  to={to}
-                  selected={location.pathname.startsWith(to)}
-                  sx={{
-                    color: isDark ? 'grey.300' : 'grey.800',
-                    '&.Mui-selected': { bgcolor: 'primary.dark', color: 'white' },
-                    '&.Mui-selected:hover': { bgcolor: 'primary.dark' },
-                    '&:hover': { bgcolor: isDark ? 'grey.800' : 'grey.300' },
-                  }}
-                >
-                  <ListItemIcon sx={{ minWidth: 36, color: 'inherit' }}>
-                    {icon}
-                  </ListItemIcon>
-                  <ListItemText primary={label} />
-                </ListItemButton>
-              </ListItem>
-            ))}
-
+            <ListItem disablePadding>
+              <ListItemButton
+                component={RouterLink}
+                to="/site"
+                selected={location.pathname.startsWith('/site')}
+                sx={{
+                  color: isDark ? 'grey.300' : 'grey.800',
+                  '&.Mui-selected': { bgcolor: 'primary.dark', color: 'white' },
+                  '&.Mui-selected:hover': { bgcolor: 'primary.dark' },
+                  '&:hover': { bgcolor: isDark ? 'grey.800' : 'grey.300' },
+                }}
+              >
+                <ListItemIcon sx={{ minWidth: 36, color: 'inherit' }}>
+                  <SettingsIcon fontSize="small" />
+                </ListItemIcon>
+                <ListItemText primary="Settings" />
+              </ListItemButton>
+            </ListItem>
           </List>
         </Box>
       </Drawer>

@@ -34,7 +34,7 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { getPage, getChildren, newPage, sequencePages, sortPages, movePage, deletePages, getPageListHtml } from '../api/page'
-import { getDrafts, addDraftPages, getCurrentDraft } from '../api/draft'
+import { addDraftPages, getCurrentDraft } from '../api/draft'
 
 SortableRow.propTypes = {
   item: PropTypes.object.isRequired,
@@ -124,10 +124,6 @@ export default function PageChildren() {
   const [listHtml, setListHtml] = useState(null)
   const [listLoading, setListLoading] = useState(false)
   const [snack, setSnack] = useState({ open: false, message: '', severity: 'success' })
-  const [draftDialog, setDraftDialog] = useState(false)
-  const [drafts, setDrafts] = useState([])
-  const [currentDraft, setCurrentDraft] = useState(null)
-  const [draftsLoading, setDraftsLoading] = useState(false)
   const [draftRegistering, setDraftRegistering] = useState(false)
 
   const sensors = useSensors(useSensor(PointerSensor))
@@ -275,28 +271,17 @@ export default function PageChildren() {
     setDirty(true)
   }
 
-  const handleOpenDraftDialog = async () => {
-    setDraftDialog(true)
-    setDraftsLoading(true)
-    try {
-      const [draftsData, current] = await Promise.all([getDrafts(), getCurrentDraft()])
-      setDrafts(draftsData.drafts || [])
-      setCurrentDraft(current?.id ? current : null)
-    } catch (e) {
-      showSnack(e.message, 'error')
-      setDraftDialog(false)
-    } finally {
-      setDraftsLoading(false)
-    }
-  }
-
-  const handleRegisterToDraft = async (draftId) => {
+  const handleAddToDraft = async () => {
     setDraftRegistering(true)
     const ids = [...selected]
     try {
-      await addDraftPages(draftId, ids)
+      const cur = await getCurrentDraft()
+      if (!cur?.id) {
+        showSnack('ドラフトが設定されていません', 'error')
+        return
+      }
+      await addDraftPages(cur.id, ids)
       showSnack(`${ids.length} ページをドラフトに登録しました`)
-      setDraftDialog(false)
     } catch (e) {
       showSnack(e.message, 'error')
     } finally {
@@ -468,8 +453,8 @@ export default function PageChildren() {
                 <Button
                   variant="outlined"
                   color="info"
-                  disabled={selected.size === 0}
-                  onClick={handleOpenDraftDialog}
+                  disabled={selected.size === 0 || draftRegistering}
+                  onClick={handleAddToDraft}
                 >
                   ドラフトに登録
                 </Button>
@@ -542,63 +527,6 @@ export default function PageChildren() {
         <DialogActions>
           <Button onClick={() => setDeleteDialog(false)}>キャンセル</Button>
           <Button onClick={handleDelete} variant="contained" color="error">削除</Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* ドラフト選択ダイアログ */}
-      <Dialog open={draftDialog} onClose={() => setDraftDialog(false)} fullWidth maxWidth="xs">
-        <DialogTitle>ドラフトに登録 — {selected.size} ページ</DialogTitle>
-        <DialogContent sx={{ pt: 1 }}>
-          {draftsLoading ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center', py: 3 }}>
-              <CircularProgress size={28} />
-            </Box>
-          ) : drafts.length === 0 ? (
-            <DialogContentText>ドラフトがありません。先にドラフトを作成してください。</DialogContentText>
-          ) : (
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mt: 0.5 }}>
-              {currentDraft && (
-                <>
-                  <Typography variant="caption" color="text.secondary" sx={{ px: 0.5 }}>現在のドラフト</Typography>
-                  <Button
-                    variant="contained"
-                    fullWidth
-                    disabled={draftRegistering}
-                    onClick={() => handleRegisterToDraft(currentDraft.id)}
-                    sx={{ justifyContent: 'flex-start', textTransform: 'none' }}
-                  >
-                    <Box sx={{ textAlign: 'left' }}>
-                      <Typography variant="body2" fontWeight={600}>{currentDraft.name || '(名前なし)'}</Typography>
-                      <Typography variant="caption" sx={{ opacity: 0.8 }}>
-                        {new Date(currentDraft.updatedAt).toLocaleString('ja-JP')}
-                      </Typography>
-                    </Box>
-                  </Button>
-                  <Typography variant="caption" color="text.secondary" sx={{ px: 0.5, pt: 0.5 }}>その他のドラフト</Typography>
-                </>
-              )}
-              {drafts.filter(d => d.id !== currentDraft?.id).map(d => (
-                <Button
-                  key={d.id}
-                  variant="outlined"
-                  fullWidth
-                  disabled={draftRegistering}
-                  onClick={() => handleRegisterToDraft(d.id)}
-                  sx={{ justifyContent: 'flex-start', textTransform: 'none' }}
-                >
-                  <Box sx={{ textAlign: 'left' }}>
-                    <Typography variant="body2" fontWeight={600}>{d.name || '(名前なし)'}</Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      {new Date(d.updatedAt).toLocaleString('ja-JP')}
-                    </Typography>
-                  </Box>
-                </Button>
-              ))}
-            </Box>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDraftDialog(false)}>キャンセル</Button>
         </DialogActions>
       </Dialog>
 

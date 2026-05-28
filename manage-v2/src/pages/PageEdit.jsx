@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useParams, useSearchParams, useNavigate, Link as RouterLink } from 'react-router-dom'
 import {
   Box, Paper, Typography, TextField, Select, MenuItem,
@@ -6,6 +6,7 @@ import {
   Button, Breadcrumbs, Link, Divider, CircularProgress,
   Snackbar, Alert as MuiAlert, Chip,
   Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions,
+  IconButton, Tooltip,
 } from '@mui/material'
 import SaveIcon from '@mui/icons-material/Save'
 import PublishIcon from '@mui/icons-material/Publish'
@@ -16,9 +17,14 @@ import AccountTreeIcon from '@mui/icons-material/AccountTree'
 import BookmarkAddIcon from '@mui/icons-material/BookmarkAdd'
 import ImageIcon from '@mui/icons-material/Image'
 import DeleteIcon from '@mui/icons-material/Delete'
+import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore'
+import UnfoldLessIcon from '@mui/icons-material/UnfoldLess'
+import WrapTextIcon from '@mui/icons-material/WrapText'
+import TextIncreaseIcon from '@mui/icons-material/TextIncrease'
+import TextDecreaseIcon from '@mui/icons-material/TextDecrease'
 import { useRef } from 'react'
 import { getPage, newPage, updatePage, deletePage, publishPage, unpublishPage, getPageImage, uploadPageImage, deletePageImage } from '../api/page'
-import { getDrafts, getCurrentDraft, addDraftPage } from '../api/draft'
+import { getCurrentDraft, addDraftPage } from '../api/draft'
 
 const SITE_TEMPLATE = 1
 const PAGE_TEMPLATE = 2
@@ -55,11 +61,15 @@ export default function PageEdit() {
   const [image, setImage] = useState(null)
   const [imageUploading, setImageUploading] = useState(false)
   const imageInputRef = useRef(null)
+  const contentRef = useRef(null)
+  const contentBoxRef = useRef(null)
+  const tagBarRef = useRef(null)
+  const actionsBarRef = useRef(null)
+  const [contentExpanded, setContentExpanded] = useState(false)
+  const [expandedRows, setExpandedRows] = useState(30)
+  const [wordWrap, setWordWrap] = useState(true)
+  const [contentFontSize, setContentFontSize] = useState(13)
   const [snack, setSnack] = useState({ open: false, message: '', severity: 'success' })
-  const [draftDialog, setDraftDialog] = useState(false)
-  const [drafts, setDrafts] = useState([])
-  const [currentDraft, setCurrentDraft] = useState(null)
-  const [draftsLoading, setDraftsLoading] = useState(false)
   const [draftRegistering, setDraftRegistering] = useState(false)
 
   useEffect(() => {
@@ -189,27 +199,54 @@ export default function PageEdit() {
     }
   }
 
-  const handleOpenDraftDialog = async () => {
-    setDraftsLoading(true)
-    setDraftDialog(true)
-    try {
-      const [draftsData, cur] = await Promise.all([getDrafts(), getCurrentDraft()])
-      setDrafts(draftsData?.drafts || [])
-      setCurrentDraft(cur || null)
-    } catch (e) {
-      showSnack(e.message, 'error')
-      setDraftDialog(false)
-    } finally {
-      setDraftsLoading(false)
-    }
+  const wrapSelection = (tag) => {
+    const el = contentRef.current?.querySelector('textarea')
+    if (!el) return
+    const { selectionStart, selectionEnd } = el
+    if (selectionStart === selectionEnd) return
+    const text = el.value
+    const selected = text.slice(selectionStart, selectionEnd)
+    const wrapped = `<${tag}>${selected}</${tag}>`
+    const updated = text.slice(0, selectionStart) + wrapped + text.slice(selectionEnd)
+    const { scrollTop } = el
+    setForm(prev => ({ ...prev, content: updated }))
+    requestAnimationFrame(() => {
+      el.focus()
+      el.scrollTop = scrollTop
+      const pos = selectionStart + wrapped.length
+      el.setSelectionRange(pos, pos)
+    })
   }
 
-  const handleRegisterToDraft = async (draftId) => {
+  const insertBr = () => {
+    const el = contentRef.current?.querySelector('textarea')
+    if (!el) return
+    const { selectionStart, selectionEnd } = el
+    if (selectionStart === selectionEnd) return
+    const text = el.value
+    const selected = text.slice(selectionStart, selectionEnd)
+    const replaced = selected.replace(/\n/g, '<br>\n')
+    const updated = text.slice(0, selectionStart) + replaced + text.slice(selectionEnd)
+    const { scrollTop } = el
+    setForm(prev => ({ ...prev, content: updated }))
+    requestAnimationFrame(() => {
+      el.focus()
+      el.scrollTop = scrollTop
+      const pos = selectionStart + replaced.length
+      el.setSelectionRange(pos, pos)
+    })
+  }
+
+  const handleAddToDraft = async () => {
     setDraftRegistering(true)
     try {
-      await addDraftPage(draftId, key)
+      const cur = await getCurrentDraft()
+      if (!cur?.id) {
+        showSnack('ドラフトが設定されていません', 'error')
+        return
+      }
+      await addDraftPage(cur.id, key)
       showSnack('ドラフトに登録しました')
-      setDraftDialog(false)
     } catch (e) {
       showSnack(e.message, 'error')
     } finally {
@@ -310,7 +347,7 @@ export default function PageEdit() {
             />
 
             {/* テンプレート + ページング */}
-            <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+            <Box id="target-section" sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
               <FormControl size="small" sx={{ flex: 1, minWidth: 160 }}>
                 <InputLabel>サイトテンプレート</InputLabel>
                 <Select
@@ -410,7 +447,7 @@ export default function PageEdit() {
         </Box>
 
         {/* 子ページ管理 + 保存/公開 */}
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+        <Box ref={actionsBarRef} sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
           {!isNew ? (
             <Box sx={{ display: 'flex', gap: 1 }}>
               <Button
@@ -426,7 +463,8 @@ export default function PageEdit() {
                 variant="text"
                 size="small"
                 startIcon={<BookmarkAddIcon />}
-                onClick={handleOpenDraftDialog}
+                onClick={handleAddToDraft}
+                disabled={draftRegistering}
               >
                 ドラフトに設定
               </Button>
@@ -457,17 +495,123 @@ export default function PageEdit() {
         </Box>
 
         {/* コンテンツ */}
-        <TextField
-          label="コンテンツ"
-          value={form.content}
-          onChange={handleText('content')}
-          fullWidth
-          multiline
-          rows={20}
-          size="small"
-          inputProps={{ style: { fontFamily: 'monospace', fontSize: 13 } }}
-          sx={{ mb: 3 }}
-        />
+        <Box ref={contentBoxRef} sx={{ position: 'relative', mb: 0.5 }}>
+          <TextField
+            ref={contentRef}
+            label="コンテンツ"
+            value={form.content}
+            onChange={handleText('content')}
+            fullWidth
+            multiline
+            rows={contentExpanded ? expandedRows : 4}
+            size="small"
+            inputProps={{ style: { fontFamily: 'monospace', fontSize: contentFontSize, whiteSpace: wordWrap ? 'pre-wrap' : 'pre', overflowX: wordWrap ? 'hidden' : 'auto' } }}
+            sx={{
+              '& textarea': {
+                transition: 'height 0.3s ease',
+              },
+            }}
+          />
+          <Tooltip title={contentExpanded ? '縮小' : '拡大'}>
+            <IconButton
+              size="small"
+              onClick={() => {
+                const next = !contentExpanded
+                if (next && contentBoxRef.current) {
+                  // タグ挿入バーが見える高さから行数を計算（1行 ≒ 19px）
+                  const lineH = 19
+                  const viewH = window.innerHeight
+                  const textareaTop = contentBoxRef.current.getBoundingClientRect().top
+                  const available = viewH - textareaTop
+                  setExpandedRows(Math.max(10, Math.floor(available / lineH) + 5))
+                }
+                setContentExpanded(next)
+                // アニメーション完了後にスクロール
+                if (next) {
+                  const textarea = contentRef.current?.querySelector('textarea')
+                  if (textarea) {
+                    const onEnd = () => {
+                      textarea.removeEventListener('transitionend', onEnd)
+                      const el = document.getElementById('target-section')
+                      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                    }
+                    textarea.addEventListener('transitionend', onEnd, { once: true })
+                  }
+                }
+              }}
+              sx={{
+                position: 'absolute',
+                top: 4,
+                right: 40,
+                bgcolor: 'background.paper',
+                opacity: 0.7,
+                '&:hover': { opacity: 1, bgcolor: 'background.paper' },
+              }}
+            >
+              {contentExpanded ? <UnfoldLessIcon fontSize="small" /> : <UnfoldMoreIcon fontSize="small" />}
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="フォント縮小">
+            <IconButton
+              size="small"
+              onClick={() => setContentFontSize(v => Math.max(9, v - 1))}
+              disabled={contentFontSize <= 9}
+              sx={{
+                position: 'absolute',
+                top: 4,
+                right: 136,
+                bgcolor: 'background.paper',
+                opacity: 0.7,
+                '&:hover': { opacity: 1, bgcolor: 'background.paper' },
+              }}
+            >
+              <TextDecreaseIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="フォント拡大">
+            <IconButton
+              size="small"
+              onClick={() => setContentFontSize(v => Math.min(22, v + 1))}
+              disabled={contentFontSize >= 22}
+              sx={{
+                position: 'absolute',
+                top: 4,
+                right: 104,
+                bgcolor: 'background.paper',
+                opacity: 0.7,
+                '&:hover': { opacity: 1, bgcolor: 'background.paper' },
+              }}
+            >
+              <TextIncreaseIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title={wordWrap ? '折り返しOFF' : '折り返しON'}>
+            <IconButton
+              size="small"
+              onClick={() => setWordWrap(v => !v)}
+              sx={{
+                position: 'absolute',
+                top: 4,
+                right: 72,
+                bgcolor: 'background.paper',
+                opacity: wordWrap ? 0.7 : 0.4,
+                '&:hover': { opacity: 1, bgcolor: 'background.paper' },
+              }}
+            >
+              <WrapTextIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        </Box>
+        <Box ref={tagBarRef} sx={{ display: 'flex', gap: 0.5, mb: 3, flexWrap: 'wrap' }}>
+          <Button size="small" variant="outlined" sx={{ minWidth: 0, px: 1, textTransform: 'none', fontFamily: 'monospace', fontSize: 12 }}
+            onClick={() => wrapSelection('p')}>
+            &lt;p&gt;
+          </Button>
+          <Button size="small" variant="outlined" sx={{ minWidth: 0, px: 1, textTransform: 'none', fontFamily: 'monospace', fontSize: 12 }}
+            onClick={insertBr}>
+            &lt;br&gt;
+          </Button>
+        </Box>
 
         {!isNew && (
           <>
@@ -530,47 +674,6 @@ export default function PageEdit() {
         <DialogActions>
           <Button onClick={() => setDeleteDialog(false)}>キャンセル</Button>
           <Button onClick={handleDelete} color="error" variant="contained">削除</Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* ドラフト選択ダイアログ */}
-      <Dialog open={draftDialog} onClose={() => setDraftDialog(false)} fullWidth maxWidth="xs">
-        <DialogTitle>ドラフトに設定</DialogTitle>
-        <DialogContent>
-          {draftsLoading ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center', py: 3 }}>
-              <CircularProgress size={24} />
-            </Box>
-          ) : drafts.length === 0 ? (
-            <DialogContentText>ドラフトがありません。先にドラフトを作成してください。</DialogContentText>
-          ) : (
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, pt: 1 }}>
-              {currentDraft && (
-                <Button
-                  variant="contained"
-                  fullWidth
-                  disabled={draftRegistering}
-                  onClick={() => handleRegisterToDraft(currentDraft.id)}
-                >
-                  {currentDraft.name || '(名前なし)'} (現在)
-                </Button>
-              )}
-              {drafts.filter(d => !currentDraft || d.id !== currentDraft.id).map(d => (
-                <Button
-                  key={d.id}
-                  variant="outlined"
-                  fullWidth
-                  disabled={draftRegistering}
-                  onClick={() => handleRegisterToDraft(d.id)}
-                >
-                  {d.name || '(名前なし)'}
-                </Button>
-              ))}
-            </Box>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDraftDialog(false)}>キャンセル</Button>
         </DialogActions>
       </Dialog>
 

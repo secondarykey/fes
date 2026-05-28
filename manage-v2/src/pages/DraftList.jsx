@@ -10,7 +10,9 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import AddIcon from '@mui/icons-material/Add'
 import BookmarkIcon from '@mui/icons-material/Bookmark'
 import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder'
-import { getDrafts, createDraft, deleteDraft, getCurrentDraft, setCurrentDraft } from '../api/draft'
+import LockIcon from '@mui/icons-material/Lock'
+import LockOpenIcon from '@mui/icons-material/LockOpen'
+import { getDrafts, createDraft, deleteDraft, getCurrentDraft, setCurrentDraft, toggleDraftLock } from '../api/draft'
 
 function fmtDate(iso) {
   return new Date(iso).toLocaleString('ja-JP', { dateStyle: 'short', timeStyle: 'short' })
@@ -75,6 +77,16 @@ export default function DraftList() {
     }
   }
 
+  const handleToggleLock = async (d) => {
+    try {
+      const updated = await toggleDraftLock(d.id)
+      setDrafts(prev => prev.map(dr => dr.id === d.id ? { ...dr, lock: updated.lock } : dr))
+      showSnack(updated.lock ? 'ロックしました' : 'ロックを解除しました')
+    } catch (e) {
+      showSnack(e.message, 'error')
+    }
+  }
+
   const handleDeleteConfirm = async () => {
     if (!deleteTarget) return
     try {
@@ -92,6 +104,9 @@ export default function DraftList() {
     <Box>
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1 }}>
         <Typography variant="h5" fontWeight={600} sx={{ flexGrow: 1 }}>Drafts</Typography>
+        <Button variant="outlined" color="success" component={RouterLink} to="/publish">
+          公開ページ
+        </Button>
         <Button variant="contained" startIcon={<AddIcon />} onClick={() => setNewDialog(true)}>
           新規作成
         </Button>
@@ -108,20 +123,21 @@ export default function DraftList() {
           <TableHead>
             <TableRow>
               <TableCell>ドラフト名</TableCell>
-              <TableCell>更新日時</TableCell>
-              <TableCell align="center" sx={{ width: 120 }}>操作</TableCell>
+              <TableCell sx={{ width: 70, px: 0.5 }} />
+              <TableCell align="center" sx={{ width: 150 }}>更新日時</TableCell>
+              <TableCell sx={{ width: 40, px: 0.5 }} />
             </TableRow>
           </TableHead>
           <TableBody>
             {loading && drafts.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={3} align="center" sx={{ py: 4 }}>
+                <TableCell colSpan={4} align="center" sx={{ py: 4 }}>
                   <CircularProgress size={24} />
                 </TableCell>
               </TableRow>
             ) : drafts.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={3}>
+                <TableCell colSpan={4}>
                   <Alert severity="info" sx={{ border: 'none' }}>ドラフトがありません</Alert>
                 </TableCell>
               </TableRow>
@@ -136,7 +152,7 @@ export default function DraftList() {
                           color="primary"
                           sx={{ '&:hover': { textDecoration: 'underline' } }}
                         >
-                          {d.name || '(名前なし)'}
+                          {(d.name || '(名前なし)') + (d.lock ? '（作業中）' : '')}
                         </Typography>
                       </RouterLink>
                       {currentDraftId === d.id && (
@@ -144,12 +160,14 @@ export default function DraftList() {
                       )}
                     </Box>
                   </TableCell>
-                  <TableCell>
-                    <Typography variant="body2" color="text.secondary">
-                      {d.updatedAt ? fmtDate(d.updatedAt) : '-'}
-                    </Typography>
-                  </TableCell>
-                  <TableCell align="center">
+                  <TableCell sx={{ px: 0.5, whiteSpace: 'nowrap' }}>
+                    <Tooltip title={d.lock ? 'ロック解除' : 'ロック'}>
+                      <IconButton size="small" onClick={() => handleToggleLock(d)}>
+                        {d.lock
+                          ? <LockIcon fontSize="small" color="warning" />
+                          : <LockOpenIcon fontSize="small" color="action" />}
+                      </IconButton>
+                    </Tooltip>
                     <Tooltip title={currentDraftId === d.id ? '現在のドラフト' : '現在のドラフトに設定'}>
                       <IconButton
                         size="small"
@@ -162,6 +180,13 @@ export default function DraftList() {
                           : <BookmarkBorderIcon fontSize="small" />}
                       </IconButton>
                     </Tooltip>
+                  </TableCell>
+                  <TableCell align="center">
+                    <Typography variant="body2" color="text.secondary">
+                      {d.updatedAt ? fmtDate(d.updatedAt) : '-'}
+                    </Typography>
+                  </TableCell>
+                  <TableCell sx={{ px: 0.5 }}>
                     <Tooltip title="削除">
                       <IconButton size="small" color="error" onClick={() => setDeleteTarget(d)}>
                         <DeleteIcon fontSize="small" />

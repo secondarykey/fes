@@ -11,6 +11,8 @@ const KindDraftName = "Draft"
 
 type Draft struct {
 	Name    string
+	Note    string
+	Lock    bool
 	Current bool `datastore:"-"`
 	Meta
 }

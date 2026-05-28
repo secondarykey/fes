@@ -6,13 +6,11 @@ import {
   Divider, CircularProgress, Snackbar, Alert as MuiAlert,
   Table, TableHead, TableBody, TableRow, TableCell, TableContainer,
   Checkbox, IconButton, Tooltip, Dialog, DialogTitle, DialogContent,
-  DialogContentText, DialogActions, Chip,
+  DialogContentText, DialogActions, Chip, FormControlLabel, Switch,
 } from '@mui/material'
 import SaveIcon from '@mui/icons-material/Save'
 import PublishIcon from '@mui/icons-material/Publish'
 import DeleteIcon from '@mui/icons-material/Delete'
-import AddIcon from '@mui/icons-material/Add'
-import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator'
 import {
   DndContext, closestCenter, PointerSensor, useSensor, useSensors,
@@ -21,7 +19,7 @@ import {
   SortableContext, verticalListSortingStrategy, useSortable, arrayMove,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { getDraft, updateDraft, publishDraft, addDraftPage, removeDraftPage } from '../api/draft'
+import { getDraft, updateDraft, publishDraft, removeDraftPage } from '../api/draft'
 
 SortableDraftRow.propTypes = { p: PropTypes.object.isRequired, idx: PropTypes.number.isRequired, onToggle: PropTypes.func, onRemove: PropTypes.func }
 function SortableDraftRow({ p, idx, onToggle, onRemove }) {
@@ -66,11 +64,11 @@ export default function DraftEdit() {
   const [draft, setDraft] = useState(null)
   const [pages, setPages] = useState([])
   const [name, setName] = useState('')
+  const [note, setNote] = useState('')
+  const [lock, setLock] = useState(false)
   const [saving, setSaving] = useState(false)
   const [publishing, setPublishing] = useState(false)
   const [publishDialog, setPublishDialog] = useState(false)
-  const [addDialog, setAddDialog] = useState(false)
-  const [newPageId, setNewPageId] = useState('')
   const [snack, setSnack] = useState({ open: false, message: '', severity: 'success' })
   const sensors = useSensors(useSensor(PointerSensor))
 
@@ -93,6 +91,8 @@ export default function DraftEdit() {
         setDraft(d.draft)
         setPages(d.pages || [])
         setName(d.draft.name || '')
+        setNote(d.draft.note || '')
+        setLock(d.draft.lock || false)
       })
       .catch(err => showSnack(err.message, 'error'))
   }, [key])
@@ -102,6 +102,8 @@ export default function DraftEdit() {
     try {
       const body = {
         name,
+        note,
+        lock,
         version: draft.version,
         pages: pages.map(p => ({ id: p.id, publishUpdate: p.publishUpdate })),
       }
@@ -110,6 +112,8 @@ export default function DraftEdit() {
         setDraft(res.draft)
         setPages(res.pages || [])
         setName(res.draft.name || '')
+        setNote(res.draft.note || '')
+        setLock(res.draft.lock || false)
       }
       showSnack('保存しました')
     } catch (e) {
@@ -130,21 +134,6 @@ export default function DraftEdit() {
       showSnack(e.message, 'error')
     } finally {
       setPublishing(false)
-    }
-  }
-
-  const handleAddPage = async () => {
-    const pid = newPageId.trim()
-    if (!pid) return
-    try {
-      const res = await addDraftPage(key, pid)
-      if (Array.isArray(res)) setPages(res)
-      showSnack('ページを追加しました')
-    } catch (e) {
-      showSnack(e.message, 'error')
-    } finally {
-      setAddDialog(false)
-      setNewPageId('')
     }
   }
 
@@ -185,17 +174,30 @@ export default function DraftEdit() {
           onChange={e => setName(e.target.value)}
           fullWidth
           size="small"
+          sx={{ mb: 2 }}
+        />
+
+        <TextField
+          label="説明（Note）"
+          value={note}
+          onChange={e => setNote(e.target.value)}
+          fullWidth
+          size="small"
+          multiline
+          minRows={2}
+          maxRows={8}
+          sx={{ mb: 2 }}
+        />
+
+        <FormControlLabel
+          control={<Switch checked={lock} onChange={e => setLock(e.target.checked)} />}
+          label="ロック（作業中 — 公開を禁止）"
           sx={{ mb: 3 }}
         />
 
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 1, gap: 1 }}>
-          <Typography variant="subtitle2" sx={{ flexGrow: 1 }}>
-            ページ一覧 <Chip label={pages.length} size="small" sx={{ ml: 0.5 }} />
-          </Typography>
-          <Button size="small" startIcon={<AddIcon />} onClick={() => setAddDialog(true)}>
-            ページを追加
-          </Button>
-        </Box>
+        <Typography variant="subtitle2" sx={{ mb: 1 }}>
+          ページ一覧 <Chip label={pages.length} size="small" sx={{ ml: 0.5 }} />
+        </Typography>
 
         <TableContainer variant="outlined" component={Paper} sx={{ mb: 3 }}>
           <Table size="small">
@@ -258,40 +260,8 @@ export default function DraftEdit() {
           >
             {publishing ? '公開中...' : '公開'}
           </Button>
-          <Button
-            variant="text"
-            startIcon={<ArrowBackIcon />}
-            component={RouterLink}
-            to="/draft"
-          >
-            一覧へ
-          </Button>
         </Box>
       </Paper>
-
-      {/* ページ追加ダイアログ */}
-      <Dialog open={addDialog} onClose={() => { setAddDialog(false); setNewPageId('') }} fullWidth maxWidth="xs">
-        <DialogTitle>ページを追加</DialogTitle>
-        <DialogContent>
-          <DialogContentText sx={{ mb: 2 }}>
-            追加するページの ID を入力してください。Pages 一覧でページ名をクリックすると URL からID を確認できます。
-          </DialogContentText>
-          <TextField
-            label="ページ ID"
-            value={newPageId}
-            onChange={e => setNewPageId(e.target.value)}
-            onKeyDown={e => { if (e.key === 'Enter') handleAddPage() }}
-            fullWidth
-            size="small"
-            autoFocus
-            inputProps={{ style: { fontFamily: 'monospace' } }}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => { setAddDialog(false); setNewPageId('') }}>キャンセル</Button>
-          <Button onClick={handleAddPage} variant="contained" disabled={!newPageId.trim()}>追加</Button>
-        </DialogActions>
-      </Dialog>
 
       {/* 公開確認ダイアログ */}
       <Dialog open={publishDialog} onClose={() => setPublishDialog(false)}>

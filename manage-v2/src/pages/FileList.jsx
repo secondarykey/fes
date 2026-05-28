@@ -2,13 +2,15 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import {
   Typography, Box, Paper, Table, TableHead, TableBody, TableRow, TableCell,
   TableContainer, IconButton, Button, Tooltip, CircularProgress, Alert,
-  Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions,
+  Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, TextField,
   Chip, Tabs, Tab, Snackbar, Alert as MuiAlert, LinearProgress, Checkbox,
 } from '@mui/material'
 import DeleteIcon from '@mui/icons-material/Delete'
 import UploadIcon from '@mui/icons-material/Upload'
 import OpenInNewIcon from '@mui/icons-material/OpenInNew'
-import { getFiles, uploadFile, deleteFiles } from '../api/file'
+import EditIcon from '@mui/icons-material/Edit'
+import SwapHorizIcon from '@mui/icons-material/SwapHoriz'
+import { getFiles, uploadFile, deleteFiles, renameFile, replaceFile, checkFile } from '../api/file'
 
 const TYPE_LABELS = { 1: 'データ', 2: 'ページ画像', 3: 'システム' }
 const TYPE_COLORS = { 1: 'default', 2: 'primary', 3: 'warning' }
@@ -32,6 +34,13 @@ export default function FileList() {
   const [typeTab, setTypeTab] = useState('1') // '' | '1' | '2'
   const [selected, setSelected] = useState(new Set())
   const [deleteDialog, setDeleteDialog] = useState(false)
+  const [renameDialog, setRenameDialog] = useState(false)
+  const [renameTarget, setRenameTarget] = useState(null)
+  const [renameName, setRenameName] = useState('')
+  const [replaceTarget, setReplaceTarget] = useState(null)
+  const replaceInputRef = useRef()
+  const [uploadConfirmDialog, setUploadConfirmDialog] = useState(false)
+  const [pendingUploadFile, setPendingUploadFile] = useState(null)
   const [snack, setSnack] = useState({ open: false, message: '', severity: 'success' })
   const fileInputRef = useRef()
 
@@ -76,6 +85,20 @@ export default function FileList() {
     const file = e.target.files?.[0]
     if (!file) return
     e.target.value = ''
+    try {
+      const existing = await checkFile(file.name)
+      if (existing) {
+        setPendingUploadFile(file)
+        setUploadConfirmDialog(true)
+        return
+      }
+    } catch {
+      // チェック失敗時はそのままアップロード
+    }
+    doUpload(file)
+  }
+
+  const doUpload = async (file) => {
     setUploading(true)
     try {
       await uploadFile(file)
@@ -88,6 +111,19 @@ export default function FileList() {
     }
   }
 
+  const handleUploadConfirm = () => {
+    setUploadConfirmDialog(false)
+    if (pendingUploadFile) {
+      doUpload(pendingUploadFile)
+      setPendingUploadFile(null)
+    }
+  }
+
+  const handleUploadCancel = () => {
+    setUploadConfirmDialog(false)
+    setPendingUploadFile(null)
+  }
+
   const handleDeleteConfirm = async () => {
     try {
       await deleteFiles([...selected])
@@ -98,6 +134,47 @@ export default function FileList() {
       showSnack(e.message, 'error')
     } finally {
       setDeleteDialog(false)
+    }
+  }
+
+  const openRename = (f) => {
+    setRenameTarget(f)
+    setRenameName(f.id)
+    setRenameDialog(true)
+  }
+
+  const handleRename = async () => {
+    const name = renameName.trim()
+    if (!name || !renameTarget) return
+    setRenameDialog(false)
+    try {
+      await renameFile(renameTarget.id, name)
+      showSnack('名前を変更しました')
+      load(typeTab)
+    } catch (e) {
+      showSnack(e.message, 'error')
+    }
+  }
+
+  const openReplace = (f) => {
+    setReplaceTarget(f)
+    replaceInputRef.current?.click()
+  }
+
+  const handleReplaceFile = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file || !replaceTarget) return
+    e.target.value = ''
+    setUploading(true)
+    try {
+      await replaceFile(replaceTarget.id, file)
+      showSnack('ファイルを更新しました')
+      load(typeTab)
+    } catch (err) {
+      showSnack(err.message, 'error')
+    } finally {
+      setUploading(false)
+      setReplaceTarget(null)
     }
   }
 
@@ -144,18 +221,19 @@ export default function FileList() {
               <TableCell align="center">種別</TableCell>
               <TableCell align="right">サイズ</TableCell>
               <TableCell align="center">更新日時</TableCell>
+              <TableCell sx={{ width: 80 }} />
             </TableRow>
           </TableHead>
           <TableBody>
             {loading && files.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} align="center" sx={{ py: 4 }}>
+                <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
                   <CircularProgress size={24} />
                 </TableCell>
               </TableRow>
             ) : files.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5}>
+                <TableCell colSpan={6}>
                   <Alert severity="info" sx={{ border: 'none' }}>ファイルがありません</Alert>
                 </TableCell>
               </TableRow>
@@ -211,6 +289,18 @@ export default function FileList() {
                       {fmtDate(f.updatedAt)}
                     </Typography>
                   </TableCell>
+                  <TableCell sx={{ px: 0.5, whiteSpace: 'nowrap' }}>
+                    <Tooltip title="名前変更">
+                      <IconButton size="small" onClick={e => { e.stopPropagation(); openRename(f) }}>
+                        <EditIcon fontSize="inherit" />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="ファイル更新">
+                      <IconButton size="small" onClick={e => { e.stopPropagation(); openReplace(f) }}>
+                        <SwapHorizIcon fontSize="inherit" />
+                      </IconButton>
+                    </Tooltip>
+                  </TableCell>
                 </TableRow>
               ))
             )}
@@ -263,6 +353,50 @@ export default function FileList() {
           </>
         )
       })()}
+
+      {/* アップロード上書き確認ダイアログ */}
+      <Dialog open={uploadConfirmDialog} onClose={handleUploadCancel}>
+        <DialogTitle>ファイルの上書き確認</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            同一のファイル名「{pendingUploadFile?.name}」が存在します。更新しますか？
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleUploadCancel}>キャンセル</Button>
+          <Button onClick={handleUploadConfirm} variant="contained" color="warning">更新</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* 名前変更ダイアログ */}
+      <Dialog open={renameDialog} onClose={() => setRenameDialog(false)} fullWidth maxWidth="xs">
+        <DialogTitle>ファイル名を変更</DialogTitle>
+        <DialogContent>
+          <TextField
+            label="新しいファイル名"
+            value={renameName}
+            onChange={e => setRenameName(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter') handleRename() }}
+            fullWidth
+            size="small"
+            autoFocus
+            sx={{ mt: 1 }}
+            inputProps={{ style: { fontFamily: 'monospace' } }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setRenameDialog(false)}>キャンセル</Button>
+          <Button onClick={handleRename} variant="contained" disabled={!renameName.trim() || renameName.trim() === renameTarget?.id}>変更</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* ファイル更新用の非表示input */}
+      <input
+        type="file"
+        ref={replaceInputRef}
+        style={{ display: 'none' }}
+        onChange={handleReplaceFile}
+      />
 
       <Snackbar
         open={snack.open}
