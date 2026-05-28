@@ -10,27 +10,27 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func registerV2VariableAPI(r *mux.Router) {
-	r.HandleFunc("/variable/", v2ListVariables).Methods("GET")
-	r.HandleFunc("/variable/", v2CreateVariable).Methods("POST")
-	r.HandleFunc("/variable/{key}", v2GetVariable).Methods("GET")
-	r.HandleFunc("/variable/{key}", v2UpdateVariable).Methods("POST")
-	r.HandleFunc("/variable/{key}", v2DeleteVariable).Methods("DELETE")
+func registerVariableAPI(r *mux.Router) {
+	r.HandleFunc("/variable/", apiListVariables).Methods("GET")
+	r.HandleFunc("/variable/", apiCreateVariable).Methods("POST")
+	r.HandleFunc("/variable/{key}", apiGetVariable).Methods("GET")
+	r.HandleFunc("/variable/{key}", apiUpdateVariable).Methods("POST")
+	r.HandleFunc("/variable/{key}", apiDeleteVariable).Methods("DELETE")
 }
 
-type v2VariableRes struct {
+type apiVariableRes struct {
 	ID        string    `json:"id"`
 	Content   string    `json:"content"`
 	Version   int       `json:"version"`
 	UpdatedAt time.Time `json:"updatedAt"`
 }
 
-func toV2VariableRes(v *datastore.Variable, content string) v2VariableRes {
+func toAPIVariableRes(v *datastore.Variable, content string) apiVariableRes {
 	id := ""
 	if v.Key != nil {
 		id = v.Key.Name
 	}
-	return v2VariableRes{
+	return apiVariableRes{
 		ID:        id,
 		Content:   content,
 		Version:   v.Version,
@@ -38,7 +38,7 @@ func toV2VariableRes(v *datastore.Variable, content string) v2VariableRes {
 	}
 }
 
-func v2ListVariables(w http.ResponseWriter, r *http.Request) {
+func apiListVariables(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	dao := datastore.NewDao()
 	defer dao.Close()
@@ -46,26 +46,26 @@ func v2ListVariables(w http.ResponseWriter, r *http.Request) {
 	cursor := r.URL.Query().Get("cursor")
 	variables, nextCursor, err := dao.SelectVariables(ctx, cursor)
 	if err != nil {
-		v2Error(w, err.Error(), 500)
+		apiError(w, err.Error(), 500)
 		return
 	}
 
-	res := make([]v2VariableRes, len(variables))
+	res := make([]apiVariableRes, len(variables))
 	for i, v := range variables {
 		id := ""
 		if v.Key != nil {
 			id = v.Key.Name
 		}
-		res[i] = v2VariableRes{ID: id, Version: v.Version, UpdatedAt: v.UpdatedAt}
+		res[i] = apiVariableRes{ID: id, Version: v.Version, UpdatedAt: v.UpdatedAt}
 	}
 
-	v2JSON(w, map[string]interface{}{
+	apiJSON(w, map[string]interface{}{
 		"variables":  res,
 		"nextCursor": nextCursor,
 	})
 }
 
-func v2GetVariable(w http.ResponseWriter, r *http.Request) {
+func apiGetVariable(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["key"]
 	ctx := r.Context()
 	dao := datastore.NewDao()
@@ -73,11 +73,11 @@ func v2GetVariable(w http.ResponseWriter, r *http.Request) {
 
 	v, err := dao.SelectVariable(ctx, id)
 	if err != nil {
-		v2Error(w, err.Error(), 500)
+		apiError(w, err.Error(), 500)
 		return
 	}
 	if v == nil {
-		v2Error(w, "variable not found", 404)
+		apiError(w, "variable not found", 404)
 		return
 	}
 
@@ -87,22 +87,22 @@ func v2GetVariable(w http.ResponseWriter, r *http.Request) {
 		content = string(vd.Content)
 	}
 
-	v2JSON(w, toV2VariableRes(v, content))
+	apiJSON(w, toAPIVariableRes(v, content))
 }
 
-type v2VariableCreateReq struct {
+type apiVariableCreateReq struct {
 	ID      string `json:"id"`
 	Content string `json:"content"`
 }
 
-func v2CreateVariable(w http.ResponseWriter, r *http.Request) {
-	var req v2VariableCreateReq
+func apiCreateVariable(w http.ResponseWriter, r *http.Request) {
+	var req apiVariableCreateReq
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		v2Error(w, "invalid request body", 400)
+		apiError(w, "invalid request body", 400)
 		return
 	}
 	if req.ID == "" {
-		v2Error(w, "id は必須です", 400)
+		apiError(w, "id は必須です", 400)
 		return
 	}
 
@@ -112,11 +112,11 @@ func v2CreateVariable(w http.ResponseWriter, r *http.Request) {
 
 	existing, err := dao.SelectVariable(ctx, req.ID)
 	if err != nil {
-		v2Error(w, err.Error(), 500)
+		apiError(w, err.Error(), 500)
 		return
 	}
 	if existing != nil {
-		v2Error(w, fmt.Sprintf("変数 '%s' は既に存在します", req.ID), 409)
+		apiError(w, fmt.Sprintf("変数 '%s' は既に存在します", req.ID), 409)
 		return
 	}
 
@@ -126,29 +126,29 @@ func v2CreateVariable(w http.ResponseWriter, r *http.Request) {
 		VariableData: &datastore.VariableData{Content: []byte(req.Content)},
 	}
 	if err := dao.PutVariable(ctx, vs); err != nil {
-		v2Error(w, err.Error(), 500)
+		apiError(w, err.Error(), 500)
 		return
 	}
 
 	saved, err := dao.SelectVariable(ctx, req.ID)
 	if err != nil || saved == nil {
-		v2JSON(w, map[string]string{"status": "created"})
+		apiJSON(w, map[string]string{"status": "created"})
 		return
 	}
-	v2JSON(w, toV2VariableRes(saved, req.Content))
+	apiJSON(w, toAPIVariableRes(saved, req.Content))
 }
 
-type v2VariableUpdateReq struct {
+type apiVariableUpdateReq struct {
 	Content string `json:"content"`
 	Version int    `json:"version"`
 }
 
-func v2UpdateVariable(w http.ResponseWriter, r *http.Request) {
+func apiUpdateVariable(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["key"]
 
-	var req v2VariableUpdateReq
+	var req apiVariableUpdateReq
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		v2Error(w, "invalid request body", 400)
+		apiError(w, "invalid request body", 400)
 		return
 	}
 
@@ -158,7 +158,7 @@ func v2UpdateVariable(w http.ResponseWriter, r *http.Request) {
 
 	existing, err := dao.SelectVariable(ctx, id)
 	if err != nil {
-		v2Error(w, err.Error(), 500)
+		apiError(w, err.Error(), 500)
 		return
 	}
 
@@ -174,27 +174,27 @@ func v2UpdateVariable(w http.ResponseWriter, r *http.Request) {
 		VariableData: &datastore.VariableData{Content: []byte(req.Content)},
 	}
 	if err := dao.PutVariable(ctx, vs); err != nil {
-		v2Error(w, err.Error(), 500)
+		apiError(w, err.Error(), 500)
 		return
 	}
 
 	updated, err := dao.SelectVariable(ctx, id)
 	if err != nil || updated == nil {
-		v2JSON(w, map[string]string{"status": "saved"})
+		apiJSON(w, map[string]string{"status": "saved"})
 		return
 	}
-	v2JSON(w, toV2VariableRes(updated, req.Content))
+	apiJSON(w, toAPIVariableRes(updated, req.Content))
 }
 
-func v2DeleteVariable(w http.ResponseWriter, r *http.Request) {
+func apiDeleteVariable(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["key"]
 	ctx := r.Context()
 	dao := datastore.NewDao()
 	defer dao.Close()
 
 	if err := dao.RemoveVariable(ctx, id); err != nil {
-		v2Error(w, err.Error(), 500)
+		apiError(w, err.Error(), 500)
 		return
 	}
-	v2JSON(w, map[string]string{"status": "deleted"})
+	apiJSON(w, map[string]string{"status": "deleted"})
 }

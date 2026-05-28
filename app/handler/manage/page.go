@@ -18,7 +18,7 @@ func viewRootPageHandler(w http.ResponseWriter, r *http.Request) {
 	page, err := dao.SelectRootPage(ctx)
 	if err != nil {
 		if err == datastore.SiteNotFoundError {
-			http.Redirect(w, r, "/manage/site/", 302)
+			http.Redirect(w, r, "/manage/v1/site/", 302)
 		} else {
 			errorPage(w, "Select Root Page error", err, 500)
 		}
@@ -238,5 +238,5 @@ func deletePageHandler(w http.ResponseWriter, r *http.Request) {
 		errorPage(w, "Error Delete Page", err, 500)
 		return
 	}
-	http.Redirect(w, r, "/manage/page/", 302)
+	http.Redirect(w, r, "/manage/v1/page/", 302)
 }

@@ -10,14 +10,14 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func registerV2FileAPI(r *mux.Router) {
-	r.HandleFunc("/file/", v2ListFiles).Methods("GET")
-	r.HandleFunc("/file/", v2UploadFile).Methods("POST")
-	r.HandleFunc("/file/", v2DeleteFiles).Methods("DELETE")
-	r.HandleFunc("/file/{key}", v2DeleteFile).Methods("DELETE")
+func registerFileAPI(r *mux.Router) {
+	r.HandleFunc("/file/", apiListFiles).Methods("GET")
+	r.HandleFunc("/file/", apiUploadFile).Methods("POST")
+	r.HandleFunc("/file/", apiDeleteFiles).Methods("DELETE")
+	r.HandleFunc("/file/{key}", apiDeleteFile).Methods("DELETE")
 }
 
-type v2FileRes struct {
+type apiFileRes struct {
 	ID        string    `json:"id"`
 	Size      int64     `json:"size"`
 	Type      int       `json:"type"`
@@ -26,12 +26,12 @@ type v2FileRes struct {
 	UpdatedAt time.Time `json:"updatedAt"`
 }
 
-func toV2FileRes(f *datastore.File) v2FileRes {
+func toAPIFileRes(f *datastore.File) apiFileRes {
 	id := ""
 	if f.Key != nil {
 		id = f.Key.Name
 	}
-	return v2FileRes{
+	return apiFileRes{
 		ID:        id,
 		Size:      f.Size,
 		Type:      f.Type,
@@ -41,7 +41,7 @@ func toV2FileRes(f *datastore.File) v2FileRes {
 	}
 }
 
-func v2ListFiles(w http.ResponseWriter, r *http.Request) {
+func apiListFiles(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	dao := datastore.NewDao()
 	defer dao.Close()
@@ -51,24 +51,24 @@ func v2ListFiles(w http.ResponseWriter, r *http.Request) {
 
 	files, nextCursor, err := dao.SelectFiles(ctx, typ, cursor)
 	if err != nil {
-		v2Error(w, err.Error(), 500)
+		apiError(w, err.Error(), 500)
 		return
 	}
 
-	res := make([]v2FileRes, len(files))
+	res := make([]apiFileRes, len(files))
 	for i := range files {
-		res[i] = toV2FileRes(&files[i])
+		res[i] = toAPIFileRes(&files[i])
 	}
 
-	v2JSON(w, map[string]interface{}{
+	apiJSON(w, map[string]interface{}{
 		"files":      res,
 		"nextCursor": nextCursor,
 	})
 }
 
-func v2UploadFile(w http.ResponseWriter, r *http.Request) {
+func apiUploadFile(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseMultipartForm(32 << 20); err != nil {
-		v2Error(w, "multipart parse error", 400)
+		apiError(w, "multipart parse error", 400)
 		return
 	}
 
@@ -78,33 +78,33 @@ func v2UploadFile(w http.ResponseWriter, r *http.Request) {
 
 	fs := &datastore.FileSet{}
 	if err := form.SetFile(r, fs, datastore.FileTypeData); err != nil {
-		v2Error(w, err.Error(), 400)
+		apiError(w, err.Error(), 400)
 		return
 	}
 	if fs.File == nil {
-		v2Error(w, "ファイルが選択されていません", 400)
+		apiError(w, "ファイルが選択されていません", 400)
 		return
 	}
 
 	if err := dao.SaveFile(ctx, fs); err != nil {
-		v2Error(w, err.Error(), 500)
+		apiError(w, err.Error(), 500)
 		return
 	}
 
 	saved, err := dao.SelectFile(ctx, fs.Name)
 	if err != nil || saved == nil {
-		v2JSON(w, map[string]string{"status": "uploaded"})
+		apiJSON(w, map[string]string{"status": "uploaded"})
 		return
 	}
-	v2JSON(w, toV2FileRes(saved))
+	apiJSON(w, toAPIFileRes(saved))
 }
 
-func v2DeleteFiles(w http.ResponseWriter, r *http.Request) {
+func apiDeleteFiles(w http.ResponseWriter, r *http.Request) {
 	var req struct {
 		IDs []string `json:"ids"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil || len(req.IDs) == 0 {
-		v2Error(w, "ids required", 400)
+		apiError(w, "ids required", 400)
 		return
 	}
 	ctx := r.Context()
@@ -112,21 +112,21 @@ func v2DeleteFiles(w http.ResponseWriter, r *http.Request) {
 	defer dao.Close()
 
 	if err := dao.RemoveFiles(ctx, req.IDs); err != nil {
-		v2Error(w, err.Error(), 500)
+		apiError(w, err.Error(), 500)
 		return
 	}
-	v2JSON(w, map[string]string{"status": "deleted"})
+	apiJSON(w, map[string]string{"status": "deleted"})
 }
 
-func v2DeleteFile(w http.ResponseWriter, r *http.Request) {
+func apiDeleteFile(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["key"]
 	ctx := r.Context()
 	dao := datastore.NewDao()
 	defer dao.Close()
 
 	if err := dao.RemoveFile(ctx, id); err != nil {
-		v2Error(w, err.Error(), 500)
+		apiError(w, err.Error(), 500)
 		return
 	}
-	v2JSON(w, map[string]string{"status": "deleted"})
+	apiJSON(w, map[string]string{"status": "deleted"})
 }

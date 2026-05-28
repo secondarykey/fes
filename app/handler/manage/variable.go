@@ -171,5 +171,5 @@ func deleteVariableHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	//リダイレクト
-	http.Redirect(w, r, "/manage/variable/", 302)
+	http.Redirect(w, r, "/manage/v1/variable/", 302)
 }

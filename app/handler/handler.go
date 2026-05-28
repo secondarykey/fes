@@ -1,10 +1,12 @@
 package handler
 
 import (
+	"app/config"
 	"app/datastore"
 	. "app/handler/internal"
 	"app/logic"
 
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -47,7 +49,8 @@ func Register() error {
 		}
 	*/
 
-	err := RegisterGCSArchive()
+	bucket, names := loadArchiveConfig()
+	err := RegisterGCSArchive(bucket, names)
 	if err != nil {
 		log.Printf("RegisterGCSArchive() error: %+v", err)
 	}
@@ -88,6 +91,30 @@ func Register() error {
 	http.Handle("/", r)
 
 	return nil
+}
+
+func loadArchiveConfig() (string, []string) {
+	ctx := context.Background()
+	dao := datastore.NewDao()
+	defer dao.Close()
+
+	site, err := dao.SelectSite(ctx, -1)
+	if err != nil {
+		log.Printf("loadArchiveConfig: SelectSite error: %v, using defaults", err)
+		return config.ArchiveBucket, config.ArchiveNames
+	}
+
+	bucket := site.ArchiveBucket
+	if bucket == "" {
+		bucket = config.ArchiveBucket
+	}
+
+	names := site.ArchiveNames
+	if len(names) == 0 {
+		names = config.ArchiveNames
+	}
+
+	return bucket, names
 }
 
 func errorPage(w http.ResponseWriter, r *http.Request, t string, e error, num int) {

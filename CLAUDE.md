@@ -36,7 +36,7 @@ go run ./app/_cmd/archive/main.go -upload 2026-Spring
 - 第1引数はアーカイブ名（必須）。既存ディレクトリがあっても上書きする。
 - `-local`: ローカルサーバーで表示確認。アップロードしない。
 - `-upload`: バケット名を表示して y/N 確認後、GCS にアップロード。
-- アップロード先バケットは `config.ArchiveBucket`（現在: `"hummingbird-archives"`）で定義。
+- アップロード先バケットは Datastore の Site エンティティ `ArchiveBucket` フィールドから取得（未設定時は `config.ArchiveBucket` のデフォルト値 `"hummingbird-archives"` を使用）。
 
 ## Architecture
 
@@ -65,17 +65,17 @@ Pages form a parent-child tree. `HTML` stores pre-rendered output to avoid re-re
 `app/handler/internal/_assets/` is embedded with `//go:embed`. It contains:
 - `environment.json` — OAuth2 credentials (CLIENT_ID, CLIENT_SECRET)
 - `archives/` — static archive zips（ZIP 形式の旧アーカイブ）
-- `manage-v2/` — V2 管理画面の Vite ビルド成果物
+- `manage-v2/` — 管理画面 SPA の Vite ビルド成果物
 
 ### GCS アーカイブ配信
 
 `app/handler/internal/archive_gcs.go` が GCS バケットからアーカイブを配信する。
 
-- 配信対象アーカイブ名は `config.ArchiveNames` (string スライス) に列挙する。**起動時に GCS API を呼ばない**設計なので起動遅延は発生しない。
+- 配信対象アーカイブ名とバケット名は Datastore の Site エンティティから取得（未設定時は `config.ArchiveNames` / `config.ArchiveBucket` をフォールバック）。管理画面の Site Settings から編集可能。
 - 各アーカイブは `/{name}/` パスで配信される（例: `/2026-Spring/`）。
 - キャッシュ: `storage.Reader.Attrs.LastModified` を `Last-Modified` ヘッダに設定し、`If-Modified-Since` が一致すれば 304 を返す。GCS API 呼び出しは 1 リクエストあたり 1 回。
 - `Cache-Control: public, max-age=86400` を付与。
-- アーカイブ名の追加は `config/option.go` の `ArchiveNames` のみ変更すればよい。
+- アーカイブ名の追加は管理画面で設定後、再デプロイが必要（ハンドラ登録は起動時のみ）。
 
 ### テンプレートキャッシュの注意点
 
@@ -85,9 +85,9 @@ Pages form a parent-child tree. `HTML` stores pre-rendered output to avoid re-re
 
 Google OAuth2 via credentials embedded in `environment.json`. Sessions managed with Gorilla sessions. JWT used for token handling.
 
-## manage-v2/ — 管理画面 SPA (開発中)
+## manage-v2/ — 管理画面 SPA
 
-既存の `/manage/` をそのまま残しつつ `/manage/v2/` で新しい SPA ベースの管理画面を並行稼働させる構成。
+React (Vite + MUI) ベースの SPA 管理画面。`/manage/` で配信され、メインの管理 UI として使用。旧テンプレートベースの管理画面 (V1) は `/manage/v1/` に移動済み。
 
 ### コマンド
 
@@ -106,7 +106,7 @@ cd app; go build ./...
 
 | ファイル/ディレクトリ | 役割 |
 |---|---|
-| `src/App.jsx` | React Router セットアップ (basename: `/manage/v2`) |
+| `src/App.jsx` | React Router セットアップ (basename: `/manage`) |
 | `src/components/Layout.jsx` | サイドバー + Outlet |
 | `src/pages/PageList.jsx` | ページツリー一覧 (遅延展開) |
 | `src/pages/PageEdit.jsx` | ページ編集フォーム・公開/非公開操作 |
@@ -116,11 +116,11 @@ cd app; go build ./...
 
 | ファイル | 役割 |
 |---|---|
-| `app/handler/internal/manage_v2.go` | `_assets/manage-v2/` の embed + 静的配信 + SPA catch-all |
-| `app/handler/manage/v2.go` | v2 ルート登録 (`/manage/v2/api/` + `/manage/v2/` catch-all) |
-| `app/handler/manage/v2_page.go` | JSON API ハンドラ (Page CRUD・公開・非公開) |
+| `app/handler/internal/manage_spa.go` | `_assets/manage-v2/` の embed + 静的配信 + SPA catch-all |
+| `app/handler/manage/api.go` | API ルート登録 (`/manage/api/` + `/manage/` catch-all) |
+| `app/handler/manage/api_page.go` | JSON API ハンドラ (Page CRUD・公開・非公開) |
 
-### API エンドポイント (すべて `/manage/v2/api` 配下)
+### API エンドポイント (すべて `/manage/api` 配下)
 
 ```
 GET    /page/                   ルートページ + 子一覧
@@ -133,11 +133,11 @@ POST   /html/publish/{key}      HTML 公開
 POST   /html/unpublish/{key}    HTML 非公開
 ```
 
-### 認証・切り替え方針
+### 認証
 
 - 認証は既存の Gorilla セッションをそのまま使用。`/manage/` 配下全体を `ManageHandler` が保護。
-- `/manage/v2/api/` への未認証アクセスはリダイレクトではなく JSON 401 を返す。
-- 将来 v2 に完全移行する際は `/manage/` を `/manage/v2/` へリダイレクトするだけでよい。
+- `/manage/api/` への未認証アクセスはリダイレクトではなく JSON 401 を返す。
+- V1 管理画面は `/manage/v1/` でアクセス可能（テンプレートベース）。
 
 ## maps/ — 独立した React アプリ
 

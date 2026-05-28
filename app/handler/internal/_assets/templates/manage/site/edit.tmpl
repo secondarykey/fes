@@ -4,7 +4,7 @@
 
 {{define "page_template"}}
 
-<form method="post" action="/manage/site/edit" id="updateForm" name="updateForm">
+<form method="post" action="/manage/v1/site/edit" id="updateForm" name="updateForm">
 
 <table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp" width="100%">
   <tbody>
@@ -40,11 +40,27 @@
         </div>
       </td>
     </tr>
+    <tr>
+      <td class="mdl-data-table__cell--non-numeric">
+        <div class="mdl-textfield mdl-js-textfield">
+          <input class="mdl-textfield__input" type="text" name="archiveBucket" id="archiveBucket" value="{{ .Site.ArchiveBucket }}">
+          <label class="mdl-textfield__label" for="archiveBucket">Archive Bucket...</label>
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td class="mdl-data-table__cell--non-numeric">
+        <div class="mdl-textfield mdl-js-textfield">
+          <input class="mdl-textfield__input" type="text" name="archiveNames" id="archiveNames" value="{{ .ArchiveNamesCSV }}">
+          <label class="mdl-textfield__label" for="archiveNames">Archive Names(csv)...</label>
+        </div>
+      </td>
+    </tr>
 
     <tr>
       <td class="mdl-data-table__cell--non-numeric">
         <div class="mdl-textfield mdl-js-textfield">
-          <a href="/manage/page/ErrorPage">Error Page Design</a>
+          <a href="/manage/v1/page/ErrorPage">Error Page Design</a>
         </div>
       </td>
     </tr>
@@ -68,7 +84,7 @@
 
 </form>
 
-<form method="post" action="/manage/file/favicon" id="faviconForm" enctype="multipart/form-data">
+<form method="post" action="/manage/v1/file/favicon" id="faviconForm" enctype="multipart/form-data">
   <input type="file" name="file" id="file" value="" style="display:none;"/>
 </form>
 
@@ -83,7 +99,7 @@
     <ul class="mdl-list">
 
       <li class="mdl-list__item">
-         <form id="GCForm" target="gcWindow" method="get" action="/manage/system/gc">
+         <form id="GCForm" target="gcWindow" method="get" action="/manage/v1/system/gc">
            <button id="GCBtn" type="button" class="mdl-button mdl-js-button mdl-button--raised mdl-button--primary">
             GC
            </button>
@@ -92,7 +108,7 @@
 
 
       <li class="mdl-list__item">
-         <form method="post" action="/manage/datastore/backup" onsubmit="return confirm('a large amount of access to Datastore occurs?');">
+         <form method="post" action="/manage/v1/datastore/backup" onsubmit="return confirm('a large amount of access to Datastore occurs?');">
            <button type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-button--primary">
             Backup
            </button>
@@ -100,7 +116,7 @@
       </li>
 
       <li class="mdl-list__item">
-        <form method="post" action="/manage/datastore/restore" enctype="multipart/form-data" onsubmit="return confirm('a large amount of access to Datastore occurs?');">
+        <form method="post" action="/manage/v1/datastore/restore" enctype="multipart/form-data" onsubmit="return confirm('a large amount of access to Datastore occurs?');">
           <input type="file" name="restoreFile" value=""/>
           <button type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-button--primary">
             Restore
@@ -109,7 +125,7 @@
       </li>
 
       <li class="mdl-list__item">
-        <form method="post" action="/manage/site/clean" onsubmit="return confirm('Check?');">
+        <form method="post" action="/manage/v1/site/clean" onsubmit="return confirm('Check?');">
           <button type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-button--primary">
             Clean
           </button>

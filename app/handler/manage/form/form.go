@@ -108,6 +108,11 @@ func SetSite(r *http.Request, site *datastore.Site) error {
 	site.ManageURL = r.FormValue("manageURL")
 	site.Managers = strings.Split(r.FormValue("manager"), ",")
 
+	site.ArchiveBucket = r.FormValue("archiveBucket")
+	if raw := r.FormValue("archiveNames"); raw != "" {
+		site.ArchiveNames = strings.Split(raw, ",")
+	}
+
 	return nil
 }
 

@@ -36,11 +36,11 @@ func RegisterStatic() error {
 
 func RegisterManageStatic() error {
 
-	fs := http.StripPrefix("/manage/", http.FileServer(http.FS(manageFs)))
+	fs := http.StripPrefix("/manage/v1/", http.FileServer(http.FS(manageFs)))
 
-	http.Handle("/manage/favicon.ico", fs)
-	http.Handle("/manage/js/", fs)
-	http.Handle("/manage/css/", fs)
+	http.Handle("/manage/v1/favicon.ico", fs)
+	http.Handle("/manage/v1/js/", fs)
+	http.Handle("/manage/v1/css/", fs)
 
 	return nil
 }

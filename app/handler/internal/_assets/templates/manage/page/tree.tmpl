@@ -10,7 +10,7 @@
 
 {{define "tree_template"}}
 <div style="padding-left:20px;">
-<a href="/manage/page/{{.Page.Key.Name}}" {{if .Page.Deleted}}style="color:red;"{{end}} target="page_edit">{{ .Page.Name }}</a>
+<a href="/manage/v1/page/{{.Page.Key.Name}}" {{if .Page.Deleted}}style="color:red;"{{end}} target="page_edit">{{ .Page.Name }}</a>
 {{ range .Children}}
   {{template "tree_template" .}}
 {{ end }}

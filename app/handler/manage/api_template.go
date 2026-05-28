@@ -10,17 +10,17 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func registerV2TemplateAPI(r *mux.Router) {
-	r.HandleFunc("/template/", v2ListTemplates).Methods("GET")
-	r.HandleFunc("/template/sequence", v2TemplateSequence).Methods("POST")
-	r.HandleFunc("/template/new", v2NewTemplate).Methods("GET")
-	r.HandleFunc("/template/{key}/references", v2TemplateReferences).Methods("GET")
-	r.HandleFunc("/template/{key}", v2GetTemplate).Methods("GET")
-	r.HandleFunc("/template/{key}", v2UpdateTemplate).Methods("POST")
-	r.HandleFunc("/template/{key}", v2DeleteTemplate).Methods("DELETE")
+func registerTemplateAPI(r *mux.Router) {
+	r.HandleFunc("/template/", apiListTemplates).Methods("GET")
+	r.HandleFunc("/template/sequence", apiTemplateSequence).Methods("POST")
+	r.HandleFunc("/template/new", apiNewTemplate).Methods("GET")
+	r.HandleFunc("/template/{key}/references", apiTemplateReferences).Methods("GET")
+	r.HandleFunc("/template/{key}", apiGetTemplate).Methods("GET")
+	r.HandleFunc("/template/{key}", apiUpdateTemplate).Methods("POST")
+	r.HandleFunc("/template/{key}", apiDeleteTemplate).Methods("DELETE")
 }
 
-type v2TemplateDetailRes struct {
+type apiTemplateDetailRes struct {
 	ID        string    `json:"id"`
 	Name      string    `json:"name"`
 	Type      int       `json:"type"`
@@ -32,12 +32,12 @@ type v2TemplateDetailRes struct {
 	UpdatedAt time.Time `json:"updatedAt"`
 }
 
-func toV2TemplateDetailRes(t *datastore.Template, content string) v2TemplateDetailRes {
+func toAPITemplateDetailRes(t *datastore.Template, content string) apiTemplateDetailRes {
 	id := ""
 	if t.Key != nil {
 		id = t.Key.Name
 	}
-	return v2TemplateDetailRes{
+	return apiTemplateDetailRes{
 		ID:        id,
 		Name:      t.Name,
 		Type:      t.Type,
@@ -50,7 +50,7 @@ func toV2TemplateDetailRes(t *datastore.Template, content string) v2TemplateDeta
 	}
 }
 
-func v2ListTemplates(w http.ResponseWriter, r *http.Request) {
+func apiListTemplates(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	dao := datastore.NewDao()
 	defer dao.Close()
@@ -63,33 +63,33 @@ func v2ListTemplates(w http.ResponseWriter, r *http.Request) {
 
 	templates, nextCursor, err := dao.SelectTemplates(ctx, typ, cursor)
 	if err != nil {
-		v2Error(w, err.Error(), 500)
+		apiError(w, err.Error(), 500)
 		return
 	}
 
-	res := make([]v2TemplateRes, len(templates))
+	res := make([]apiTemplateRes, len(templates))
 	for i, t := range templates {
 		id := ""
 		if t.Key != nil {
 			id = t.Key.Name
 		}
-		res[i] = v2TemplateRes{ID: id, Name: t.Name, Type: t.Type}
+		res[i] = apiTemplateRes{ID: id, Name: t.Name, Type: t.Type}
 	}
 
-	v2JSON(w, map[string]interface{}{
+	apiJSON(w, map[string]interface{}{
 		"templates":  res,
 		"nextCursor": nextCursor,
 	})
 }
 
-func v2NewTemplate(w http.ResponseWriter, r *http.Request) {
+func apiNewTemplate(w http.ResponseWriter, r *http.Request) {
 	key := datastore.CreateTemplateKey()
 	t := &datastore.Template{}
 	t.LoadKey(key)
-	v2JSON(w, toV2TemplateDetailRes(t, ""))
+	apiJSON(w, toAPITemplateDetailRes(t, ""))
 }
 
-func v2GetTemplate(w http.ResponseWriter, r *http.Request) {
+func apiGetTemplate(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["key"]
 	ctx := r.Context()
 	dao := datastore.NewDao()
@@ -97,11 +97,11 @@ func v2GetTemplate(w http.ResponseWriter, r *http.Request) {
 
 	t, err := dao.SelectTemplate(ctx, id)
 	if err != nil {
-		v2Error(w, err.Error(), 500)
+		apiError(w, err.Error(), 500)
 		return
 	}
 	if t == nil {
-		v2Error(w, "template not found", 404)
+		apiError(w, "template not found", 404)
 		return
 	}
 
@@ -111,22 +111,22 @@ func v2GetTemplate(w http.ResponseWriter, r *http.Request) {
 		content = string(td.Content)
 	}
 
-	v2JSON(w, toV2TemplateDetailRes(t, content))
+	apiJSON(w, toAPITemplateDetailRes(t, content))
 }
 
-type v2TemplateUpdateReq struct {
+type apiTemplateUpdateReq struct {
 	Name    string `json:"name"`
 	Type    int    `json:"type"`
 	Content string `json:"content"`
 	Version int    `json:"version"`
 }
 
-func v2UpdateTemplate(w http.ResponseWriter, r *http.Request) {
+func apiUpdateTemplate(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["key"]
 
-	var req v2TemplateUpdateReq
+	var req apiTemplateUpdateReq
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		v2Error(w, "invalid request body", 400)
+		apiError(w, "invalid request body", 400)
 		return
 	}
 
@@ -136,7 +136,7 @@ func v2UpdateTemplate(w http.ResponseWriter, r *http.Request) {
 
 	existing, err := dao.SelectTemplate(ctx, id)
 	if err != nil {
-		v2Error(w, err.Error(), 500)
+		apiError(w, err.Error(), 500)
 		return
 	}
 
@@ -160,19 +160,19 @@ func v2UpdateTemplate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := dao.PutTemplate(ctx, ts); err != nil {
-		v2Error(w, err.Error(), 500)
+		apiError(w, err.Error(), 500)
 		return
 	}
 
 	updated, err := dao.SelectTemplate(ctx, id)
 	if err != nil || updated == nil {
-		v2JSON(w, map[string]string{"status": "saved"})
+		apiJSON(w, map[string]string{"status": "saved"})
 		return
 	}
-	v2JSON(w, toV2TemplateDetailRes(updated, req.Content))
+	apiJSON(w, toAPITemplateDetailRes(updated, req.Content))
 }
 
-func v2DeleteTemplate(w http.ResponseWriter, r *http.Request) {
+func apiDeleteTemplate(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["key"]
 	ctx := r.Context()
 	dao := datastore.NewDao()
@@ -180,22 +180,22 @@ func v2DeleteTemplate(w http.ResponseWriter, r *http.Request) {
 
 	ok, err := dao.UsingTemplate(ctx, id)
 	if err != nil {
-		v2Error(w, err.Error(), 500)
+		apiError(w, err.Error(), 500)
 		return
 	}
 	if ok {
-		v2Error(w, "このテンプレートはページで使用中のため削除できません", 409)
+		apiError(w, "このテンプレートはページで使用中のため削除できません", 409)
 		return
 	}
 
 	if err := dao.RemoveTemplate(ctx, id); err != nil {
-		v2Error(w, err.Error(), 500)
+		apiError(w, err.Error(), 500)
 		return
 	}
-	v2JSON(w, map[string]string{"status": "deleted"})
+	apiJSON(w, map[string]string{"status": "deleted"})
 }
 
-func v2TemplateReferences(w http.ResponseWriter, r *http.Request) {
+func apiTemplateReferences(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["key"]
 	ctx := r.Context()
 	dao := datastore.NewDao()
@@ -214,7 +214,7 @@ func v2TemplateReferences(w http.ResponseWriter, r *http.Request) {
 	for _, typ := range []int{2, 1} {
 		ps, err := dao.SelectReferencePages(ctx, id, typ)
 		if err != nil {
-			v2Error(w, err.Error(), 500)
+			apiError(w, err.Error(), 500)
 			return
 		}
 		for _, p := range ps {
@@ -234,18 +234,18 @@ func v2TemplateReferences(w http.ResponseWriter, r *http.Request) {
 	if pages == nil {
 		pages = []refPage{}
 	}
-	v2JSON(w, map[string]interface{}{"pages": pages})
+	apiJSON(w, map[string]interface{}{"pages": pages})
 }
 
-type v2TemplateSeqReqItem struct {
+type apiTemplateSeqReqItem struct {
 	ID      string `json:"id"`
 	Version int    `json:"version"`
 }
 
-func v2TemplateSequence(w http.ResponseWriter, r *http.Request) {
-	var req []v2TemplateSeqReqItem
+func apiTemplateSequence(w http.ResponseWriter, r *http.Request) {
+	var req []apiTemplateSeqReqItem
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		v2Error(w, "invalid request body", 400)
+		apiError(w, "invalid request body", 400)
 		return
 	}
 
@@ -262,8 +262,8 @@ func v2TemplateSequence(w http.ResponseWriter, r *http.Request) {
 	defer dao.Close()
 
 	if err := dao.PutTemplateSequence(ctx, items); err != nil {
-		v2Error(w, err.Error(), 500)
+		apiError(w, err.Error(), 500)
 		return
 	}
-	v2JSON(w, map[string]string{"status": "ok"})
+	apiJSON(w, map[string]string{"status": "ok"})
 }

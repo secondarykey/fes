@@ -14,24 +14,24 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func registerV2ToolAPI(r *mux.Router) {
-	r.HandleFunc("/tool/gc", v2GC).Methods("POST")
-	r.HandleFunc("/tool/clean", v2SiteClean).Methods("POST")
-	r.HandleFunc("/tool/page-list", v2PageList).Methods("GET")
-	r.HandleFunc("/tool/backup", v2Backup).Methods("GET")
-	r.HandleFunc("/tool/restore", v2Restore).Methods("POST")
+func registerToolAPI(r *mux.Router) {
+	r.HandleFunc("/tool/gc", apiGC).Methods("POST")
+	r.HandleFunc("/tool/clean", apiSiteClean).Methods("POST")
+	r.HandleFunc("/tool/page-list", apiPageList).Methods("GET")
+	r.HandleFunc("/tool/backup", apiBackup).Methods("GET")
+	r.HandleFunc("/tool/restore", apiRestore).Methods("POST")
 }
 
-func v2GC(w http.ResponseWriter, r *http.Request) {
+func apiGC(w http.ResponseWriter, r *http.Request) {
 	var buf bytes.Buffer
 	if err := logic.GC(&buf); err != nil {
-		v2Error(w, err.Error(), 500)
+		apiError(w, err.Error(), 500)
 		return
 	}
-	v2JSON(w, map[string]string{"result": buf.String()})
+	apiJSON(w, map[string]string{"result": buf.String()})
 }
 
-func v2SiteClean(w http.ResponseWriter, r *http.Request) {
+func apiSiteClean(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	dao := datastore.NewDao()
 	defer dao.Close()
@@ -45,7 +45,7 @@ func v2SiteClean(w http.ResponseWriter, r *http.Request) {
 	// 孤立HTML削除
 	htmlIDs, err := dao.GetHTMLs(ctx)
 	if err != nil {
-		v2Error(w, err.Error(), 500)
+		apiError(w, err.Error(), 500)
 		return
 	}
 	for _, id := range htmlIDs {
@@ -62,7 +62,7 @@ func v2SiteClean(w http.ResponseWriter, r *http.Request) {
 	// 孤立ページ画像削除（公開・下書き両方）
 	files, err := dao.GetAllFiles(ctx)
 	if err != nil {
-		v2Error(w, err.Error(), 500)
+		apiError(w, err.Error(), 500)
 		return
 	}
 	for _, f := range files {
@@ -82,10 +82,10 @@ func v2SiteClean(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	v2JSON(w, result)
+	apiJSON(w, result)
 }
 
-func v2PageList(w http.ResponseWriter, r *http.Request) {
+func apiPageList(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	dao := datastore.NewDao()
 	defer dao.Close()
@@ -94,7 +94,7 @@ func v2PageList(w http.ResponseWriter, r *http.Request) {
 	if parentID == "" {
 		root, err := dao.SelectRootPage(ctx)
 		if err != nil || root == nil {
-			v2Error(w, "root page not found", 500)
+			apiError(w, "root page not found", 500)
 			return
 		}
 		parentID = root.Key.Name
@@ -102,20 +102,20 @@ func v2PageList(w http.ResponseWriter, r *http.Request) {
 
 	var buf bytes.Buffer
 	if err := appendPageListItems(ctx, dao, parentID, &buf); err != nil {
-		v2Error(w, err.Error(), 500)
+		apiError(w, err.Error(), 500)
 		return
 	}
-	v2JSON(w, map[string]string{"html": buf.String()})
+	apiJSON(w, map[string]string{"html": buf.String()})
 }
 
-func v2Backup(w http.ResponseWriter, r *http.Request) {
+func apiBackup(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	dao := datastore.NewDao()
 	defer dao.Close()
 
 	data, err := dao.CreateBackupData(ctx)
 	if err != nil {
-		v2Error(w, err.Error(), 500)
+		apiError(w, err.Error(), 500)
 		return
 	}
 
@@ -140,23 +140,23 @@ func v2Backup(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func v2Restore(w http.ResponseWriter, r *http.Request) {
+func apiRestore(w http.ResponseWriter, r *http.Request) {
 	file, header, err := r.FormFile("file")
 	if err != nil {
-		v2Error(w, "ファイルの読み込みに失敗しました: "+err.Error(), 400)
+		apiError(w, "ファイルの読み込みに失敗しました: "+err.Error(), 400)
 		return
 	}
 	defer file.Close()
 
 	reader, err := zip.NewReader(file, header.Size)
 	if err != nil {
-		v2Error(w, "ZIP の解析に失敗しました: "+err.Error(), 400)
+		apiError(w, "ZIP の解析に失敗しました: "+err.Error(), 400)
 		return
 	}
 
 	backup, err := createGob(reader)
 	if err != nil {
-		v2Error(w, "データの変換に失敗しました: "+err.Error(), 500)
+		apiError(w, "データの変換に失敗しました: "+err.Error(), 500)
 		return
 	}
 
@@ -165,11 +165,11 @@ func v2Restore(w http.ResponseWriter, r *http.Request) {
 	defer dao.Close()
 
 	if err := dao.PutBackupData(ctx, backup); err != nil {
-		v2Error(w, "リストアに失敗しました: "+err.Error(), 500)
+		apiError(w, "リストアに失敗しました: "+err.Error(), 500)
 		return
 	}
 
-	v2JSON(w, map[string]string{"status": "restored"})
+	apiJSON(w, map[string]string{"status": "restored"})
 }
 
 func appendPageListItems(ctx context.Context, dao *datastore.Dao, parentID string, buf *bytes.Buffer) error {

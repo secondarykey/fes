@@ -7,8 +7,8 @@ import (
 
 	"errors"
 	"fmt"
-
 	"net/http"
+	"strings"
 )
 
 //setting画面
@@ -40,10 +40,13 @@ func viewSiteHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	archiveNamesCSV := strings.Join(site.ArchiveNames, ",")
+
 	dto := struct {
-		Site     *datastore.Site
-		Managers string
-	}{site, managers}
+		Site            *datastore.Site
+		Managers        string
+		ArchiveNamesCSV string
+	}{site, managers, archiveNamesCSV}
 
 	viewManage(w, "site/edit.tmpl", dto)
 }

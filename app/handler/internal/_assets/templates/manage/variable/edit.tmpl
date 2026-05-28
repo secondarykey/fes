@@ -3,7 +3,7 @@
 
 {{define "page_template"}}
 
-<form method="post" action="/manage/variable/edit" name="updateForm">
+<form method="post" action="/manage/v1/variable/edit" name="updateForm">
 {{ if .Variable.Key  }}
 <input type="hidden" name="check" value="false">
 {{ else }}
@@ -102,7 +102,7 @@
         const body = new FormData()
         body.append('targetFile', f);
         const xhr = new XMLHttpRequest()
-        xhr.open('post', '/manage/variable/upload')
+        xhr.open('post', '/manage/v1/variable/upload')
         xhr.onload = () => {
           document.querySelector('#variableData').value = xhr.responseText;
         }

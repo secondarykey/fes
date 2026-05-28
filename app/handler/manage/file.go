@@ -104,7 +104,7 @@ func addFileHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	//リダイレクト
-	http.Redirect(w, r, "/manage/file/", 302)
+	http.Redirect(w, r, "/manage/v1/file/", 302)
 }
 
 func faviconUploadHandler(w http.ResponseWriter, r *http.Request) {
@@ -130,7 +130,7 @@ func faviconUploadHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	//リダイレクト
-	http.Redirect(w, r, "/manage/site/", 302)
+	http.Redirect(w, r, "/manage/v1/site/", 302)
 }
 
 //URL = /manage/file/delete
@@ -148,7 +148,7 @@ func deleteFileHandler(w http.ResponseWriter, r *http.Request) {
 		errorPage(w, "RemoveFile Error", err, 500)
 		return
 	}
-	http.Redirect(w, r, "/manage/file/", 302)
+	http.Redirect(w, r, "/manage/v1/file/", 302)
 }
 
 type Resize struct {
@@ -215,7 +215,7 @@ func resizeCommitFileHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(w, r, "/manage/file/resize/"+resize.id, 302)
+	http.Redirect(w, r, "/manage/v1/file/resize/"+resize.id, 302)
 }
 
 func resizeFileViewHandler(w http.ResponseWriter, r *http.Request) {
