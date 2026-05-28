@@ -97,7 +97,10 @@ export default function PageEdit() {
   }, [key, isNew, parentKey])
 
   useEffect(() => {
-    if (isNew || !key) return
+    if (isNew || !key) {
+      setImage(null)
+      return
+    }
     getPageImage(key)
       .then(d => setImage(d))
       .catch(() => {})
@@ -410,49 +413,57 @@ export default function PageEdit() {
                 />
               )}
             </Box>
-            {image?.url ? (
-              <Box
-                component="img"
-                src={image.url}
-                alt="ページ画像"
-                sx={{ width: '100%', maxHeight: 160, objectFit: 'contain', border: '1px solid', borderColor: 'divider', borderRadius: 1, display: 'block', mb: 1 }}
-              />
-            ) : (
+            {isNew ? (
               <Box sx={{ width: '100%', height: 120, border: '1px dashed', borderColor: 'divider', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1 }}>
-                <Typography variant="body2" color="text.disabled">画像なし</Typography>
+                <Typography variant="body2" color="text.disabled">保存後に設定できます</Typography>
               </Box>
+            ) : (
+              <>
+                {image?.url ? (
+                  <Box
+                    component="img"
+                    src={image.url}
+                    alt="ページ画像"
+                    sx={{ width: '100%', maxHeight: 160, objectFit: 'contain', border: '1px solid', borderColor: 'divider', borderRadius: 1, display: 'block', mb: 1 }}
+                  />
+                ) : (
+                  <Box sx={{ width: '100%', height: 120, border: '1px dashed', borderColor: 'divider', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1 }}>
+                    <Typography variant="body2" color="text.disabled">画像なし</Typography>
+                  </Box>
+                )}
+                <input
+                  type="file"
+                  accept="image/*"
+                  ref={imageInputRef}
+                  style={{ display: 'none' }}
+                  onChange={handleImageSelect}
+                />
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    sx={{ flex: 1 }}
+                    startIcon={imageUploading ? <CircularProgress size={14} /> : <ImageIcon />}
+                    onClick={() => imageInputRef.current?.click()}
+                    disabled={imageUploading}
+                  >
+                    {imageUploading ? '処理中...' : '画像を選択'}
+                  </Button>
+                  {image?.url && (
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      color="error"
+                      startIcon={<DeleteIcon />}
+                      onClick={handleImageDelete}
+                      disabled={imageUploading}
+                    >
+                      削除
+                    </Button>
+                  )}
+                </Box>
+              </>
             )}
-            <input
-              type="file"
-              accept="image/*"
-              ref={imageInputRef}
-              style={{ display: 'none' }}
-              onChange={handleImageSelect}
-            />
-            <Box sx={{ display: 'flex', gap: 1 }}>
-              <Button
-                variant="outlined"
-                size="small"
-                sx={{ flex: 1 }}
-                startIcon={imageUploading ? <CircularProgress size={14} /> : <ImageIcon />}
-                onClick={() => imageInputRef.current?.click()}
-                disabled={imageUploading}
-              >
-                {imageUploading ? '処理中...' : '画像を選択'}
-              </Button>
-              {image?.url && (
-                <Button
-                  variant="outlined"
-                  size="small"
-                  color="error"
-                  startIcon={<DeleteIcon />}
-                  onClick={handleImageDelete}
-                  disabled={imageUploading}
-                >
-                  削除
-                </Button>
-              )}
-            </Box>
           </Box>
         </Box>
 
@@ -460,23 +471,6 @@ export default function PageEdit() {
         <Box ref={actionsBarRef} sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
           {!isNew ? (
             <Box sx={{ display: 'flex', gap: 1 }}>
-              <Button
-                variant="text"
-                size="small"
-                startIcon={<AccountTreeIcon />}
-                component={RouterLink}
-                to={`/page/${key}/children`}
-              >
-                子ページ管理
-              </Button>
-              <Button
-                variant="text"
-                size="small"
-                startIcon={<AddIcon />}
-                onClick={handleAddChild}
-              >
-                子ページを追加
-              </Button>
               <Button
                 variant="text"
                 size="small"
@@ -664,6 +658,27 @@ export default function PageEdit() {
                 label="有効"
                 sx={{ ml: 'auto' }}
               />
+            </Box>
+
+            <Divider sx={{ my: 2 }} />
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              <Button
+                variant="text"
+                size="small"
+                startIcon={<AddIcon />}
+                onClick={handleAddChild}
+              >
+                子ページの追加
+              </Button>
+              <Button
+                variant="text"
+                size="small"
+                startIcon={<AccountTreeIcon />}
+                component={RouterLink}
+                to={`/page/${key}/children`}
+              >
+                子ページ管理
+              </Button>
             </Box>
           </>
         )}

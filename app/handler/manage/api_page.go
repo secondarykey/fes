@@ -159,6 +159,7 @@ func apiGetChildren(w http.ResponseWriter, r *http.Request) {
 
 func apiNewPage(w http.ResponseWriter, r *http.Request) {
 	parentKey := mux.Vars(r)["parentKey"]
+	ctx := r.Context()
 	dao := datastore.NewDao()
 	defer dao.Close()
 
@@ -166,6 +167,18 @@ func apiNewPage(w http.ResponseWriter, r *http.Request) {
 	page.Parent = parentKey
 	page.Deleted = false
 	page.LoadKey(datastore.CreatePageKey())
+
+	// パンくずリスト（親を辿る）
+	var breadcrumbs []apiPageRes
+	cur := parentKey
+	for cur != "" {
+		pp, err := dao.SelectPage(ctx, cur, -1)
+		if err != nil || pp == nil {
+			break
+		}
+		breadcrumbs = append([]apiPageRes{toAPIPageRes(pp)}, breadcrumbs...)
+		cur = pp.Parent
+	}
 
 	tmplRes, err := apiTemplates(r, dao)
 	if err != nil {
@@ -177,7 +190,7 @@ func apiNewPage(w http.ResponseWriter, r *http.Request) {
 		"page":        toAPIPageRes(page),
 		"pageData":    "",
 		"children":    []apiPageRes{},
-		"breadcrumbs": []apiPageRes{},
+		"breadcrumbs": breadcrumbs,
 		"templates":   tmplRes,
 	})
 }
