@@ -147,7 +147,7 @@ func deleteTemplateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	//リダイレクト
-	http.Redirect(w, r, "/manage/template/", 302)
+	http.Redirect(w, r, "/manage/v1/template/", 302)
 }
 
 func referenceTemplateHandler(w http.ResponseWriter, r *http.Request) {
@@ -161,5 +161,5 @@ func referenceTemplateHandler(w http.ResponseWriter, r *http.Request) {
 		typ = "page"
 	}
 
-	http.Redirect(w, r, "/manage/page/template/"+typ+"/"+id, 302)
+	http.Redirect(w, r, "/manage/v1/page/template/"+typ+"/"+id, 302)
 }

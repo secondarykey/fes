@@ -108,7 +108,7 @@ func editDraftHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if redirect {
-			http.Redirect(w, r, "/manage/draft/", 302)
+			http.Redirect(w, r, "/manage/v1/draft/", 302)
 		}
 	}
 
@@ -144,7 +144,7 @@ func deleteDraftHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	//リダイレクト
-	http.Redirect(w, r, "/manage/draft/", 302)
+	http.Redirect(w, r, "/manage/v1/draft/", 302)
 }
 
 func publishDraftHandler(w http.ResponseWriter, r *http.Request) {
@@ -184,7 +184,7 @@ func publishDraftHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	//リダイレクト
-	http.Redirect(w, r, "/manage/draft/", 302)
+	http.Redirect(w, r, "/manage/v1/draft/", 302)
 }
 
 func currentDraftHandler(w http.ResponseWriter, r *http.Request) {
@@ -200,7 +200,7 @@ func currentDraftHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(w, r, "/manage/draft/", 302)
+	http.Redirect(w, r, "/manage/v1/draft/", 302)
 }
 
 func addDraftPageHandler(w http.ResponseWriter, r *http.Request) {
@@ -235,7 +235,7 @@ func addDraftPageHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(w, r, "/manage/page/"+id, 302)
+	http.Redirect(w, r, "/manage/v1/page/"+id, 302)
 }
 
 func deleteDraftPageHandler(w http.ResponseWriter, r *http.Request) {
@@ -254,5 +254,5 @@ func deleteDraftPageHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(w, r, "/manage/draft/edit/"+draftId, 302)
+	http.Redirect(w, r, "/manage/v1/draft/edit/"+draftId, 302)
 }

@@ -30,11 +30,14 @@ const (
 	DatastoreProjectID    = "DATASTORE_PROJECT_ID"
 	DatastoreDataset      = "DATASTORE_DATASET"
 
+	// ArchiveBucket はデフォルトのバケット名。
+	// Datastore の Site エンティティに設定がある場合はそちらが優先される。
 	ArchiveBucket = "hummingbird-archives"
 )
 
-// ArchiveNames はアーカイブとして公開するディレクトリ名の一覧。
-// 追加した場合は再デプロイが必要。
+// ArchiveNames はアーカイブとして公開するディレクトリ名のデフォルト一覧。
+// Datastore の Site エンティティに ArchiveNames が設定されている場合はそちらが優先される。
+// 変更した場合は再デプロイが必要。
 var ArchiveNames = []string{
 	"2020",
 	"2021",

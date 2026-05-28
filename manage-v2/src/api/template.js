@@ -1,4 +1,4 @@
-const BASE = '/manage/v2/api/template'
+const BASE = '/manage/api/template'
 
 async function apiFetch(url, options = {}) {
   const res = await fetch(url, options)
@@ -50,7 +50,7 @@ export function getTemplateReferences(id) {
 }
 
 export function publishPages(ids) {
-  return apiFetch('/manage/v2/api/html/publish-pages', {
+  return apiFetch('/manage/api/html/publish-pages', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ ids }),

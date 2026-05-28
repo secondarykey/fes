@@ -66,7 +66,7 @@ export default function App() {
     <ColorModeContext.Provider value={colorModeContext}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
-        <BrowserRouter basename="/manage/v2">
+        <BrowserRouter basename="/manage">
           <Routes>
             <Route path="/" element={<Layout />}>
               <Route index element={<Navigate to="/page" replace />} />

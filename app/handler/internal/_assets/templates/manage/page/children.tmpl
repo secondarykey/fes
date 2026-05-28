@@ -3,7 +3,7 @@
 {{define "header"}}
 
 {{ if ne .Parent "Trash" }}
-Page Tool[<a href="/manage/page/{{ .Parent }}">Parent</a>]
+Page Tool[<a href="/manage/v1/page/{{ .Parent }}">Parent</a>]
 {{ end }}
 {{ if eq .Parent "Trash" }}
 Trash
@@ -53,7 +53,7 @@ Trash
       </td>
 
       <td class="mdl-data-table__cell--non-numeric">
-        <a href="/manage/page/{{ .Key.Name}}" target="_page_editor" {{if .Deleted}}style="color:red;"{{end}}>{{ .Name }}</a>
+        <a href="/manage/v1/page/{{ .Key.Name}}" target="_page_editor" {{if .Deleted}}style="color:red;"{{end}}>{{ .Name }}</a>
         <br>
         <span style="font-size:10px;color:#999999;">{{ .Key.Name }}</span>
       </td>
@@ -99,11 +99,11 @@ Trash
 {{ end }}
   </tbody>
 
-  <form id="sortForm" name="sortForm" method="post" action="/manage/page/update/sort">
+  <form id="sortForm" name="sortForm" method="post" action="/manage/v1/page/update/sort">
     <input type="hidden" name="id" value="{{.Parent}}" />
   </form>
 
-  <form id="sequenceForm" name="sequenceForm" method="post" action="/manage/page/update/sequence">
+  <form id="sequenceForm" name="sequenceForm" method="post" action="/manage/v1/page/update/sequence">
     <input type="hidden" name="id" value="{{.Parent}}" />
     <input type="hidden" name="ids" id="ids" value="" />
     <input type="hidden" name="versions" id="versions" value="" />
@@ -119,7 +119,7 @@ Trash
   </div>
 
   <div class="panel">
-    <form id="moveForm" name="moveForm" method="post" action="/manage/page/update/move" onsubmit="return confirm('realy?');">
+    <form id="moveForm" name="moveForm" method="post" action="/manage/v1/page/update/move" onsubmit="return confirm('realy?');">
       <input type="hidden" name="id" value="{{.Parent}}" />
 
       <div class="mdl-textfield mdl-js-textfield">
@@ -154,7 +154,7 @@ Trash
 {{ if ne .Parent "Trash" }}
     var addBtn = document.querySelector('#add-content');
     addBtn.addEventListener('click', function() {
-      var url = "/manage/page/add/{{.Parent}}";
+      var url = "/manage/v1/page/add/{{.Parent}}";
       var name = "_page_editor";
       window.open(url,name);
       return false;

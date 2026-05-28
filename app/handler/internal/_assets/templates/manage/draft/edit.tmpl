@@ -5,7 +5,7 @@ Edit Draft
 {{end}}
 
 {{define "page_template"}}
-<form method="post" action="/manage/draft/edit/{{ .Draft.Key.Name }}" name="updateForm">
+<form method="post" action="/manage/v1/draft/edit/{{ .Draft.Key.Name }}" name="updateForm">
 
 <table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp" width="100%">
   <tbody>
@@ -36,7 +36,7 @@ Edit Draft
 {{ range $i,$v := .DraftPages }}
     <tr class="seqRow" data-index="{{ $i }}" data-id="{{.Key.Name}}" data-version="{{.Version}}">
       <td class="mdl-data-table__cell--non-numeric">
-        <a href="/manage/page/{{ .PageID}}" target="_page_editor">{{ .Name }}</a>
+        <a href="/manage/v1/page/{{ .PageID}}" target="_page_editor">{{ .Name }}</a>
       </td>
       <td>{{convertDate .CreatedAt}}</td>
 
@@ -211,7 +211,7 @@ Edit Draft
       var id = tr.getAttribute("data-id");
 
       confirmFes("Delete Draft Page?",function() {
-        window.location.href = "/manage/draft/page/delete/" + id;
+        window.location.href = "/manage/v1/draft/page/delete/" + id;
       });
 
     });

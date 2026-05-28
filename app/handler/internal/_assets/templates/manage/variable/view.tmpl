@@ -16,7 +16,7 @@
   <tbody>
 {{ range .Variables}}
     <tr>
-      <td class="mdl-data-table__cell--non-numeric"><a href="/manage/variable/edit/{{ .Key.Name}}">{{ .Key.Name }}</a></td>
+      <td class="mdl-data-table__cell--non-numeric"><a href="/manage/v1/variable/edit/{{ .Key.Name}}">{{ .Key.Name }}</a></td>
       <td>{{convertDate .CreatedAt}}<br>{{convertDate .UpdatedAt}}</td>
       <td>
       <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent removeBtn" data-id="{{ .Key.Name }}">
@@ -50,7 +50,7 @@
 </table>
 
 
-<a href="/manage/variable/add">
+<a href="/manage/v1/variable/add">
 <button id="add-content" class="mdl-button mdl-js-button mdl-button--fab mdl-button--primary">
   <i class="material-icons">add</i>
 </button>
@@ -64,7 +64,7 @@
         removes[i].addEventListener('click', function(e) {
             confirmFes("Delete Variable?",function() {
               var id = e.target.parentElement.getAttribute('data-id');
-              window.location.href = "/manage/variable/delete/" + id;
+              window.location.href = "/manage/v1/variable/delete/" + id;
             });
         });
     }

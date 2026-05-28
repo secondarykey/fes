@@ -12,6 +12,7 @@ import { getSite, updateSite } from '../api/site'
 export default function SiteEdit() {
   const [form, setForm] = useState(null)
   const [newManager, setNewManager] = useState('')
+  const [newArchiveName, setNewArchiveName] = useState('')
   const [saving, setSaving] = useState(false)
   const [snack, setSnack] = useState({ open: false, message: '', severity: 'success' })
 
@@ -52,6 +53,21 @@ export default function SiteEdit() {
 
   const handleRemoveManager = (email) => {
     setForm(f => ({ ...f, managers: f.managers.filter(m => m !== email) }))
+  }
+
+  const handleAddArchiveName = () => {
+    const name = newArchiveName.trim()
+    if (!name) return
+    if (form.archiveNames.includes(name)) {
+      setNewArchiveName('')
+      return
+    }
+    setForm(f => ({ ...f, archiveNames: [...f.archiveNames, name] }))
+    setNewArchiveName('')
+  }
+
+  const handleRemoveArchiveName = (name) => {
+    setForm(f => ({ ...f, archiveNames: f.archiveNames.filter(n => n !== name) }))
   }
 
   if (!form) {
@@ -105,6 +121,65 @@ export default function SiteEdit() {
           sx={{ mb: 3 }}
         />
 
+        <Divider sx={{ mb: 2 }} />
+        <Typography variant="subtitle1" fontWeight={600} gutterBottom>Archive</Typography>
+
+        <TextField
+          label="GCS バケット名"
+          value={form.archiveBucket || ''}
+          onChange={e => setForm(f => ({ ...f, archiveBucket: e.target.value }))}
+          fullWidth
+          size="small"
+          placeholder="hummingbird-archives"
+          sx={{ mb: 2 }}
+        />
+
+        <Typography variant="subtitle2" gutterBottom>アーカイブ名一覧</Typography>
+        <Box sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1, mb: 3 }}>
+          {(form.archiveNames || []).length === 0 ? (
+            <Typography variant="body2" color="text.disabled" sx={{ p: 1.5 }}>
+              アーカイブ名が登録されていません
+            </Typography>
+          ) : (
+            <List dense disablePadding>
+              {form.archiveNames.map((n, i) => (
+                <ListItem
+                  key={n}
+                  divider={i < form.archiveNames.length - 1}
+                  secondaryAction={
+                    <IconButton size="small" color="error" onClick={() => handleRemoveArchiveName(n)}>
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
+                  }
+                >
+                  <ListItemText primary={n} />
+                </ListItem>
+              ))}
+            </List>
+          )}
+          <Divider />
+          <Box sx={{ p: 1 }}>
+            <TextField
+              placeholder="アーカイブ名を追加（例: 2026-Fall）"
+              value={newArchiveName}
+              onChange={e => setNewArchiveName(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddArchiveName() } }}
+              size="small"
+              fullWidth
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton size="small" onClick={handleAddArchiveName} color="primary">
+                      <AddIcon fontSize="small" />
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+            />
+          </Box>
+        </Box>
+
+        <Divider sx={{ mb: 2 }} />
         <Typography variant="subtitle2" gutterBottom>管理者</Typography>
         <Box sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1, mb: 3 }}>
           {form.managers.length === 0 ? (

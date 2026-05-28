@@ -38,7 +38,7 @@ func changePublishPageHandler(w http.ResponseWriter, r *http.Request) {
 		errorPage(w, "Error Publish HTML", err, 500)
 		return
 	}
-	http.Redirect(w, r, "/manage/page/"+id, 302)
+	http.Redirect(w, r, "/manage/v1/page/"+id, 302)
 }
 
 func changePrivatePageHandler(w http.ResponseWriter, r *http.Request) {
@@ -56,5 +56,5 @@ func changePrivatePageHandler(w http.ResponseWriter, r *http.Request) {
 		errorPage(w, "Error Private HTML", err, 500)
 		return
 	}
-	http.Redirect(w, r, "/manage/page/"+id, 302)
+	http.Redirect(w, r, "/manage/v1/page/"+id, 302)
 }

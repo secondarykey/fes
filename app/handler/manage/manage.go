@@ -26,87 +26,90 @@ func Register() error {
 	r := mux.NewRouter()
 	s := r.PathPrefix("/manage").Subrouter()
 
-	s.HandleFunc("/favico.ico", viewRootPageHandler).Methods("GET")
+	// V1 ルートは /manage/v1/ 配下
+	v1 := s.PathPrefix("/v1").Subrouter()
+
+	v1.HandleFunc("/favico.ico", viewRootPageHandler).Methods("GET")
 
 	//Page
-	s.HandleFunc("/page/", viewRootPageHandler).Methods("GET")
-	s.HandleFunc("/page/{key}", viewPageHandler)
-	s.HandleFunc("/page/add/{key}", addPageHandler).Methods("GET")
-	s.HandleFunc("/page/delete/{key}", deletePageHandler).Methods("GET")
+	v1.HandleFunc("/page/", viewRootPageHandler).Methods("GET")
+	v1.HandleFunc("/page/{key}", viewPageHandler)
+	v1.HandleFunc("/page/add/{key}", addPageHandler).Methods("GET")
+	v1.HandleFunc("/page/delete/{key}", deletePageHandler).Methods("GET")
 
 	//Tool
-	s.HandleFunc("/page/children/{key}", childrenPageHandler).Methods("GET")
-	s.HandleFunc("/page/update/sequence", changeSequencePageHandler).Methods("POST")
-	s.HandleFunc("/page/update/sort", changeSortPageHandler).Methods("POST")
-	s.HandleFunc("/page/update/move", movePageHandler).Methods("POST")
-	s.HandleFunc("/page/template/page/{key}", referencePageTemplateHandler).Methods("GET")
-	s.HandleFunc("/page/template/site/{key}", referenceSiteTemplateHandler).Methods("GET")
-	s.HandleFunc("/page/tree/", treePageHandler).Methods("GET")
+	v1.HandleFunc("/page/children/{key}", childrenPageHandler).Methods("GET")
+	v1.HandleFunc("/page/update/sequence", changeSequencePageHandler).Methods("POST")
+	v1.HandleFunc("/page/update/sort", changeSortPageHandler).Methods("POST")
+	v1.HandleFunc("/page/update/move", movePageHandler).Methods("POST")
+	v1.HandleFunc("/page/template/page/{key}", referencePageTemplateHandler).Methods("GET")
+	v1.HandleFunc("/page/template/site/{key}", referenceSiteTemplateHandler).Methods("GET")
+	v1.HandleFunc("/page/tree/", treePageHandler).Methods("GET")
 
 	//HTML
-	s.HandleFunc("/html/publish/{key}", changePublishPageHandler).Methods("GET")
-	s.HandleFunc("/html/private/{key}", changePrivatePageHandler).Methods("GET")
-	s.HandleFunc("/html/update", updateHTMLHandler).Methods("POST")
+	v1.HandleFunc("/html/publish/{key}", changePublishPageHandler).Methods("GET")
+	v1.HandleFunc("/html/private/{key}", changePrivatePageHandler).Methods("GET")
+	v1.HandleFunc("/html/update", updateHTMLHandler).Methods("POST")
 
 	//ページ表示
-	s.HandleFunc("/page/view/{key}", privatePageHandler).Methods("GET")
-	s.HandleFunc("/page/view/", privateHandler).Methods("GET")
+	v1.HandleFunc("/page/view/{key}", privatePageHandler).Methods("GET")
+	v1.HandleFunc("/page/view/", privateHandler).Methods("GET")
 
 	//Draft
-	s.HandleFunc("/draft/", viewDraftHandler).Methods("GET")
-	s.HandleFunc("/draft/add", addDraftHandler).Methods("GET")
-	s.HandleFunc("/draft/publish/{key}", publishDraftHandler)
-	s.HandleFunc("/draft/current/{key}", currentDraftHandler)
-	s.HandleFunc("/draft/edit/{key}", editDraftHandler)
-	s.HandleFunc("/draft/delete/{key}", deleteDraftHandler)
-	s.HandleFunc("/draft/page/add/{key}", addDraftPageHandler)
-	s.HandleFunc("/draft/page/delete/{key}", deleteDraftPageHandler)
+	v1.HandleFunc("/draft/", viewDraftHandler).Methods("GET")
+	v1.HandleFunc("/draft/add", addDraftHandler).Methods("GET")
+	v1.HandleFunc("/draft/publish/{key}", publishDraftHandler)
+	v1.HandleFunc("/draft/current/{key}", currentDraftHandler)
+	v1.HandleFunc("/draft/edit/{key}", editDraftHandler)
+	v1.HandleFunc("/draft/delete/{key}", deleteDraftHandler)
+	v1.HandleFunc("/draft/page/add/{key}", addDraftPageHandler)
+	v1.HandleFunc("/draft/page/delete/{key}", deleteDraftPageHandler)
 
 	//File
-	s.HandleFunc("/file/", viewFileHandler).Methods("GET")
-	s.HandleFunc("/file/type/{type}", viewFileHandler).Methods("GET")
-	s.HandleFunc("/file/add", addFileHandler).Methods("POST")
-	s.HandleFunc("/file/favicon", faviconUploadHandler).Methods("POST")
-	s.HandleFunc("/file/delete", deleteFileHandler).Methods("POST")
-	s.HandleFunc("/file/resize/{key}", resizeFileHandler).Methods("GET")
-	s.HandleFunc("/file/resize/commit", resizeCommitFileHandler).Methods("POST")
-	s.HandleFunc("/file/resize/view/{key}", resizeFileViewHandler).Methods("GET")
-	s.HandleFunc("/file/view/{key}", fileViewHandler).Methods("GET")
+	v1.HandleFunc("/file/", viewFileHandler).Methods("GET")
+	v1.HandleFunc("/file/type/{type}", viewFileHandler).Methods("GET")
+	v1.HandleFunc("/file/add", addFileHandler).Methods("POST")
+	v1.HandleFunc("/file/favicon", faviconUploadHandler).Methods("POST")
+	v1.HandleFunc("/file/delete", deleteFileHandler).Methods("POST")
+	v1.HandleFunc("/file/resize/{key}", resizeFileHandler).Methods("GET")
+	v1.HandleFunc("/file/resize/commit", resizeCommitFileHandler).Methods("POST")
+	v1.HandleFunc("/file/resize/view/{key}", resizeFileViewHandler).Methods("GET")
+	v1.HandleFunc("/file/view/{key}", fileViewHandler).Methods("GET")
 
 	//Template
-	s.HandleFunc("/template/", viewTemplateHandler).Methods("GET")
-	s.HandleFunc("/template/type/{type}", viewTemplateHandler).Methods("GET")
-	s.HandleFunc("/template/add", addTemplateHandler).Methods("GET")
-	s.HandleFunc("/template/edit/{key}", editTemplateHandler)
-	s.HandleFunc("/template/delete/{key}", deleteTemplateHandler)
-	s.HandleFunc("/template/reference/{type}/{key}", referenceTemplateHandler)
+	v1.HandleFunc("/template/", viewTemplateHandler).Methods("GET")
+	v1.HandleFunc("/template/type/{type}", viewTemplateHandler).Methods("GET")
+	v1.HandleFunc("/template/add", addTemplateHandler).Methods("GET")
+	v1.HandleFunc("/template/edit/{key}", editTemplateHandler)
+	v1.HandleFunc("/template/delete/{key}", deleteTemplateHandler)
+	v1.HandleFunc("/template/reference/{type}/{key}", referenceTemplateHandler)
 
-	s.HandleFunc("/variable/", viewVariableHandler).Methods("GET")
-	s.HandleFunc("/variable/add", addVariableHandler).Methods("GET")
-	s.HandleFunc("/variable/edit", editVariableHandler)
-	s.HandleFunc("/variable/upload", uploadVariableHandler).Methods("POST")
-	s.HandleFunc("/variable/edit/{key}", editVariableHandler).Methods("GET")
-	s.HandleFunc("/variable/delete/{key}", deleteVariableHandler)
+	v1.HandleFunc("/variable/", viewVariableHandler).Methods("GET")
+	v1.HandleFunc("/variable/add", addVariableHandler).Methods("GET")
+	v1.HandleFunc("/variable/edit", editVariableHandler)
+	v1.HandleFunc("/variable/upload", uploadVariableHandler).Methods("POST")
+	v1.HandleFunc("/variable/edit/{key}", editVariableHandler).Methods("GET")
+	v1.HandleFunc("/variable/delete/{key}", deleteVariableHandler)
 
 	//table
-	s.HandleFunc("/table/view", viewTableHandler)
+	v1.HandleFunc("/table/view", viewTableHandler)
 
-	s.HandleFunc("/datastore/backup", backupHandler).Methods("POST")
-	s.HandleFunc("/datastore/restore", restoreHandler).Methods("POST")
+	v1.HandleFunc("/datastore/backup", backupHandler).Methods("POST")
+	v1.HandleFunc("/datastore/restore", restoreHandler).Methods("POST")
 
 	//Site
-	s.HandleFunc("/site/", viewSiteHandler).Methods("GET")
-	s.HandleFunc("/site/edit", editSiteHandler).Methods("POST")
-	s.HandleFunc("/site/map", downloadSitemapHandler).Methods("GET")
-	s.HandleFunc("/site/clean", cleanSiteHandler).Methods("GET", "POST")
+	v1.HandleFunc("/site/", viewSiteHandler).Methods("GET")
+	v1.HandleFunc("/site/edit", editSiteHandler).Methods("POST")
+	v1.HandleFunc("/site/map", downloadSitemapHandler).Methods("GET")
+	v1.HandleFunc("/site/clean", cleanSiteHandler).Methods("GET", "POST")
 
-	s.HandleFunc("/system/gc", gc).Methods("GET")
+	v1.HandleFunc("/system/gc", gc).Methods("GET")
 
-	s.HandleFunc("/", indexHandler).Methods("GET")
+	v1.HandleFunc("/", indexHandler).Methods("GET")
 
-	// v2 SPA + API (既存ルートの後に登録)
-	if err := registerV2(s); err != nil {
-		return xerrors.Errorf("registerV2() error: %w", err)
+	// SPA + API (/manage/api/ + /manage/ キャッチオール)
+	if err := registerAPI(s); err != nil {
+		return xerrors.Errorf("registerAPI() error: %w", err)
 	}
 
 	h := NewHandler(s)
@@ -129,8 +132,8 @@ func (h ManageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	u, err := GetSession(r)
 	if err != nil {
 		log.Printf("%+v", err)
-		if isV2APIPath(r.URL.Path) {
-			v2Unauthorized(w)
+		if isAPIPath(r.URL.Path) {
+			apiUnauthorized(w)
 			return
 		}
 		http.Redirect(w, r, "/login", 302)
@@ -139,8 +142,8 @@ func (h ManageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	if u == nil {
 		log.Println("ユーザがいない")
-		if isV2APIPath(r.URL.Path) {
-			v2Unauthorized(w)
+		if isAPIPath(r.URL.Path) {
+			apiUnauthorized(w)
 			return
 		}
 		http.Redirect(w, r, "/login", 302)
@@ -150,11 +153,11 @@ func (h ManageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	h.r.ServeHTTP(w, r)
 }
 
-func isV2APIPath(path string) bool {
-	return strings.HasPrefix(path, "/manage/v2/api/")
+func isAPIPath(path string) bool {
+	return strings.HasPrefix(path, "/manage/api/")
 }
 
-func v2Unauthorized(w http.ResponseWriter) {
+func apiUnauthorized(w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusUnauthorized)
 	json.NewEncoder(w).Encode(map[string]string{"error": "unauthorized"})

@@ -6,16 +6,13 @@ import {
   DialogContentText, DialogActions, Alert, CircularProgress,
   Chip, LinearProgress,
 } from '@mui/material'
-import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import DownloadIcon from '@mui/icons-material/Download'
-import AccountTreeIcon from '@mui/icons-material/AccountTree'
-import HtmlIcon from '@mui/icons-material/Html'
 import MemoryIcon from '@mui/icons-material/Memory'
 import CleaningServicesIcon from '@mui/icons-material/CleaningServices'
 import RestoreIcon from '@mui/icons-material/Restore'
 
 async function apiFetch(path, options = {}) {
-  const res = await fetch(`/manage/v2/api${path}`, options)
+  const res = await fetch(`/manage/api${path}`, options)
   if (!res.ok) {
     const b = await res.json().catch(() => ({}))
     throw new Error(b.error || `HTTP ${res.status}`)
@@ -29,7 +26,7 @@ const runClean = () => apiFetch('/tool/clean', { method: 'POST' })
 async function runRestore(file) {
   const form = new FormData()
   form.append('file', file)
-  const res = await fetch('/manage/v2/api/tool/restore', { method: 'POST', body: form })
+  const res = await fetch('/manage/api/tool/restore', { method: 'POST', body: form })
   if (!res.ok) {
     const b = await res.json().catch(() => ({}))
     throw new Error(b.error || `HTTP ${res.status}`)
@@ -51,24 +48,6 @@ function ToolCard({ title, description, actions, chip }) {
       <Divider />
       <CardActions sx={{ p: 1.5, gap: 0.5, flexWrap: 'wrap' }}>{actions}</CardActions>
     </Card>
-  )
-}
-
-ExternalButton.propTypes = { href: PropTypes.string.isRequired, icon: PropTypes.node, label: PropTypes.string.isRequired, download: PropTypes.bool }
-function ExternalButton({ href, icon, label, download }) {
-  return (
-    <Button
-      size="small"
-      startIcon={icon}
-      endIcon={download ? undefined : <OpenInNewIcon fontSize="inherit" />}
-      href={href}
-      target={download ? '_self' : '_blank'}
-      rel="noopener noreferrer"
-      component="a"
-      variant="outlined"
-    >
-      {label}
-    </Button>
   )
 }
 
@@ -149,59 +128,6 @@ export default function ToolsPage() {
 
       <Grid container spacing={2}>
 
-        {/* HTML 管理 */}
-        <Grid item xs={12} sm={6} md={4}>
-          <ToolCard
-            title="HTML 管理"
-            description="複数ページの HTML を一括で再生成・公開します。ページ ID を指定して実行します。"
-            actions={
-              <ExternalButton
-                href="/manage/html/update"
-                icon={<HtmlIcon />}
-                label="HTML 一括更新 (v1)"
-              />
-            }
-          />
-        </Grid>
-
-        {/* ページツール */}
-        <Grid item xs={12} sm={6} md={4}>
-          <ToolCard
-            title="ページツール"
-            description="ページ階層をツリー形式で確認・操作します。ページの移動や並び替えも可能です。"
-            actions={
-              <>
-                <ExternalButton
-                  href="/manage/page/tree/"
-                  icon={<AccountTreeIcon />}
-                  label="ページツリー"
-                />
-                <ExternalButton
-                  href="/manage/page/"
-                  icon={<AccountTreeIcon />}
-                  label="ページ一覧 (v1)"
-                />
-              </>
-            }
-          />
-        </Grid>
-
-        {/* サイトマップ */}
-        <Grid item xs={12} sm={6} md={4}>
-          <ToolCard
-            title="サイトマップ"
-            description="現在のページ構成からサイトマップ（ZIP）を生成してダウンロードします。"
-            actions={
-              <ExternalButton
-                href="/manage/site/map"
-                icon={<DownloadIcon />}
-                label="ダウンロード"
-                download
-              />
-            }
-          />
-        </Grid>
-
         {/* サイトクリーン */}
         <Grid item xs={12} sm={6} md={4}>
           <ToolCard
@@ -255,7 +181,7 @@ export default function ToolsPage() {
                   variant="outlined"
                   startIcon={<DownloadIcon />}
                   component="a"
-                  href="/manage/v2/api/tool/backup"
+                  href="/manage/api/tool/backup"
                 >
                   バックアップ
                 </Button>

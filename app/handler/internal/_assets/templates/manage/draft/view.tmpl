@@ -34,7 +34,7 @@ Draft
 {{ end }}
       </td>
 
-      <td class="mdl-data-table__cell--non-numeric"><a href="/manage/draft/edit/{{ .Key.Name}}">{{ .Name }}</a></td>
+      <td class="mdl-data-table__cell--non-numeric"><a href="/manage/v1/draft/edit/{{ .Key.Name}}">{{ .Name }}</a></td>
       <td>{{convertDate .CreatedAt}} <br> {{convertDate .UpdatedAt}}</td>
       <td>
         <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent removeBtn" data-id="{{ .Key.Name }}">
@@ -71,7 +71,7 @@ Draft
 
 
 <!-- view template -->
-<a href="/manage/draft/add">
+<a href="/manage/v1/draft/add">
 <button id="add-content" class="mdl-button mdl-js-button mdl-button--fab mdl-button--primary">
   <i class="material-icons">add</i>
 </button>
@@ -83,7 +83,7 @@ Draft
     for (var i=0; i< currents.length; i++) {
         currents[i].addEventListener('click', function(e) {
           var id = e.target.getAttribute('data-id');
-          window.location.href = "/manage/draft/current/" + id;
+          window.location.href = "/manage/v1/draft/current/" + id;
         });
     }
 
@@ -92,7 +92,7 @@ Draft
         publishs[i].addEventListener('click', function(e) {
             confirmFes("Publish Draft?",function() {
               var id = e.target.parentElement.getAttribute('data-id');
-              window.location.href = "/manage/draft/publish/" + id;
+              window.location.href = "/manage/v1/draft/publish/" + id;
             });
         });
     }
@@ -102,7 +102,7 @@ Draft
         removes[i].addEventListener('click', function(e) {
             confirmFes("Delete Draft?",function() {
               var id = e.target.parentElement.getAttribute('data-id');
-              window.location.href = "/manage/draft/delete/" + id;
+              window.location.href = "/manage/v1/draft/delete/" + id;
             });
         });
     }

@@ -2,8 +2,10 @@ package main
 
 import (
 	"app/config"
+	"app/datastore"
 	"app/logic"
 	"bufio"
+	"context"
 	"flag"
 	"fmt"
 	"log"
@@ -73,15 +75,34 @@ func main() {
 		}
 
 	default: // -upload または引数なし
-		fmt.Printf("\nUpload target:\n  directory : %s\n  bucket    : %s\n", dir, config.ArchiveBucket)
+		bucket := resolveArchiveBucket()
+		fmt.Printf("\nUpload target:\n  directory : %s\n  bucket    : %s\n", dir, bucket)
 		if !confirm("Upload? [y/N]: ") {
 			fmt.Println("Cancelled.")
 			return
 		}
-		fmt.Println("=== Uploading to GCS bucket:", config.ArchiveBucket)
-		if err := logic.UploadToGCS(dir, config.ArchiveBucket); err != nil {
+		fmt.Println("=== Uploading to GCS bucket:", bucket)
+		if err := logic.UploadToGCS(dir, bucket); err != nil {
 			log.Fatalf("%+v", err)
 		}
 		fmt.Println("=== Done!")
 	}
+}
+
+func resolveArchiveBucket() string {
+	ctx := context.Background()
+	dao := datastore.NewDao()
+	defer dao.Close()
+
+	site, err := dao.SelectSite(ctx, -1)
+	if err != nil {
+		log.Printf("Warning: could not read Site from Datastore: %v", err)
+		log.Printf("Using default bucket: %s", config.ArchiveBucket)
+		return config.ArchiveBucket
+	}
+
+	if site.ArchiveBucket != "" {
+		return site.ArchiveBucket
+	}
+	return config.ArchiveBucket
 }

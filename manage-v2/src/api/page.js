@@ -1,4 +1,4 @@
-const BASE = '/manage/v2/api'
+const BASE = '/manage/api'
 
 async function apiFetch(path, options = {}) {
   const headers = options.body instanceof FormData

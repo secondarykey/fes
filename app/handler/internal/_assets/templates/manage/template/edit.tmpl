@@ -5,7 +5,7 @@ Edit Template
 {{end}}
 
 {{define "page_template"}}
-<form method="post" action="/manage/template/edit/{{ .Template.Key.Name }}" name="updateForm">
+<form method="post" action="/manage/v1/template/edit/{{ .Template.Key.Name }}" name="updateForm">
 
 <table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp" width="100%">
   <tbody>
@@ -47,7 +47,7 @@ Edit Template
 
     <tr>
       <td class="mdl-data-table__cell--non-numeric">
-      <a href="/manage/template/reference/{{.Template.Type}}/{{ .Template.Key.Name }}">Reference(Pages)</a>
+      <a href="/manage/v1/template/reference/{{.Template.Type}}/{{ .Template.Key.Name }}">Reference(Pages)</a>
       </td>
     </tr>
 

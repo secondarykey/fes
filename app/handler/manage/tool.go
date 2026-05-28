@@ -47,7 +47,7 @@ func changeSequencePageHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(w, r, "/manage/page/children/"+id, 302)
+	http.Redirect(w, r, "/manage/v1/page/children/"+id, 302)
 }
 
 func changeSortPageHandler(w http.ResponseWriter, r *http.Request) {
@@ -62,7 +62,7 @@ func changeSortPageHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(w, r, "/manage/page/children/"+id, 302)
+	http.Redirect(w, r, "/manage/v1/page/children/"+id, 302)
 }
 
 func movePageHandler(w http.ResponseWriter, r *http.Request) {
@@ -82,7 +82,7 @@ func movePageHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(w, r, "/manage/page/children/"+id, 302)
+	http.Redirect(w, r, "/manage/v1/page/children/"+id, 302)
 }
 
 func referencePageTemplateHandler(w http.ResponseWriter, r *http.Request) {
@@ -117,7 +117,7 @@ func referenceTemplateView(w http.ResponseWriter, r *http.Request, id string, ty
 		return
 	}
 
-	redirect := "/manage/template/edit/" + id
+	redirect := "/manage/v1/template/edit/" + id
 
 	dto := struct {
 		ID       string

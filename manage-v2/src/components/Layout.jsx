@@ -14,7 +14,6 @@ import DataObjectIcon from '@mui/icons-material/DataObject'
 import DraftsIcon from '@mui/icons-material/Drafts'
 import BuildIcon from '@mui/icons-material/Build'
 import DeleteIcon from '@mui/icons-material/Delete'
-import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import DarkModeIcon from '@mui/icons-material/DarkMode'
 import LightModeIcon from '@mui/icons-material/LightMode'
 import { useColorMode } from '../context/ColorMode'
@@ -137,21 +136,7 @@ export default function Layout() {
                 </ListItemButton>
               </ListItem>
             ))}
-            <ListItem disablePadding>
-              <ListItemButton
-                component="a"
-                href="/manage/"
-                sx={{
-                  color: isDark ? 'grey.400' : 'grey.600',
-                  '&:hover': { bgcolor: isDark ? 'grey.800' : 'grey.300', color: isDark ? 'grey.100' : 'grey.900' },
-                }}
-              >
-                <ListItemIcon sx={{ minWidth: 36, color: 'inherit' }}>
-                  <ArrowBackIcon fontSize="small" />
-                </ListItemIcon>
-                <ListItemText primary="v1 に戻る" />
-              </ListItemButton>
-            </ListItem>
+
           </List>
         </Box>
       </Drawer>

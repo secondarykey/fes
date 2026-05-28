@@ -3,7 +3,7 @@
 {{define "header"}}
 Edit Page[
 {{ range .Breadcrumbs}}
-&gt; <a href="/manage/page/{{ .Key.Name }}">{{ .Name }}</a>
+&gt; <a href="/manage/v1/page/{{ .Key.Name }}">{{ .Name }}</a>
 {{ end }}
 ]
 
@@ -23,7 +23,7 @@ Edit Page[
 {{define "page_template"}}
 
 
-<form id="editForm" method="post" action="/manage/page/{{ .Page.Key.Name }}" enctype="multipart/form-data">
+<form id="editForm" method="post" action="/manage/v1/page/{{ .Page.Key.Name }}" enctype="multipart/form-data">
 <table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp" width="100%">
   <tbody>
     <tr>
@@ -38,7 +38,7 @@ Edit Page[
 
         <span class="material-icons" style="vertical-align:middle;width:24px;"> </span>
 
-        <a href="/manage/page/view/{{ .Page.Key.Name }}" target="private"><button type="button" class="mdl-button"><span class="material-icons">preview</span></button></a>
+        <a href="/manage/v1/page/view/{{ .Page.Key.Name }}" target="private"><button type="button" class="mdl-button"><span class="material-icons">preview</span></button></a>
         <a href="/page/{{ .Page.Key.Name }}" target="public"><button type="button" class="mdl-button"><span class="material-icons">public</span></button></a>
       </td>
     </tr>
@@ -53,11 +53,11 @@ Edit Page[
         <span id="attache" class="material-icons" style="color:white;vertical-align:middle;">attachment</span>
 
         {{ if .ExistDraftFile }}
-        <a href="/manage/file/view/{{ .Page.Key.Name }}-DRAFT" target="_blank"><button type="button" class="mdl-button"><span class="material-icons">preview</span></button></a>
+        <a href="/manage/v1/file/view/{{ .Page.Key.Name }}-DRAFT" target="_blank"><button type="button" class="mdl-button"><span class="material-icons">preview</span></button></a>
 
         {{ end }}
         {{ if .ExistFile }}
-        <a href="/manage/file/view/{{ .Page.Key.Name }}" target="_blank"><button type="button" class="mdl-button"><span class="material-icons">public</span></button></a>
+        <a href="/manage/v1/file/view/{{ .Page.Key.Name }}" target="_blank"><button type="button" class="mdl-button"><span class="material-icons">public</span></button></a>
         {{ end }}
 
 
@@ -139,7 +139,7 @@ Edit Page[
         </ul>
         </div>
 
-        <a href="/manage/page/children/{{ .Page.Key.Name }}">
+        <a href="/manage/v1/page/children/{{ .Page.Key.Name }}">
         <button type="button" id="toolBtn" class="mdl-button mdl-js-button mdl-button--raised">
           <span class="material-icons">list</span>
         </button>
@@ -249,9 +249,9 @@ Edit Page[
         list[i].addEventListener('click', function(e) {
           var id = e.target.getAttribute("data-id");
           if ( id == "" ) {
-            window.location.href = "/manage/page/add/{{ .Page.Key.Name }}";
+            window.location.href = "/manage/v1/page/add/{{ .Page.Key.Name }}";
           } else {
-            window.location.href = "/manage/page/" + id;
+            window.location.href = "/manage/v1/page/" + id;
           }
         });
     }
@@ -281,7 +281,7 @@ Edit Page[
     var draftAdd = document.querySelector('#draftAdd');
     draftAdd.addEventListener('click', function() {
       confirmFes("Add Draft Page?",function() {
-        window.location.href = "/manage/draft/page/add/{{ .Page.Key.Name }}";
+        window.location.href = "/manage/v1/draft/page/add/{{ .Page.Key.Name }}";
       });
     });
 
@@ -289,7 +289,7 @@ Edit Page[
     var generateBtn = document.querySelector('#generateBtn');
     generateBtn.addEventListener('click', function() {
       confirmFes("Publish Page?",function() {
-        window.location.href = "/manage/html/publish/{{ .Page.Key.Name }}";
+        window.location.href = "/manage/v1/html/publish/{{ .Page.Key.Name }}";
       });
     });
 {{ end }}
@@ -297,14 +297,14 @@ Edit Page[
     var privateBtn = document.querySelector('#privateBtn');
     privateBtn.addEventListener('click', function() {
       confirmFes("Unpublish Page?",function() {
-        window.location.href = "/manage/html/private/{{ .Page.Key.Name }}";
+        window.location.href = "/manage/v1/html/private/{{ .Page.Key.Name }}";
       });
     });
 
     var removeBtn = document.querySelector('#removeBtn');
     removeBtn.addEventListener('click', function() {
       confirmFes("Delete Page?",function() {
-        window.location.href = "/manage/page/delete/{{ .Page.Key.Name }}";
+        window.location.href = "/manage/v1/page/delete/{{ .Page.Key.Name }}";
       });
     });
 
@@ -331,13 +331,13 @@ Edit Page[
     var siteTemplateBtn = document.querySelector('#siteTemplateBtn');
     siteTemplateBtn.addEventListener('click', function() {
         var siteID = document.querySelector('#siteTemplateID');
-        window.location.href = "/manage/template/edit/" + siteID.getAttribute("value");
+        window.location.href = "/manage/v1/template/edit/" + siteID.getAttribute("value");
     });
 
     var pageTemplateBtn = document.querySelector('#pageTemplateBtn');
     pageTemplateBtn.addEventListener('click', function() {
         var pageID = document.querySelector('#pageTemplateID');
-        window.location.href = "/manage/template/edit/" + pageID.getAttribute("value");
+        window.location.href = "/manage/v1/template/edit/" + pageID.getAttribute("value");
     });
 
 </script>

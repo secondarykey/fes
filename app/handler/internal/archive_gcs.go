@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"app/config"
 	"context"
 	"fmt"
 	"io"
@@ -14,8 +13,8 @@ import (
 	"golang.org/x/xerrors"
 )
 
-func RegisterGCSArchive() error {
-	if len(config.ArchiveNames) == 0 {
+func RegisterGCSArchive(bucket string, names []string) error {
+	if len(names) == 0 {
 		return nil
 	}
 
@@ -25,8 +24,7 @@ func RegisterGCSArchive() error {
 		return xerrors.Errorf("storage.NewClient() error: %w", err)
 	}
 
-	bucket := config.ArchiveBucket
-	for _, name := range config.ArchiveNames {
+	for _, name := range names {
 		pre := "/" + name + "/"
 		http.Handle(pre, http.StripPrefix(pre, gcsArchiveHandler(client, bucket, name+"/")))
 		fmt.Printf("Archive(GCS):[%s] -> gs://%s/%s/\n", pre, bucket, name)

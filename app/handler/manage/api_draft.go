@@ -11,30 +11,30 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func registerV2DraftAPI(r *mux.Router) {
-	r.HandleFunc("/draft/current", v2GetCurrentDraft).Methods("GET")
-	r.HandleFunc("/draft/current/{key}", v2SetCurrentDraft).Methods("POST")
-	r.HandleFunc("/draft/", v2ListDrafts).Methods("GET")
-	r.HandleFunc("/draft/", v2CreateDraft).Methods("POST")
-	r.HandleFunc("/draft/{key}", v2GetDraft).Methods("GET")
-	r.HandleFunc("/draft/{key}", v2UpdateDraft).Methods("POST")
-	r.HandleFunc("/draft/{key}", v2DeleteDraft).Methods("DELETE")
-	r.HandleFunc("/draft/{key}/publish", v2PublishDraft).Methods("POST")
-	r.HandleFunc("/draft/{key}/page", v2AddDraftPage).Methods("POST")
-	r.HandleFunc("/draft/{key}/pages", v2AddDraftPages).Methods("POST")
-	r.HandleFunc("/draft/{key}/page/{pageKey}", v2RemoveDraftPage).Methods("DELETE")
+func registerDraftAPI(r *mux.Router) {
+	r.HandleFunc("/draft/current", apiGetCurrentDraft).Methods("GET")
+	r.HandleFunc("/draft/current/{key}", apiSetCurrentDraft).Methods("POST")
+	r.HandleFunc("/draft/", apiListDrafts).Methods("GET")
+	r.HandleFunc("/draft/", apiCreateDraft).Methods("POST")
+	r.HandleFunc("/draft/{key}", apiGetDraft).Methods("GET")
+	r.HandleFunc("/draft/{key}", apiUpdateDraft).Methods("POST")
+	r.HandleFunc("/draft/{key}", apiDeleteDraft).Methods("DELETE")
+	r.HandleFunc("/draft/{key}/publish", apiPublishDraft).Methods("POST")
+	r.HandleFunc("/draft/{key}/page", apiAddDraftPage).Methods("POST")
+	r.HandleFunc("/draft/{key}/pages", apiAddDraftPages).Methods("POST")
+	r.HandleFunc("/draft/{key}/page/{pageKey}", apiRemoveDraftPage).Methods("DELETE")
 }
 
 // ── レスポンス型 ──────────────────────────────────────────
 
-type v2DraftRes struct {
+type apiDraftRes struct {
 	ID        string    `json:"id"`
 	Name      string    `json:"name"`
 	Version   int       `json:"version"`
 	UpdatedAt time.Time `json:"updatedAt"`
 }
 
-type v2DraftPageRes struct {
+type apiDraftPageRes struct {
 	ID            string `json:"id"`
 	PageID        string `json:"pageId"`
 	Name          string `json:"name"`
@@ -42,20 +42,20 @@ type v2DraftPageRes struct {
 	PublishUpdate bool   `json:"publishUpdate"`
 }
 
-func toV2DraftRes(d *datastore.Draft) v2DraftRes {
+func toAPIDraftRes(d *datastore.Draft) apiDraftRes {
 	id := ""
 	if d.Key != nil {
 		id = d.Key.Name
 	}
-	return v2DraftRes{ID: id, Name: d.Name, Version: d.Version, UpdatedAt: d.UpdatedAt}
+	return apiDraftRes{ID: id, Name: d.Name, Version: d.Version, UpdatedAt: d.UpdatedAt}
 }
 
-func toV2DraftPageRes(p *datastore.DraftPage) v2DraftPageRes {
+func toAPIDraftPageRes(p *datastore.DraftPage) apiDraftPageRes {
 	id := ""
 	if p.Key != nil {
 		id = p.Key.Name
 	}
-	return v2DraftPageRes{
+	return apiDraftPageRes{
 		ID:            id,
 		PageID:        p.PageID,
 		Name:          p.Name,
@@ -65,22 +65,22 @@ func toV2DraftPageRes(p *datastore.DraftPage) v2DraftPageRes {
 }
 
 func draftSetToRes(set *datastore.DraftSet) map[string]interface{} {
-	pages := make([]v2DraftPageRes, len(set.Pages))
+	pages := make([]apiDraftPageRes, len(set.Pages))
 	for i, p := range set.Pages {
-		pages[i] = toV2DraftPageRes(p)
+		pages[i] = toAPIDraftPageRes(p)
 	}
 	return map[string]interface{}{
-		"draft": toV2DraftRes(set.Draft),
+		"draft": toAPIDraftRes(set.Draft),
 		"pages": pages,
 	}
 }
 
 // ── ハンドラ ──────────────────────────────────────────────
 
-func v2GetCurrentDraft(w http.ResponseWriter, r *http.Request) {
+func apiGetCurrentDraft(w http.ResponseWriter, r *http.Request) {
 	id, _ := GetDraftId(r)
 	if id == "" {
-		v2JSON(w, map[string]interface{}{"id": nil})
+		apiJSON(w, map[string]interface{}{"id": nil})
 		return
 	}
 	ctx := r.Context()
@@ -91,22 +91,22 @@ func v2GetCurrentDraft(w http.ResponseWriter, r *http.Request) {
 	if err != nil || draft == nil {
 		// セッションに残っているが実体がない場合はクリア
 		SetDraftId(w, r, "")
-		v2JSON(w, map[string]interface{}{"id": nil})
+		apiJSON(w, map[string]interface{}{"id": nil})
 		return
 	}
-	v2JSON(w, toV2DraftRes(draft))
+	apiJSON(w, toAPIDraftRes(draft))
 }
 
-func v2SetCurrentDraft(w http.ResponseWriter, r *http.Request) {
+func apiSetCurrentDraft(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["key"]
 	if err := SetDraftId(w, r, id); err != nil {
-		v2Error(w, err.Error(), 500)
+		apiError(w, err.Error(), 500)
 		return
 	}
-	v2JSON(w, map[string]string{"status": "ok", "id": id})
+	apiJSON(w, map[string]string{"status": "ok", "id": id})
 }
 
-func v2ListDrafts(w http.ResponseWriter, r *http.Request) {
+func apiListDrafts(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	dao := datastore.NewDao()
 	defer dao.Close()
@@ -114,25 +114,25 @@ func v2ListDrafts(w http.ResponseWriter, r *http.Request) {
 	cursor := r.URL.Query().Get("cursor")
 	drafts, nextCursor, err := dao.SelectDrafts(ctx, cursor)
 	if err != nil {
-		v2Error(w, err.Error(), 500)
+		apiError(w, err.Error(), 500)
 		return
 	}
 
-	res := make([]v2DraftRes, len(drafts))
+	res := make([]apiDraftRes, len(drafts))
 	for i := range drafts {
-		res[i] = toV2DraftRes(&drafts[i])
+		res[i] = toAPIDraftRes(&drafts[i])
 	}
-	v2JSON(w, map[string]interface{}{"drafts": res, "nextCursor": nextCursor})
+	apiJSON(w, map[string]interface{}{"drafts": res, "nextCursor": nextCursor})
 }
 
-type v2DraftCreateReq struct {
+type apiDraftCreateReq struct {
 	Name string `json:"name"`
 }
 
-func v2CreateDraft(w http.ResponseWriter, r *http.Request) {
-	var req v2DraftCreateReq
+func apiCreateDraft(w http.ResponseWriter, r *http.Request) {
+	var req apiDraftCreateReq
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		v2Error(w, "invalid request body", 400)
+		apiError(w, "invalid request body", 400)
 		return
 	}
 
@@ -147,14 +147,14 @@ func v2CreateDraft(w http.ResponseWriter, r *http.Request) {
 	// 新規なので existSet.Pages は空、forms も空 → copyDraft([], []) で OK
 	set := &datastore.DraftSet{Draft: draft, Pages: []*datastore.DraftPage{}}
 	if err := dao.PutDraftSet(ctx, set); err != nil {
-		v2Error(w, err.Error(), 500)
+		apiError(w, err.Error(), 500)
 		return
 	}
 
-	v2JSON(w, toV2DraftRes(draft))
+	apiJSON(w, toAPIDraftRes(draft))
 }
 
-func v2GetDraft(w http.ResponseWriter, r *http.Request) {
+func apiGetDraft(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["key"]
 	ctx := r.Context()
 	dao := datastore.NewDao()
@@ -162,17 +162,17 @@ func v2GetDraft(w http.ResponseWriter, r *http.Request) {
 
 	set, err := dao.SelectDraftSet(ctx, id)
 	if err != nil {
-		v2Error(w, err.Error(), 500)
+		apiError(w, err.Error(), 500)
 		return
 	}
 	if set.Draft == nil {
-		v2Error(w, "draft not found", 404)
+		apiError(w, "draft not found", 404)
 		return
 	}
-	v2JSON(w, draftSetToRes(set))
+	apiJSON(w, draftSetToRes(set))
 }
 
-type v2DraftUpdateReq struct {
+type apiDraftUpdateReq struct {
 	Name    string `json:"name"`
 	Version int    `json:"version"`
 	Pages   []struct {
@@ -181,12 +181,12 @@ type v2DraftUpdateReq struct {
 	} `json:"pages"`
 }
 
-func v2UpdateDraft(w http.ResponseWriter, r *http.Request) {
+func apiUpdateDraft(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["key"]
 
-	var req v2DraftUpdateReq
+	var req apiDraftUpdateReq
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		v2Error(w, "invalid request body", 400)
+		apiError(w, "invalid request body", 400)
 		return
 	}
 
@@ -196,11 +196,11 @@ func v2UpdateDraft(w http.ResponseWriter, r *http.Request) {
 
 	set, err := dao.SelectDraftSet(ctx, id)
 	if err != nil {
-		v2Error(w, err.Error(), 500)
+		apiError(w, err.Error(), 500)
 		return
 	}
 	if set.Draft == nil {
-		v2Error(w, "draft not found", 404)
+		apiError(w, "draft not found", 404)
 		return
 	}
 
@@ -222,32 +222,32 @@ func v2UpdateDraft(w http.ResponseWriter, r *http.Request) {
 	// 件数不一致の場合は set.Pages をそのまま渡す（名前だけ更新）
 
 	if err := dao.PutDraftSet(ctx, set); err != nil {
-		v2Error(w, err.Error(), 500)
+		apiError(w, err.Error(), 500)
 		return
 	}
 
 	updated, err := dao.SelectDraftSet(ctx, id)
 	if err != nil || updated.Draft == nil {
-		v2JSON(w, map[string]string{"status": "saved"})
+		apiJSON(w, map[string]string{"status": "saved"})
 		return
 	}
-	v2JSON(w, draftSetToRes(updated))
+	apiJSON(w, draftSetToRes(updated))
 }
 
-func v2DeleteDraft(w http.ResponseWriter, r *http.Request) {
+func apiDeleteDraft(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["key"]
 	ctx := r.Context()
 	dao := datastore.NewDao()
 	defer dao.Close()
 
 	if err := dao.RemoveDraft(ctx, id); err != nil {
-		v2Error(w, err.Error(), 500)
+		apiError(w, err.Error(), 500)
 		return
 	}
-	v2JSON(w, map[string]string{"status": "deleted"})
+	apiJSON(w, map[string]string{"status": "deleted"})
 }
 
-func v2PublishDraft(w http.ResponseWriter, r *http.Request) {
+func apiPublishDraft(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["key"]
 	ctx := r.Context()
 	dao := datastore.NewDao()
@@ -255,11 +255,11 @@ func v2PublishDraft(w http.ResponseWriter, r *http.Request) {
 
 	pages, err := dao.SelectDraftPages(ctx, id)
 	if err != nil {
-		v2Error(w, err.Error(), 500)
+		apiError(w, err.Error(), 500)
 		return
 	}
 	if len(pages) == 0 {
-		v2Error(w, "公開するページがありません", 400)
+		apiError(w, "公開するページがありません", 400)
 		return
 	}
 
@@ -271,31 +271,31 @@ func v2PublishDraft(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := logic.PutHTMLs(ctx, infos...); err != nil {
-		v2Error(w, err.Error(), 500)
+		apiError(w, err.Error(), 500)
 		return
 	}
 
 	if err := dao.RemoveDraft(ctx, id); err != nil {
-		v2Error(w, err.Error(), 500)
+		apiError(w, err.Error(), 500)
 		return
 	}
-	v2JSON(w, map[string]string{"status": "published"})
+	apiJSON(w, map[string]string{"status": "published"})
 }
 
-type v2AddDraftPageReq struct {
+type apiAddDraftPageReq struct {
 	PageID string `json:"pageId"`
 }
 
-func v2AddDraftPage(w http.ResponseWriter, r *http.Request) {
+func apiAddDraftPage(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["key"]
 
-	var req v2AddDraftPageReq
+	var req apiAddDraftPageReq
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		v2Error(w, "invalid request body", 400)
+		apiError(w, "invalid request body", 400)
 		return
 	}
 	if req.PageID == "" {
-		v2Error(w, "pageId は必須です", 400)
+		apiError(w, "pageId は必須です", 400)
 		return
 	}
 
@@ -304,32 +304,32 @@ func v2AddDraftPage(w http.ResponseWriter, r *http.Request) {
 	defer dao.Close()
 
 	if err := dao.AddDraftPage(ctx, id, req.PageID); err != nil {
-		v2Error(w, err.Error(), 500)
+		apiError(w, err.Error(), 500)
 		return
 	}
 
 	pages, err := dao.SelectDraftPages(ctx, id)
 	if err != nil {
-		v2JSON(w, map[string]string{"status": "added"})
+		apiJSON(w, map[string]string{"status": "added"})
 		return
 	}
-	res := make([]v2DraftPageRes, len(pages))
+	res := make([]apiDraftPageRes, len(pages))
 	for i, p := range pages {
-		res[i] = toV2DraftPageRes(p)
+		res[i] = toAPIDraftPageRes(p)
 	}
-	v2JSON(w, res)
+	apiJSON(w, res)
 }
 
-type v2AddDraftPagesReq struct {
+type apiAddDraftPagesReq struct {
 	PageIDs []string `json:"pageIds"`
 }
 
-func v2AddDraftPages(w http.ResponseWriter, r *http.Request) {
+func apiAddDraftPages(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["key"]
 
-	var req v2AddDraftPagesReq
+	var req apiAddDraftPagesReq
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil || len(req.PageIDs) == 0 {
-		v2Error(w, "invalid request body", 400)
+		apiError(w, "invalid request body", 400)
 		return
 	}
 
@@ -339,32 +339,32 @@ func v2AddDraftPages(w http.ResponseWriter, r *http.Request) {
 
 	for _, pageID := range req.PageIDs {
 		if err := dao.AddDraftPage(ctx, id, pageID); err != nil {
-			v2Error(w, err.Error(), 500)
+			apiError(w, err.Error(), 500)
 			return
 		}
 	}
 
 	pages, err := dao.SelectDraftPages(ctx, id)
 	if err != nil {
-		v2JSON(w, map[string]string{"status": "added"})
+		apiJSON(w, map[string]string{"status": "added"})
 		return
 	}
-	res := make([]v2DraftPageRes, len(pages))
+	res := make([]apiDraftPageRes, len(pages))
 	for i, p := range pages {
-		res[i] = toV2DraftPageRes(p)
+		res[i] = toAPIDraftPageRes(p)
 	}
-	v2JSON(w, res)
+	apiJSON(w, res)
 }
 
-func v2RemoveDraftPage(w http.ResponseWriter, r *http.Request) {
+func apiRemoveDraftPage(w http.ResponseWriter, r *http.Request) {
 	pageKey := mux.Vars(r)["pageKey"]
 	ctx := r.Context()
 	dao := datastore.NewDao()
 	defer dao.Close()
 
 	if _, err := dao.RemoveDraftPage(ctx, pageKey); err != nil {
-		v2Error(w, err.Error(), 500)
+		apiError(w, err.Error(), 500)
 		return
 	}
-	v2JSON(w, map[string]string{"status": "removed"})
+	apiJSON(w, map[string]string{"status": "removed"})
 }

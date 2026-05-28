@@ -1,7 +1,7 @@
 {{define "title"}}File View{{end}}
 
 {{define "header"}}
-File Type[<a href="/manage/file/type/1">File</a>|<a href="/manage/file/type/2">Page</a>|<a href="/manage/file/type/all">ALL</a>]
+File Type[<a href="/manage/v1/file/type/1">File</a>|<a href="/manage/v1/file/type/2">Page</a>|<a href="/manage/v1/file/type/all">ALL</a>]
 {{end}}
 
 {{define "page_template"}}
@@ -40,7 +40,7 @@ File Type[<a href="/manage/file/type/1">File</a>|<a href="/manage/file/type/2">P
     <tr>
 
       <td class="mdl-data-table__cell--non-numeric"><a href="/file/{{ .Key.Name}}" target="_blank">{{ .Key.Name }}</a></td>
-      <td><a href="/manage/file/resize/{{.Key.Name}}">{{convertSize .Size}}</a></td>
+      <td><a href="/manage/v1/file/resize/{{.Key.Name}}">{{convertSize .Size}}</a></td>
       <td>{{convertDate .CreatedAt}}<br>{{convertDate .UpdatedAt}}</td>
 
       <td>
@@ -75,11 +75,11 @@ File Type[<a href="/manage/file/type/1">File</a>|<a href="/manage/file/type/2">P
   </tbody>
 </table>
 
-<form id="deleteForm" method="post" action="/manage/file/delete" style="display:none;">
+<form id="deleteForm" method="post" action="/manage/v1/file/delete" style="display:none;">
 <input type="text" name="fileName" id="fileName" value="" />
 </form>
 
-<form id="uploadForm" method="post" action="/manage/file/add" enctype="multipart/form-data" style="display:none;">
+<form id="uploadForm" method="post" action="/manage/v1/file/add" enctype="multipart/form-data" style="display:none;">
 <input type="file" name="file" id="file" value="" />
 </form>
 

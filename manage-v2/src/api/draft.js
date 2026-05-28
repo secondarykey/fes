@@ -1,4 +1,4 @@
-const BASE = '/manage/v2/api/draft'
+const BASE = '/manage/api/draft'
 
 async function apiFetch(url, options = {}) {
   const res = await fetch(url, options)
