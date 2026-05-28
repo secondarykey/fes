@@ -51,7 +51,7 @@ func Register() error {
 	v1.HandleFunc("/html/private/{key}", changePrivatePageHandler).Methods("GET")
 	v1.HandleFunc("/html/update", updateHTMLHandler).Methods("POST")
 
-	//ページ表示
+	//ページ表示（V1互換）
 	v1.HandleFunc("/page/view/{key}", privatePageHandler).Methods("GET")
 	v1.HandleFunc("/page/view/", privateHandler).Methods("GET")
 
@@ -107,6 +107,10 @@ func Register() error {
 
 	v1.HandleFunc("/", indexHandler).Methods("GET")
 
+	// ページプレビュー（/manage/page/view/）— SPA catch-all より前に登録
+	s.HandleFunc("/page/view/{key}", privatePageHandler).Methods("GET")
+	s.HandleFunc("/page/view/", privateHandler).Methods("GET")
+
 	// SPA + API (/manage/api/ + /manage/ キャッチオール)
 	if err := registerAPI(s); err != nil {
 		return xerrors.Errorf("registerAPI() error: %w", err)
@@ -136,7 +140,7 @@ func (h ManageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			apiUnauthorized(w)
 			return
 		}
-		http.Redirect(w, r, "/login", 302)
+		http.Redirect(w, r, "/login?redirect="+r.URL.RequestURI(), 302)
 		return
 	}
 
@@ -146,7 +150,7 @@ func (h ManageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			apiUnauthorized(w)
 			return
 		}
-		http.Redirect(w, r, "/login", 302)
+		http.Redirect(w, r, "/login?redirect="+r.URL.RequestURI(), 302)
 		return
 	}
 

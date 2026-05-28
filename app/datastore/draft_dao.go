@@ -132,6 +132,18 @@ func copyDraft(exists []*DraftPage, forms []*DraftPage) ([]*DraftPage, error) {
 	return exists, nil
 }
 
+func (dao *Dao) PutDraft(ctx context.Context, draft *Draft) error {
+	cli, err := dao.createClient(ctx)
+	if err != nil {
+		return xerrors.Errorf("createClient() error: %w", err)
+	}
+	_, err = cli.Put(ctx, draft.GetKey(), draft)
+	if err != nil {
+		return xerrors.Errorf("Draft Put() error: %w", err)
+	}
+	return nil
+}
+
 func (dao *Dao) SelectDraft(ctx context.Context, id string) (*Draft, error) {
 
 	var err error

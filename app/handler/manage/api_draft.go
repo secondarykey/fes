@@ -19,6 +19,7 @@ func registerDraftAPI(r *mux.Router) {
 	r.HandleFunc("/draft/{key}", apiGetDraft).Methods("GET")
 	r.HandleFunc("/draft/{key}", apiUpdateDraft).Methods("POST")
 	r.HandleFunc("/draft/{key}", apiDeleteDraft).Methods("DELETE")
+	r.HandleFunc("/draft/{key}/lock", apiToggleDraftLock).Methods("POST")
 	r.HandleFunc("/draft/{key}/publish", apiPublishDraft).Methods("POST")
 	r.HandleFunc("/draft/{key}/page", apiAddDraftPage).Methods("POST")
 	r.HandleFunc("/draft/{key}/pages", apiAddDraftPages).Methods("POST")
@@ -30,16 +31,19 @@ func registerDraftAPI(r *mux.Router) {
 type apiDraftRes struct {
 	ID        string    `json:"id"`
 	Name      string    `json:"name"`
+	Note      string    `json:"note"`
+	Lock      bool      `json:"lock"`
 	Version   int       `json:"version"`
 	UpdatedAt time.Time `json:"updatedAt"`
 }
 
 type apiDraftPageRes struct {
-	ID            string `json:"id"`
-	PageID        string `json:"pageId"`
-	Name          string `json:"name"`
-	Seq           int    `json:"seq"`
-	PublishUpdate bool   `json:"publishUpdate"`
+	ID            string    `json:"id"`
+	PageID        string    `json:"pageId"`
+	Name          string    `json:"name"`
+	Seq           int       `json:"seq"`
+	PublishUpdate bool      `json:"publishUpdate"`
+	UpdatedAt     time.Time `json:"updatedAt"`
 }
 
 func toAPIDraftRes(d *datastore.Draft) apiDraftRes {
@@ -47,7 +51,7 @@ func toAPIDraftRes(d *datastore.Draft) apiDraftRes {
 	if d.Key != nil {
 		id = d.Key.Name
 	}
-	return apiDraftRes{ID: id, Name: d.Name, Version: d.Version, UpdatedAt: d.UpdatedAt}
+	return apiDraftRes{ID: id, Name: d.Name, Note: d.Note, Lock: d.Lock, Version: d.Version, UpdatedAt: d.UpdatedAt}
 }
 
 func toAPIDraftPageRes(p *datastore.DraftPage) apiDraftPageRes {
@@ -61,6 +65,7 @@ func toAPIDraftPageRes(p *datastore.DraftPage) apiDraftPageRes {
 		Name:          p.Name,
 		Seq:           p.Seq,
 		PublishUpdate: p.PublishUpdate,
+		UpdatedAt:     p.UpdatedAt,
 	}
 }
 
@@ -141,7 +146,7 @@ func apiCreateDraft(w http.ResponseWriter, r *http.Request) {
 	defer dao.Close()
 
 	key := datastore.CreateDraftKey()
-	draft := &datastore.Draft{Name: req.Name}
+	draft := &datastore.Draft{Name: req.Name, Lock: true}
 	draft.LoadKey(key)
 
 	// 新規なので existSet.Pages は空、forms も空 → copyDraft([], []) で OK
@@ -174,6 +179,8 @@ func apiGetDraft(w http.ResponseWriter, r *http.Request) {
 
 type apiDraftUpdateReq struct {
 	Name    string `json:"name"`
+	Note    string `json:"note"`
+	Lock    bool   `json:"lock"`
 	Version int    `json:"version"`
 	Pages   []struct {
 		ID            string `json:"id"`
@@ -205,6 +212,8 @@ func apiUpdateDraft(w http.ResponseWriter, r *http.Request) {
 	}
 
 	set.Draft.Name = req.Name
+	set.Draft.Note = req.Note
+	set.Draft.Lock = req.Lock
 	set.Draft.SetTargetVersion(fmt.Sprintf("%d", req.Version))
 
 	// req.Pages が既存ページと件数一致する場合のみ順序・PublishUpdate を更新
@@ -247,11 +256,49 @@ func apiDeleteDraft(w http.ResponseWriter, r *http.Request) {
 	apiJSON(w, map[string]string{"status": "deleted"})
 }
 
+func apiToggleDraftLock(w http.ResponseWriter, r *http.Request) {
+	id := mux.Vars(r)["key"]
+	ctx := r.Context()
+	dao := datastore.NewDao()
+	defer dao.Close()
+
+	draft, err := dao.SelectDraft(ctx, id)
+	if err != nil {
+		apiError(w, err.Error(), 500)
+		return
+	}
+	if draft == nil {
+		apiError(w, "draft not found", 404)
+		return
+	}
+
+	draft.Lock = !draft.Lock
+	if err := dao.PutDraft(ctx, draft); err != nil {
+		apiError(w, err.Error(), 500)
+		return
+	}
+	apiJSON(w, toAPIDraftRes(draft))
+}
+
 func apiPublishDraft(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["key"]
 	ctx := r.Context()
 	dao := datastore.NewDao()
 	defer dao.Close()
+
+	draft, err := dao.SelectDraft(ctx, id)
+	if err != nil {
+		apiError(w, err.Error(), 500)
+		return
+	}
+	if draft == nil {
+		apiError(w, "draft not found", 404)
+		return
+	}
+	if draft.Lock {
+		apiError(w, "現在作業中の為公開できません", 400)
+		return
+	}
 
 	pages, err := dao.SelectDraftPages(ctx, id)
 	if err != nil {

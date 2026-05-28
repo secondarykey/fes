@@ -98,3 +98,30 @@ func GetDraftId(r *http.Request) (string, error) {
 	}
 	return "", fmt.Errorf("下書きのID取得失敗")
 }
+
+func SetRedirectCookie(w http.ResponseWriter, redirect string) {
+	http.SetCookie(w, &http.Cookie{
+		Name:     "login_redirect",
+		Value:    redirect,
+		Path:     "/",
+		MaxAge:   600,
+		HttpOnly: true,
+		SameSite: http.SameSiteNoneMode,
+		Secure:   true,
+	})
+}
+
+func PopRedirectCookie(w http.ResponseWriter, r *http.Request) string {
+	c, err := r.Cookie("login_redirect")
+	if err != nil || c.Value == "" {
+		return ""
+	}
+	http.SetCookie(w, &http.Cookie{
+		Name:     "login_redirect",
+		Value:    "",
+		Path:     "/",
+		MaxAge:   -1,
+		HttpOnly: true,
+	})
+	return c.Value
+}

@@ -5,6 +5,7 @@ import (
 	. "app/handler/internal"
 	"app/handler/manage"
 	"os"
+	"strings"
 
 	"fmt"
 	"net/http"
@@ -17,6 +18,10 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 	err := manage.SetSession(w, r, nil)
 	if err != nil {
 		//TODO エラー
+	}
+
+	if redirect := r.URL.Query().Get("redirect"); redirect != "" {
+		manage.SetRedirectCookie(w, redirect)
 	}
 
 	err = View(w, nil, "authentication.tmpl")
@@ -93,5 +98,10 @@ func sessionHandler(w http.ResponseWriter, r *http.Request) {
 		errorPage(w, r, "セッション作成エラー", err, 500)
 		return
 	}
-	http.Redirect(w, r, "/manage/", 302)
+
+	redirect := manage.PopRedirectCookie(w, r)
+	if redirect == "" || !strings.HasPrefix(redirect, "/manage") {
+		redirect = "/manage/"
+	}
+	http.Redirect(w, r, redirect, 302)
 }
