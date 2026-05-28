@@ -15,6 +15,7 @@ import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import PreviewIcon from '@mui/icons-material/Preview'
 import AccountTreeIcon from '@mui/icons-material/AccountTree'
 import BookmarkAddIcon from '@mui/icons-material/BookmarkAdd'
+import AddIcon from '@mui/icons-material/Add'
 import ImageIcon from '@mui/icons-material/Image'
 import DeleteIcon from '@mui/icons-material/Delete'
 import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore'
@@ -235,6 +236,15 @@ export default function PageEdit() {
       const pos = selectionStart + replaced.length
       el.setSelectionRange(pos, pos)
     })
+  }
+
+  const handleAddChild = async () => {
+    try {
+      const data = await newPage(key)
+      if (data) navigate(`/page/new?parent=${key}&key=${data.page.id}`)
+    } catch (e) {
+      showSnack(e.message, 'error')
+    }
   }
 
   const handleAddToDraft = async () => {
@@ -458,6 +468,14 @@ export default function PageEdit() {
                 to={`/page/${key}/children`}
               >
                 子ページ管理
+              </Button>
+              <Button
+                variant="text"
+                size="small"
+                startIcon={<AddIcon />}
+                onClick={handleAddChild}
+              >
+                子ページを追加
               </Button>
               <Button
                 variant="text"

@@ -33,7 +33,7 @@ import {
   arrayMove,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { getPage, getChildren, newPage, sequencePages, sortPages, movePage, deletePages, getPageListHtml } from '../api/page'
+import { getPage, getChildren, newPage, sequencePages, movePage, deletePages, getPageListHtml } from '../api/page'
 import { addDraftPages, getCurrentDraft } from '../api/draft'
 
 SortableRow.propTypes = {
@@ -205,14 +205,12 @@ export default function PageChildren() {
     setSaving(false)
   }
 
-  const handleSort = async () => {
-    try {
-      await sortPages(key)
-      showSnack('自動ソートしました')
-      await load()
-    } catch (e) {
-      showSnack(e.message, 'error')
-    }
+  const handleSort = () => {
+    setItems(prev => {
+      const sorted = [...prev].sort((a, b) => a.name.localeCompare(b.name, 'ja'))
+      return sorted
+    })
+    setDirty(true)
   }
 
   const handleAddChild = async () => {
