@@ -3,7 +3,7 @@ import { useParams, Link as RouterLink } from 'react-router-dom'
 import {
   Box, Paper, Typography, TextField, Button,
   Breadcrumbs, Link, Divider, CircularProgress,
-  Snackbar, Alert as MuiAlert,
+  Snackbar, Alert,
 } from '@mui/material'
 import SaveIcon from '@mui/icons-material/Save'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
@@ -115,7 +115,7 @@ export default function VariableEdit() {
         onClose={() => setSnack(s => ({ ...s, open: false }))}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <MuiAlert
+        <Alert
           severity={snack.severity}
           onClose={() => setSnack(s => ({ ...s, open: false }))}
           sx={{ width: '100%' }}
@@ -123,7 +123,7 @@ export default function VariableEdit() {
           variant="filled"
         >
           {snack.message}
-        </MuiAlert>
+        </Alert>
       </Snackbar>
     </Box>
   )

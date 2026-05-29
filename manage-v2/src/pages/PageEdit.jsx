@@ -4,7 +4,7 @@ import {
   Box, Paper, Typography, TextField, Select, MenuItem,
   FormControl, InputLabel, FormControlLabel, Switch,
   Button, Breadcrumbs, Link, Divider, CircularProgress,
-  Snackbar, Alert as MuiAlert, Chip,
+  Snackbar, Alert, Chip,
   Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions,
   IconButton, Tooltip,
 } from '@mui/material'
@@ -717,7 +717,7 @@ export default function PageEdit() {
         onClose={() => setSnack(s => ({ ...s, open: false }))}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <MuiAlert
+        <Alert
           severity={snack.severity}
           onClose={() => setSnack(s => ({ ...s, open: false }))}
           sx={{ width: '100%' }}
@@ -725,7 +725,7 @@ export default function PageEdit() {
           variant="filled"
         >
           {snack.message}
-        </MuiAlert>
+        </Alert>
       </Snackbar>
     </Box>
   )

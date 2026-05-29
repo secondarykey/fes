@@ -3,7 +3,7 @@ import { useParams, Link as RouterLink, useNavigate } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import {
   Box, Paper, Typography, TextField, Button, Breadcrumbs, Link,
-  Divider, CircularProgress, Snackbar, Alert as MuiAlert,
+  Divider, CircularProgress, Snackbar, Alert,
   Table, TableHead, TableBody, TableRow, TableCell, TableContainer,
   Checkbox, IconButton, Tooltip, Dialog, DialogTitle, DialogContent,
   DialogContentText, DialogActions, Chip, FormControlLabel, Switch,
@@ -283,10 +283,10 @@ export default function DraftEdit() {
         onClose={() => setSnack(s => ({ ...s, open: false }))}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <MuiAlert severity={snack.severity} onClose={() => setSnack(s => ({ ...s, open: false }))}
+        <Alert severity={snack.severity} onClose={() => setSnack(s => ({ ...s, open: false }))}
           sx={{ width: '100%' }} elevation={6} variant="filled">
           {snack.message}
-        </MuiAlert>
+        </Alert>
       </Snackbar>
     </Box>
   )

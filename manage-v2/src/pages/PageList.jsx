@@ -4,7 +4,7 @@ import { Link as RouterLink, useNavigate } from 'react-router-dom'
 import {
   Typography, Box, Paper, List, ListItem, ListItemButton,
   ListItemText, ListItemIcon, Chip, IconButton, Collapse,
-  CircularProgress, Tooltip, Alert, Snackbar, Alert as MuiAlert,
+  CircularProgress, Tooltip, Alert, Snackbar,
 } from '@mui/material'
 import ExpandLessIcon from '@mui/icons-material/ExpandLess'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
@@ -105,7 +105,7 @@ export default function PageList() {
         onClose={() => setSnack(s => ({ ...s, open: false }))}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <MuiAlert
+        <Alert
           severity={snack.severity}
           onClose={() => setSnack(s => ({ ...s, open: false }))}
           sx={{ width: '100%' }}
@@ -113,7 +113,7 @@ export default function PageList() {
           variant="filled"
         >
           {snack.message}
-        </MuiAlert>
+        </Alert>
       </Snackbar>
     </Box>
   )

@@ -3,7 +3,7 @@ import {
   Typography, Box, Paper, Table, TableHead, TableBody, TableRow, TableCell,
   TableContainer, IconButton, Button, Tooltip, CircularProgress, Alert,
   Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, TextField,
-  Chip, Tabs, Tab, Snackbar, Alert as MuiAlert, LinearProgress, Checkbox,
+  Chip, Tabs, Tab, Snackbar, LinearProgress, Checkbox,
 } from '@mui/material'
 import DeleteIcon from '@mui/icons-material/Delete'
 import UploadIcon from '@mui/icons-material/Upload'
@@ -404,7 +404,7 @@ export default function FileList() {
         onClose={() => setSnack(s => ({ ...s, open: false }))}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <MuiAlert
+        <Alert
           severity={snack.severity}
           onClose={() => setSnack(s => ({ ...s, open: false }))}
           sx={{ width: '100%' }}
@@ -412,7 +412,7 @@ export default function FileList() {
           variant="filled"
         >
           {snack.message}
-        </MuiAlert>
+        </Alert>
       </Snackbar>
     </Box>
   )

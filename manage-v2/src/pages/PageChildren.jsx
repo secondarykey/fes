@@ -4,7 +4,7 @@ import { useParams, Link as RouterLink, useNavigate } from 'react-router-dom'
 import {
   Box, Paper, Typography, Breadcrumbs, Link, CircularProgress,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-  Switch, Button, Tooltip, Snackbar, Alert as MuiAlert,
+  Switch, Button, Tooltip, Snackbar, Alert,
   Dialog, DialogTitle, DialogContent, DialogContentText,
   DialogActions, TextField, Checkbox, Divider,
   IconButton, Menu, MenuItem,
@@ -534,7 +534,7 @@ export default function PageChildren() {
         onClose={() => setSnack(s => ({ ...s, open: false }))}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <MuiAlert
+        <Alert
           severity={snack.severity}
           onClose={() => setSnack(s => ({ ...s, open: false }))}
           sx={{ width: '100%' }}
@@ -542,7 +542,7 @@ export default function PageChildren() {
           variant="filled"
         >
           {snack.message}
-        </MuiAlert>
+        </Alert>
       </Snackbar>
     </Box>
   )

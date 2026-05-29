@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import {
   Typography, Box, Paper, Button, CircularProgress, Alert,
-  Snackbar, Alert as MuiAlert, Dialog, DialogTitle, DialogContent,
+  Snackbar, Dialog, DialogTitle, DialogContent,
   DialogContentText, DialogActions, Chip, Collapse, Link,
   List, ListItem, ListItemText, ListItemIcon, Divider,
 } from '@mui/material'
@@ -265,7 +265,7 @@ export default function PublishPage() {
         onClose={() => setSnack(s => ({ ...s, open: false }))}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <MuiAlert
+        <Alert
           severity={snack.severity}
           onClose={() => setSnack(s => ({ ...s, open: false }))}
           sx={{ width: '100%' }}
@@ -273,7 +273,7 @@ export default function PublishPage() {
           variant="filled"
         >
           {snack.message}
-        </MuiAlert>
+        </Alert>
       </Snackbar>
     </Box>
   )

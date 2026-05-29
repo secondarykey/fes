@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import {
   Box, Paper, Typography, TextField, Button, Divider,
-  CircularProgress, Snackbar, Alert as MuiAlert,
+  CircularProgress, Snackbar, Alert,
   IconButton, List, ListItem, ListItemText, InputAdornment,
   Card, CardContent, CardActions, Chip, Grid, LinearProgress,
   Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions,
@@ -366,21 +366,21 @@ export default function SiteEdit() {
       </Grid>
 
       {restoreRunning && <LinearProgress sx={{ mt: 2 }} />}
-      {restoreResult && <MuiAlert severity="success" sx={{ mt: 2 }} onClose={() => setRestoreResult(null)}>{restoreResult}</MuiAlert>}
-      {restoreError && <MuiAlert severity="error" sx={{ mt: 2 }} onClose={() => setRestoreError(null)}>{restoreError}</MuiAlert>}
+      {restoreResult && <Alert severity="success" sx={{ mt: 2 }} onClose={() => setRestoreResult(null)}>{restoreResult}</Alert>}
+      {restoreError && <Alert severity="error" sx={{ mt: 2 }} onClose={() => setRestoreError(null)}>{restoreError}</Alert>}
       {cleanResult && (
-        <MuiAlert severity="success" sx={{ mt: 2 }} onClose={() => setCleanResult(null)}>
+        <Alert severity="success" sx={{ mt: 2 }} onClose={() => setCleanResult(null)}>
           HTML削除: {cleanResult.deletedHtmls?.length ?? 0} 件 / 画像削除: {cleanResult.deletedImages?.length ?? 0} 件
           {(cleanResult.deletedHtmls?.length === 0 && cleanResult.deletedImages?.length === 0) && ' — 孤立データはありませんでした。'}
-        </MuiAlert>
+        </Alert>
       )}
-      {cleanError && <MuiAlert severity="error" sx={{ mt: 2 }} onClose={() => setCleanError(null)}>{cleanError}</MuiAlert>}
+      {cleanError && <Alert severity="error" sx={{ mt: 2 }} onClose={() => setCleanError(null)}>{cleanError}</Alert>}
       {gcResult && (
-        <MuiAlert severity="success" sx={{ mt: 2 }} onClose={() => setGcResult(null)}>
+        <Alert severity="success" sx={{ mt: 2 }} onClose={() => setGcResult(null)}>
           <Typography variant="body2" component="pre" sx={{ fontFamily: 'monospace', whiteSpace: 'pre-wrap', m: 0 }}>{gcResult}</Typography>
-        </MuiAlert>
+        </Alert>
       )}
-      {gcError && <MuiAlert severity="error" sx={{ mt: 2 }} onClose={() => setGcError(null)}>{gcError}</MuiAlert>}
+      {gcError && <Alert severity="error" sx={{ mt: 2 }} onClose={() => setGcError(null)}>{gcError}</Alert>}
 
       {/* クリーン確認 */}
       <Dialog open={cleanDialog} onClose={() => setCleanDialog(false)}>
@@ -422,7 +422,7 @@ export default function SiteEdit() {
         onClose={() => setSnack(s => ({ ...s, open: false }))}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <MuiAlert
+        <Alert
           severity={snack.severity}
           onClose={() => setSnack(s => ({ ...s, open: false }))}
           sx={{ width: '100%' }}
@@ -430,7 +430,7 @@ export default function SiteEdit() {
           variant="filled"
         >
           {snack.message}
-        </MuiAlert>
+        </Alert>
       </Snackbar>
     </Box>
   )

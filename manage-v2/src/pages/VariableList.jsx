@@ -4,7 +4,7 @@ import {
   Typography, Box, Paper, Table, TableHead, TableBody, TableRow, TableCell,
   TableContainer, IconButton, Button, Tooltip, CircularProgress, Alert,
   Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions,
-  TextField, Snackbar, Alert as MuiAlert,
+  TextField, Snackbar,
 } from '@mui/material'
 import DeleteIcon from '@mui/icons-material/Delete'
 import AddIcon from '@mui/icons-material/Add'
@@ -202,7 +202,7 @@ export default function VariableList() {
         onClose={() => setSnack(s => ({ ...s, open: false }))}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <MuiAlert
+        <Alert
           severity={snack.severity}
           onClose={() => setSnack(s => ({ ...s, open: false }))}
           sx={{ width: '100%' }}
@@ -210,7 +210,7 @@ export default function VariableList() {
           variant="filled"
         >
           {snack.message}
-        </MuiAlert>
+        </Alert>
       </Snackbar>
     </Box>
   )

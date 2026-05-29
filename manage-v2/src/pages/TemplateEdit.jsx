@@ -3,7 +3,7 @@ import { useParams, useSearchParams, useNavigate, Link as RouterLink } from 'rea
 import {
   Box, Paper, Typography, TextField, Select, MenuItem,
   FormControl, InputLabel, Button, Breadcrumbs, Link,
-  Divider, CircularProgress, Snackbar, Alert as MuiAlert,
+  Divider, CircularProgress, Snackbar, Alert,
   Dialog, DialogTitle, DialogContent, DialogActions,
   List, ListItem, ListItemText, ListItemIcon, Checkbox,
 } from '@mui/material'
@@ -253,7 +253,7 @@ export default function TemplateEdit() {
         onClose={() => setSnack(s => ({ ...s, open: false }))}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <MuiAlert
+        <Alert
           severity={snack.severity}
           onClose={() => setSnack(s => ({ ...s, open: false }))}
           sx={{ width: '100%' }}
@@ -261,7 +261,7 @@ export default function TemplateEdit() {
           variant="filled"
         >
           {snack.message}
-        </MuiAlert>
+        </Alert>
       </Snackbar>
     </Box>
   )
