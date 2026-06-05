@@ -2,6 +2,7 @@ package manage
 
 import (
 	"app/datastore"
+	. "app/handler/internal"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -18,15 +19,16 @@ func registerSiteAPI(r *mux.Router) {
 }
 
 type apiSiteRes struct {
-	Name          string    `json:"name"`
-	Description   string    `json:"description"`
-	Root          string    `json:"root"`
-	ManageURL     string    `json:"manageURL"`
-	Managers      []string  `json:"managers"`
-	ArchiveBucket string    `json:"archiveBucket"`
-	ArchiveNames  []string  `json:"archiveNames"`
-	Version       int       `json:"version"`
-	UpdatedAt     time.Time `json:"updatedAt"`
+	Name              string    `json:"name"`
+	Description       string    `json:"description"`
+	Root              string    `json:"root"`
+	ManageURL         string    `json:"manageURL"`
+	Managers          []string  `json:"managers"`
+	ArchiveBucket     string    `json:"archiveBucket"`
+	ArchiveNames      []string  `json:"archiveNames"`
+	ArchiveDailyLimit int       `json:"archiveDailyLimit"`
+	Version           int       `json:"version"`
+	UpdatedAt         time.Time `json:"updatedAt"`
 }
 
 func toAPISiteRes(s *datastore.Site) apiSiteRes {
@@ -39,15 +41,16 @@ func toAPISiteRes(s *datastore.Site) apiSiteRes {
 		archiveNames = []string{}
 	}
 	return apiSiteRes{
-		Name:          s.Name,
-		Description:   s.Description,
-		Root:          s.Root,
-		ManageURL:     s.ManageURL,
-		Managers:      managers,
-		ArchiveBucket: s.ArchiveBucket,
-		ArchiveNames:  archiveNames,
-		Version:       s.Version,
-		UpdatedAt:     s.UpdatedAt,
+		Name:              s.Name,
+		Description:       s.Description,
+		Root:              s.Root,
+		ManageURL:         s.ManageURL,
+		Managers:          managers,
+		ArchiveBucket:     s.ArchiveBucket,
+		ArchiveNames:      archiveNames,
+		ArchiveDailyLimit: s.ArchiveDailyLimit,
+		Version:           s.Version,
+		UpdatedAt:         s.UpdatedAt,
 	}
 }
 
@@ -69,14 +72,15 @@ func apiGetSite(w http.ResponseWriter, r *http.Request) {
 }
 
 type apiSiteUpdateReq struct {
-	Name          string   `json:"name"`
-	Description   string   `json:"description"`
-	Root          string   `json:"root"`
-	ManageURL     string   `json:"manageURL"`
-	Managers      []string `json:"managers"`
-	ArchiveBucket string   `json:"archiveBucket"`
-	ArchiveNames  []string `json:"archiveNames"`
-	Version       int      `json:"version"`
+	Name              string   `json:"name"`
+	Description       string   `json:"description"`
+	Root              string   `json:"root"`
+	ManageURL         string   `json:"manageURL"`
+	Managers          []string `json:"managers"`
+	ArchiveBucket     string   `json:"archiveBucket"`
+	ArchiveNames      []string `json:"archiveNames"`
+	ArchiveDailyLimit int      `json:"archiveDailyLimit"`
+	Version           int      `json:"version"`
 }
 
 func apiUpdateSite(w http.ResponseWriter, r *http.Request) {
@@ -132,10 +136,21 @@ func apiUpdateSite(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	site.ArchiveNames = filteredNames
+	site.ArchiveDailyLimit = req.ArchiveDailyLimit
 
 	if err := dao.PutSite(ctx, site); err != nil {
 		apiError(w, err.Error(), 500)
 		return
+	}
+
+	// GCS アーカイブルーターを動的に更新
+	if GCSArchiveRouter != nil {
+		GCSArchiveRouter.Update(site.ArchiveBucket, site.ArchiveNames)
+		if site.ArchiveDailyLimit > 0 {
+			GCSArchiveRouter.SetLimit(int64(site.ArchiveDailyLimit))
+		} else {
+			GCSArchiveRouter.SetLimit(DefaultArchiveDailyLimit)
+		}
 	}
 
 	updated, err := dao.SelectSite(ctx, -1)

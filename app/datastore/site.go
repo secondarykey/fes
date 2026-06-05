@@ -22,8 +22,9 @@ type Site struct {
 	ManageURL   string
 	Managers    []string
 
-	ArchiveBucket string
-	ArchiveNames  []string
+	ArchiveBucket    string
+	ArchiveNames     []string
+	ArchiveDailyLimit int
 
 	TargetVersion string `datastore:"-"`
 	Meta

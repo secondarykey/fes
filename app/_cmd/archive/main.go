@@ -96,13 +96,11 @@ func resolveArchiveBucket() string {
 
 	site, err := dao.SelectSite(ctx, -1)
 	if err != nil {
-		log.Printf("Warning: could not read Site from Datastore: %v", err)
-		log.Printf("Using default bucket: %s", config.ArchiveBucket)
-		return config.ArchiveBucket
+		log.Fatalf("Site の取得に失敗しました: %v", err)
 	}
 
-	if site.ArchiveBucket != "" {
-		return site.ArchiveBucket
+	if site.ArchiveBucket == "" {
+		log.Fatal("Site の ArchiveBucket が未設定です。管理画面で設定してください。")
 	}
-	return config.ArchiveBucket
+	return site.ArchiveBucket
 }
