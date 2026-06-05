@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"app/config"
 	"app/datastore"
 	. "app/handler/internal"
 	"app/logic"
@@ -49,10 +48,13 @@ func Register() error {
 		}
 	*/
 
-	bucket, names := loadArchiveConfig()
-	err := RegisterGCSArchive(bucket, names)
+	bucket, names, dailyLimit := loadArchiveConfig()
+	archiveHandler, err := InitGCSArchive(bucket, names)
 	if err != nil {
-		log.Printf("RegisterGCSArchive() error: %+v", err)
+		log.Printf("InitGCSArchive() error: %+v", err)
+	}
+	if GCSArchiveRouter != nil && dailyLimit > 0 {
+		GCSArchiveRouter.SetLimit(int64(dailyLimit))
 	}
 
 	err = RegisterMaps()
@@ -88,33 +90,39 @@ func Register() error {
 	// JavaScript 埋め込みモード
 	// robot.txt
 
-	http.Handle("/", r)
+	if archiveHandler != nil {
+		// アーカイブルーターが先に判定し、該当しなければ mux ルーターに委譲
+		http.Handle("/", archiveFallback(archiveHandler, r))
+	} else {
+		http.Handle("/", r)
+	}
 
 	return nil
 }
 
-func loadArchiveConfig() (string, []string) {
+// archiveFallback はアーカイブ名に一致するリクエストを archive に、それ以外を fallback に委譲する。
+func archiveFallback(archive http.Handler, fallback http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if GCSArchiveRouter != nil && GCSArchiveRouter.Match(r.URL.Path) {
+			archive.ServeHTTP(w, r)
+			return
+		}
+		fallback.ServeHTTP(w, r)
+	})
+}
+
+func loadArchiveConfig() (string, []string, int) {
 	ctx := context.Background()
 	dao := datastore.NewDao()
 	defer dao.Close()
 
 	site, err := dao.SelectSite(ctx, -1)
 	if err != nil {
-		log.Printf("loadArchiveConfig: SelectSite error: %v, using defaults", err)
-		return config.ArchiveBucket, config.ArchiveNames
+		log.Printf("loadArchiveConfig: SelectSite error: %v", err)
+		return "", nil, 0
 	}
 
-	bucket := site.ArchiveBucket
-	if bucket == "" {
-		bucket = config.ArchiveBucket
-	}
-
-	names := site.ArchiveNames
-	if len(names) == 0 {
-		names = config.ArchiveNames
-	}
-
-	return bucket, names
+	return site.ArchiveBucket, site.ArchiveNames, site.ArchiveDailyLimit
 }
 
 func errorPage(w http.ResponseWriter, r *http.Request, t string, e error, num int) {
@@ -194,12 +202,15 @@ func robotTxt(w http.ResponseWriter, r *http.Request) {
 
 	host := getHost(r)
 
-	txt := fmt.Sprintf(`User-agent:*
-Disallow:/file/*
-Disallow:/manage/
-Sitemap:%ssitemap/
-Sitemap:%ssitemap.xml`, host, host)
-	w.Write([]byte(txt))
+	_, names, _ := loadArchiveConfig()
+
+	var b strings.Builder
+	fmt.Fprintf(&b, "User-agent:*\nDisallow:/file/*\nDisallow:/manage/\n")
+	for _, name := range names {
+		fmt.Fprintf(&b, "Disallow:/%s/\n", name)
+	}
+	fmt.Fprintf(&b, "Sitemap:%ssitemap/\nSitemap:%ssitemap.xml", host, host)
+	w.Write([]byte(b.String()))
 }
 
 func sitemap(w http.ResponseWriter, r *http.Request) {

@@ -2,6 +2,7 @@ package manage
 
 import (
 	"app/datastore"
+	. "app/handler/internal"
 	"app/logic"
 	"archive/zip"
 	"bytes"
@@ -11,7 +12,9 @@ import (
 	"strings"
 	"time"
 
+	"cloud.google.com/go/storage"
 	"github.com/gorilla/mux"
+	"google.golang.org/api/iterator"
 )
 
 func registerToolAPI(r *mux.Router) {
@@ -20,6 +23,7 @@ func registerToolAPI(r *mux.Router) {
 	r.HandleFunc("/tool/page-list", apiPageList).Methods("GET")
 	r.HandleFunc("/tool/backup", apiBackup).Methods("GET")
 	r.HandleFunc("/tool/restore", apiRestore).Methods("POST")
+	r.HandleFunc("/tool/archive-storage", apiArchiveStorage).Methods("GET")
 }
 
 func apiGC(w http.ResponseWriter, r *http.Request) {
@@ -170,6 +174,80 @@ func apiRestore(w http.ResponseWriter, r *http.Request) {
 	}
 
 	apiJSON(w, map[string]string{"status": "restored"})
+}
+
+func apiArchiveStorage(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	dao := datastore.NewDao()
+	defer dao.Close()
+
+	// バケット名とアーカイブ名を取得
+	site, err := dao.SelectSite(ctx, -1)
+	if err != nil {
+		apiError(w, "Site取得エラー: "+err.Error(), 500)
+		return
+	}
+	bucket := site.ArchiveBucket
+	archiveNames := site.ArchiveNames
+
+	client, err := storage.NewClient(ctx)
+	if err != nil {
+		apiError(w, "GCS接続エラー: "+err.Error(), 500)
+		return
+	}
+	defer client.Close()
+
+	// バケットのデフォルトストレージクラスを取得
+	bktAttrs, err := client.Bucket(bucket).Attrs(ctx)
+	if err != nil {
+		apiError(w, "バケット情報取得エラー: "+err.Error(), 500)
+		return
+	}
+
+	type archiveInfo struct {
+		Name         string `json:"name"`
+		StorageClass string `json:"storageClass"`
+		Size         int64  `json:"size"`
+		FileCount    int    `json:"fileCount"`
+	}
+
+	archives := make([]archiveInfo, 0, len(archiveNames))
+	for _, name := range archiveNames {
+		info := archiveInfo{Name: name}
+		it := client.Bucket(bucket).Objects(ctx, &storage.Query{Prefix: name + "/"})
+		for {
+			attrs, err := it.Next()
+			if err == iterator.Done {
+				break
+			}
+			if err != nil {
+				info.StorageClass = "(取得エラー)"
+				break
+			}
+			if info.StorageClass == "" {
+				info.StorageClass = attrs.StorageClass
+			}
+			info.Size += attrs.Size
+			info.FileCount++
+		}
+		if info.StorageClass == "" {
+			info.StorageClass = "(空)"
+		}
+		archives = append(archives, info)
+	}
+
+	res := map[string]interface{}{
+		"bucket":       bucket,
+		"storageClass": bktAttrs.StorageClass,
+		"archives":     archives,
+	}
+
+	if GCSArchiveRouter != nil {
+		info := GCSArchiveRouter.GetAccessInfo()
+		res["access"] = info
+	}
+
+	apiJSON(w, res)
 }
 
 func appendPageListItems(ctx context.Context, dao *datastore.Dao, parentID string, buf *bytes.Buffer) error {

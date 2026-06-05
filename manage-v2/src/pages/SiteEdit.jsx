@@ -15,8 +15,16 @@ import CleaningServicesIcon from '@mui/icons-material/CleaningServices'
 import RestoreIcon from '@mui/icons-material/Restore'
 import DarkModeIcon from '@mui/icons-material/DarkMode'
 import LightModeIcon from '@mui/icons-material/LightMode'
+import StorageIcon from '@mui/icons-material/Storage'
 import { getSite, updateSite } from '../api/site'
 import { useColorMode } from '../context/ColorMode'
+
+function formatSize(bytes) {
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+  if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+  return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`
+}
 
 async function toolFetch(path, options = {}) {
   const res = await fetch(`/manage/api${path}`, options)
@@ -51,6 +59,8 @@ export default function SiteEdit() {
   const [restoreError, setRestoreError] = useState(null)
   const [restoreFile, setRestoreFile] = useState(null)
   const fileInputRef = useRef(null)
+  const [storageLoading, setStorageLoading] = useState(false)
+  const [storageInfo, setStorageInfo] = useState(null)
 
   const showSnack = (message, severity = 'success') =>
     setSnack({ open: true, message, severity })
@@ -116,6 +126,19 @@ export default function SiteEdit() {
     setCleanDialog(false); setCleanRunning(true); setCleanResult(null); setCleanError(null)
     try { setCleanResult(await toolFetch('/tool/clean', { method: 'POST' })) }
     catch (e) { setCleanError(e.message) } finally { setCleanRunning(false) }
+  }
+
+  const handleFetchStorage = async () => {
+    setStorageLoading(true)
+    setStorageInfo(null)
+    try {
+      const data = await toolFetch('/tool/archive-storage')
+      setStorageInfo(data)
+    } catch (e) {
+      showSnack(e.message, 'error')
+    } finally {
+      setStorageLoading(false)
+    }
   }
 
   const handleRestoreFileChange = (e) => {
@@ -190,7 +213,22 @@ export default function SiteEdit() {
         />
 
         <Divider sx={{ mb: 2 }} />
-        <Typography variant="subtitle1" fontWeight={600} gutterBottom>Archive</Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+          <Typography variant="subtitle1" fontWeight={600}>Archive</Typography>
+          {storageInfo && (() => {
+            const archives = storageInfo.archives || []
+            const totalSize = archives.reduce((s, a) => s + (a.size || 0), 0)
+            const totalFiles = archives.reduce((s, a) => s + (a.fileCount || 0), 0)
+            return (
+              <>
+                <Chip label={storageInfo.storageClass} size="small" variant="outlined" />
+                <Typography variant="body2" color="text.secondary">
+                  {formatSize(totalSize)} / {totalFiles} files
+                </Typography>
+              </>
+            )
+          })()}
+        </Box>
 
         <TextField
           label="GCS バケット名"
@@ -202,7 +240,31 @@ export default function SiteEdit() {
           sx={{ mb: 2 }}
         />
 
-        <Typography variant="subtitle2" gutterBottom>アーカイブ名一覧</Typography>
+        <TextField
+          label="1日あたりのアクセス上限"
+          type="number"
+          value={form.archiveDailyLimit || ''}
+          onChange={e => setForm(f => ({ ...f, archiveDailyLimit: parseInt(e.target.value) || 0 }))}
+          fullWidth
+          size="small"
+          placeholder="2000"
+          helperText="0 または空欄の場合はデフォルト値 (2000) を使用。超過時は 429 を返します。"
+          sx={{ mb: 2 }}
+        />
+
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+          <Typography variant="subtitle2">アーカイブ名一覧</Typography>
+          <Button
+            size="small"
+            variant="text"
+            startIcon={storageLoading ? <CircularProgress size={14} /> : <StorageIcon />}
+            onClick={handleFetchStorage}
+            disabled={storageLoading}
+            sx={{ textTransform: 'none', fontSize: '0.75rem' }}
+          >
+            現在の状態を取得
+          </Button>
+        </Box>
         <Box sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1, mb: 3 }}>
           {(form.archiveNames || []).length === 0 ? (
             <Typography variant="body2" color="text.disabled" sx={{ p: 1.5 }}>
@@ -210,19 +272,37 @@ export default function SiteEdit() {
             </Typography>
           ) : (
             <List dense disablePadding>
-              {form.archiveNames.map((n, i) => (
-                <ListItem
-                  key={n}
-                  divider={i < form.archiveNames.length - 1}
-                  secondaryAction={
-                    <IconButton size="small" color="error" onClick={() => handleRemoveArchiveName(n)}>
-                      <DeleteIcon fontSize="small" />
-                    </IconButton>
-                  }
-                >
-                  <ListItemText primary={n} />
-                </ListItem>
-              ))}
+              {form.archiveNames.map((n, i) => {
+                const info = storageInfo?.archives?.find(a => a.name === n)
+                return (
+                  <ListItem
+                    key={n}
+                    divider={i < form.archiveNames.length - 1}
+                    secondaryAction={
+                      <IconButton size="small" color="error" onClick={() => handleRemoveArchiveName(n)}>
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    }
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', minWidth: 0, pr: 1 }}>
+                      <Typography variant="body2" sx={{ width: 120, flexShrink: 0 }}>{n}</Typography>
+                      {info && (
+                        <>
+                          <Typography variant="body2" color="text.secondary" sx={{ width: 80, flexShrink: 0, textAlign: 'right' }}>
+                            {info.storageClass}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary" sx={{ width: 70, flexShrink: 0, textAlign: 'right' }}>
+                            {formatSize(info.size)}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary" sx={{ width: 70, flexShrink: 0, textAlign: 'right' }}>
+                            {info.fileCount} files
+                          </Typography>
+                        </>
+                      )}
+                    </Box>
+                  </ListItem>
+                )
+              })}
             </List>
           )}
           <Divider />
@@ -246,6 +326,25 @@ export default function SiteEdit() {
             />
           </Box>
         </Box>
+
+        {storageInfo?.access && (() => {
+          const { count, limit, resetAt } = storageInfo.access
+          const resetTime = new Date(resetAt).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })
+          const ratio = limit > 0 ? count / limit : 0
+          return (
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+                リセット {resetTime} : {count.toLocaleString()} / {limit.toLocaleString()} アクセス
+              </Typography>
+              <LinearProgress
+                variant="determinate"
+                value={Math.min(ratio * 100, 100)}
+                color={ratio >= 1 ? 'error' : ratio >= 0.8 ? 'warning' : 'primary'}
+                sx={{ height: 6, borderRadius: 1 }}
+              />
+            </Box>
+          )
+        })()}
 
         <Divider sx={{ mb: 2 }} />
         <Typography variant="subtitle2" gutterBottom>管理者</Typography>
