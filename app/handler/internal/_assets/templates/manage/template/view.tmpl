@@ -1,5 +1,7 @@
-{{define "title"}}
-Template[<a href="/manage/template/type/2">Page</a>|<a href="/manage/template/type/1">Site</a>|<a href="/manage/template/type/all">ALL</a>]
+{{define "title"}}TemplateView{{end}}
+
+{{define "header"}}
+Template Type[<a href="/manage/v1/template/type/2">Page</a>|<a href="/manage/v1/template/type/1">Site</a>|<a href="/manage/v1/template/type/all">ALL</a>]
 {{end}}
 
 {{define "page_template"}}
@@ -8,22 +10,20 @@ Template[<a href="/manage/template/type/2">Page</a>|<a href="/manage/template/ty
   <thead>
     <tr>
       <th class="mdl-data-table__cell--non-numeric">Name</th>
-      <th>Create</th>
-      <th>Update</th>
-      <th> </th>
+      <th style="width:160px;">Create / Update</th>
+      <th style="width:100px;"> </th>
     </tr>
   </thead>
 
   <tbody>
 {{ range .Templates}}
     <tr>
-      <td class="mdl-data-table__cell--non-numeric"><a href="/manage/template/edit/{{ .Key.Name}}">{{ .Name }}</a></td>
-      <td>{{convertDate .CreatedAt}}</td>
-      <td>{{convertDate .UpdatedAt}}</td>
+      <td class="mdl-data-table__cell--non-numeric"><a href="/manage/v1/template/edit/{{ .Key.Name}}">{{ .Name }}</a></td>
+      <td>{{convertDate .CreatedAt}} <br> {{convertDate .UpdatedAt}}</td>
       <td>
-      <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent removeBtn" data-id="{{ .Key.Name }}">
-        Remove
-      </button>
+        <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent removeBtn" data-id="{{ .Key.Name }}">
+          <span class="material-icons">delete_forever</span>
+        </button>
       </td>
     </tr>
 {{ end }}
@@ -31,7 +31,7 @@ Template[<a href="/manage/template/type/2">Page</a>|<a href="/manage/template/ty
     <tr>
       <td class="mdl-data-table__cell--non-numeric">
 {{if ne .Now ""}}
-        <a href="javascript:history.back();" class="demo-nav__button" title="Older">
+        <a href="javascript:history.back();" class="fes-nav__button" title="Older">
           <button class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon">
              <i class="material-icons">arrow_back</i>
           </button>
@@ -39,9 +39,8 @@ Template[<a href="/manage/template/type/2">Page</a>|<a href="/manage/template/ty
 {{end}}
       </td>
       <td></td>
-      <td></td>
       <td>
-        <a href="?cursor={{.Next}}" class="demo-nav__button" title="Newer">
+        <a href="?cursor={{.Next}}" class="fes-nav__button" title="Newer">
           <button class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon">
             <i class="material-icons" role="presentation">arrow_forward</i>
           </button>
@@ -54,7 +53,7 @@ Template[<a href="/manage/template/type/2">Page</a>|<a href="/manage/template/ty
 
 
 <!-- view template -->
-<a href="/manage/template/add">
+<a href="/manage/v1/template/add">
 <button id="add-content" class="mdl-button mdl-js-button mdl-button--fab mdl-button--primary">
   <i class="material-icons">add</i>
 </button>
@@ -66,9 +65,9 @@ Template[<a href="/manage/template/type/2">Page</a>|<a href="/manage/template/ty
     var removes = document.querySelectorAll('button.removeBtn');
     for (var i=0; i< removes.length; i++) {
         removes[i].addEventListener('click', function(e) {
-            confirmFes(function() {
+            confirmFes("Delete Template?",function() {
               var id = e.target.parentElement.getAttribute('data-id');
-              window.location.href = "/manage/template/delete/" + id;
+              window.location.href = "/manage/v1/template/delete/" + id;
             });
         });
     }

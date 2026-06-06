@@ -2,10 +2,13 @@ package logic
 
 import (
 	"app/datastore"
+	"errors"
 	"io"
+	"io/fs"
 	"log"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"context"
@@ -26,6 +29,7 @@ func CreateStaticSite(dir string) error {
 	fmt.Println("Pages create.")
 	//ディレクトリの作成
 	renameP, err := createPageFiles(dir)
+
 	if err != nil {
 		return xerrors.Errorf("createPageFiles() error: %w", err)
 	}
@@ -48,8 +52,11 @@ func CreateStaticSite(dir string) error {
 
 func createPageFiles(dir string) (map[string]string, error) {
 
+	dao := datastore.NewDao()
+	defer dao.Close()
+
 	//Pageをすべて検索
-	tree, err := datastore.PageTree(context.Background())
+	tree, err := dao.CreatePagesTree(context.Background())
 	if err != nil {
 		return nil, xerrors.Errorf("datastore.PageTree() error: %w", err)
 	}
@@ -91,6 +98,8 @@ func setRenameMap(urlPath string, realPath string, trees []*datastore.Tree, rtn 
 		}
 	}
 
+	fmt.Printf("URL[%s],REAL[%s]:Length:%d\n", urlPath, realPath, len(trees))
+
 	for idx, tree := range trees {
 
 		p := tree.Page
@@ -98,12 +107,17 @@ func setRenameMap(urlPath string, realPath string, trees []*datastore.Tree, rtn 
 		id := p.GetKey().Name
 		num := fmt.Sprintf("%d", idx+1)
 
+		fmt.Printf("%05d[%s]\n", idx+1, id)
+
 		name := num + ".html"
 		url := urlPath + name
 		rtn["/page/"+id] = url
 
 		err = createPageFile(id, filepath.Join(realPath, name))
 		if err != nil {
+			if errors.Is(err, HTMLisNil) {
+				continue
+			}
 			return xerrors.Errorf("createPageFile() error: %w", err)
 		}
 
@@ -114,7 +128,6 @@ func setRenameMap(urlPath string, realPath string, trees []*datastore.Tree, rtn 
 		if err != nil {
 			return xerrors.Errorf("setRenameMap() error: %w", err)
 		}
-
 	}
 
 	return nil
@@ -123,6 +136,7 @@ func setRenameMap(urlPath string, realPath string, trees []*datastore.Tree, rtn 
 var exts = map[string]string{
 	"image/png":       "png",
 	"image/jpeg":      "jpg",
+	"image/webp":      "webp",
 	"text/css":        "css",
 	"image/x-icon":    "ico",
 	"application/pdf": "pdf",
@@ -136,7 +150,10 @@ func createAssetFiles(dir string) (map[string]string, error) {
 		return nil, xerrors.Errorf("assets make directory error: %w", err)
 	}
 
-	files, err := datastore.GetAllFiles(context.Background())
+	dao := datastore.NewDao()
+	defer dao.Close()
+
+	files, err := dao.GetAllFiles(context.Background())
 	if err != nil {
 		return nil, xerrors.Errorf("datastore.GetAllFiles() error: %w", err)
 	}
@@ -147,7 +164,7 @@ func createAssetFiles(dir string) (map[string]string, error) {
 
 		name := file.GetKey().Name
 		//FileData検索
-		data, err := datastore.GetFileData(context.Background(), name)
+		data, err := dao.GetFileData(context.Background(), name)
 		if err != nil {
 			return nil, xerrors.Errorf("datastore.GetFileData() error: %w", err)
 		}
@@ -159,7 +176,7 @@ func createAssetFiles(dir string) (map[string]string, error) {
 			if v, ok := exts[mime]; ok {
 				rename = fmt.Sprintf("%d.%s", idx, v)
 			} else {
-				log.Printf("Not Found mime[%s]", mime)
+				log.Printf("Not Found mime[%s] = %s", mime, name)
 			}
 		}
 
@@ -175,12 +192,24 @@ func createAssetFiles(dir string) (map[string]string, error) {
 	return rtn, nil
 }
 
+var HTMLisNil = fmt.Errorf("HTML is nil")
+
 func createPageFile(id string, name string) error {
+
+	dao := datastore.NewDao()
+	defer dao.Close()
+
 	//HTML検索
-	html, err := datastore.GetHTML(context.Background(), id)
+	html, err := dao.GetHTML(context.Background(), id)
 	if err != nil {
 		return xerrors.Errorf("datastore.GetHTML() error: %w", err)
 	}
+
+	if html == nil {
+		fmt.Println("HTML is nil:", id)
+		return HTMLisNil
+	}
+
 	//名称でファイルを作成
 	return createFile(name, html.Content)
 }
@@ -202,17 +231,19 @@ func createFile(name string, data []byte) error {
 
 func convertHTML(dir string, htmlMap, fileMap map[string]string) error {
 
-	htmls, err := filepath.Glob(dir + "/*.html")
+	var htmls []string
+	err := filepath.WalkDir(dir, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if !d.IsDir() && strings.HasSuffix(path, ".html") {
+			htmls = append(htmls, path)
+		}
+		return nil
+	})
 	if err != nil {
-		return xerrors.Errorf("error: %w", err)
+		return xerrors.Errorf("WalkDir error: %w", err)
 	}
-
-	re, err := filepath.Glob(dir + "/**/*.html")
-	if err != nil {
-		return xerrors.Errorf("error: %w", err)
-	}
-
-	htmls = append(htmls, re...)
 
 	for _, v := range htmls {
 		fmt.Println("convert:" + v)
@@ -260,7 +291,11 @@ func createChangeFile(name string, htmlMap, fileMap map[string]string) (string, 
 	}
 
 	for key, v := range fileMap {
-		buf = strings.ReplaceAll(buf, key, v)
+		// /file/{key} および /file/{date}/{key} の両パターンを置換
+		// key = "/file/some-uuid"
+		name := strings.TrimPrefix(key, "/file/")
+		re := regexp.MustCompile(`/file(?:/[^/"'\s]*)?/` + regexp.QuoteMeta(name))
+		buf = re.ReplaceAllString(buf, v)
 	}
 
 	buf = strings.ReplaceAll(buf, `="/"`, fmt.Sprintf(`="%s"`, top))
@@ -289,7 +324,10 @@ func GenerateFiles(dir string) error {
 		return xerrors.Errorf("make directory error: %w", err)
 	}
 
-	files, err := datastore.GetAllFiles(context.Background())
+	dao := datastore.NewDao()
+	defer dao.Close()
+
+	files, err := dao.GetAllFiles(context.Background())
 	if err != nil {
 		return xerrors.Errorf("datastore.GetAllFiles() error: %w", err)
 	}
@@ -298,7 +336,7 @@ func GenerateFiles(dir string) error {
 
 		name := file.GetKey().Name
 		//FileData検索
-		data, err := datastore.GetFileData(context.Background(), name)
+		data, err := dao.GetFileData(context.Background(), name)
 		if err != nil {
 			return xerrors.Errorf("datastore.GetFileData() error: %w", err)
 		}

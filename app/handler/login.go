@@ -5,11 +5,12 @@ import (
 	. "app/handler/internal"
 	"app/handler/manage"
 	"os"
+	"strings"
 
 	"fmt"
 	"net/http"
 
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt/v4"
 )
 
 func loginHandler(w http.ResponseWriter, r *http.Request) {
@@ -19,9 +20,13 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		//TODO エラー
 	}
 
+	if redirect := r.URL.Query().Get("redirect"); redirect != "" {
+		manage.SetRedirectCookie(w, redirect)
+	}
+
 	err = View(w, nil, "authentication.tmpl")
 	if err != nil {
-		errorPage(w, "描画エラー", fmt.Errorf("認証ページの表示に失敗 %v", err), 500)
+		errorPage(w, r, "描画エラー", fmt.Errorf("認証ページの表示に失敗 %v", err), 500)
 	}
 }
 
@@ -36,10 +41,13 @@ func logoutHandler(w http.ResponseWriter, r *http.Request) {
 func sessionHandler(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
-	site, err := datastore.SelectSite(ctx, -1)
+	dao := datastore.NewDao()
+	defer dao.Close()
+
+	site, err := dao.SelectSite(ctx, -1)
 	if err != nil {
 		if err != datastore.SiteNotFoundError {
-			errorPage(w, "サイト取得エラー", err, 500)
+			errorPage(w, r, "サイト取得エラー", err, 500)
 			return
 		}
 	}
@@ -80,16 +88,20 @@ func sessionHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !flag {
-		errorPage(w, "認証エラー", err, 403)
+		errorPage(w, r, "認証エラー", err, 403)
 		return
-	} else {
-		//Cookieの作成
-		u := manage.NewLoginUser(email, tokenString)
-		err = manage.SetSession(w, r, u)
-		if err != nil {
-			errorPage(w, "セッション作成エラー", err, 500)
-			return
-		}
 	}
-	http.Redirect(w, r, "/manage/", 302)
+	//Cookieの作成
+	u := manage.NewLoginUser(email, tokenString)
+	err = manage.SetSession(w, r, u)
+	if err != nil {
+		errorPage(w, r, "セッション作成エラー", err, 500)
+		return
+	}
+
+	redirect := manage.PopRedirectCookie(w, r)
+	if redirect == "" || !strings.HasPrefix(redirect, "/manage") {
+		redirect = "/manage/"
+	}
+	http.Redirect(w, r, redirect, 302)
 }

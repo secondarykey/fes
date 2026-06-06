@@ -1,18 +1,21 @@
-{{define "title"}}
+{{define "title"}}Edit Page{{end}}
+
+{{define "header"}}
 Edit Page[
 {{ range .Breadcrumbs}}
-&gt; <a href="/manage/page/{{ .Key.Name }}">{{ .Name }}</a>
+&gt; <a href="/manage/v1/page/{{ .Key.Name }}">{{ .Name }}</a>
 {{ end }}
 ]
 
-<a href="/manage/page/view/{{ .Page.Key.Name }}" target="private">Private</a> | 
-<a href="/page/{{ .Page.Key.Name }}" target="public">Public</a>
-
+&nbsp;
+<button type="button" id="draftAdd" class="mdl-button mdl-js-button mdl-button--raised">
+  <span class="material-icons">playlist_add</span>
+</button>
 
 {{ if .Publish }}
-        <button type="button" id="generateBtn" class="mdl-button mdl-js-button mdl-button--raised mdl-button--primary">
-          Publish
-        </button>
+<button type="button" id="generateBtn" class="mdl-button mdl-js-button mdl-button--raised mdl-button--primary">
+  <span class="material-icons">publish</span>
+</button>
 {{ end }}
 
 {{end}}
@@ -20,7 +23,7 @@ Edit Page[
 {{define "page_template"}}
 
 
-<form id="editForm" method="post" action="/manage/page/{{ .Page.Key.Name }}" enctype="multipart/form-data">
+<form id="editForm" method="post" action="/manage/v1/page/{{ .Page.Key.Name }}" enctype="multipart/form-data">
 <table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp" width="100%">
   <tbody>
     <tr>
@@ -32,20 +35,54 @@ Edit Page[
           <span style="font-size:10px;color:#999999;">{{.Page.Key.Name}}</span>
 
         </div>
+
+        <span class="material-icons" style="vertical-align:middle;width:24px;"> </span>
+
+        <a href="/manage/v1/page/view/{{ .Page.Key.Name }}" target="private"><button type="button" class="mdl-button"><span class="material-icons">preview</span></button></a>
+        <a href="/page/{{ .Page.Key.Name }}" target="public"><button type="button" class="mdl-button"><span class="material-icons">public</span></button></a>
       </td>
     </tr>
 
+    <tr>
+      <td class="mdl-data-table__cell--non-numeric">
+        <!-- Image upload-->
+        <button type="button" id="uploadBtn" class="mdl-button mdl-js-button mdl-button--raised" style="width:300px;">
+          <span class="material-icons">image</span>
+        </button>
+
+        <span id="attache" class="material-icons" style="color:white;vertical-align:middle;">attachment</span>
+
+        {{ if .ExistDraftFile }}
+        <a href="/manage/v1/file/view/{{ .Page.Key.Name }}-DRAFT" target="_blank"><button type="button" class="mdl-button"><span class="material-icons">preview</span></button></a>
+
+        {{ end }}
+        {{ if .ExistFile }}
+        <a href="/manage/v1/file/view/{{ .Page.Key.Name }}" target="_blank"><button type="button" class="mdl-button"><span class="material-icons">public</span></button></a>
+        {{ end }}
+
+
+        <input type="file" name="file" id="file" value="" style="display:none;"/>
+
+        <input type="hidden" name="parentID" id="parentID" value="{{ .Page.Parent }}" />
+        <input type="hidden" name="siteTemplateID" id="siteTemplateID" value="{{ .Page.SiteTemplate }}" />
+        <input type="hidden" name="pageTemplateID" id="pageTemplateID" value="{{ .Page.PageTemplate }}" />
+        <input type="hidden" name="version" id="version" value="{{ .Page.Version }}" />
+        <input type="hidden" name="seq" id="seq" value="{{ .Page.Seq }}" />
+      </td>
+    </tr>
+
+{{ if ne .Page.Key.Name "ErrorPage" }}
     <tr>
       <td class="mdl-data-table__cell--non-numeric">
 
         <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="publish">
           <span class="mdl-switch__label">Enabled</span>
           <input type="checkbox" name="publish" id="publish" class="mdl-switch__input" {{if not .Page.Deleted}}checked{{end}}>
-
         </label>
 
       </td>
     </tr>
+{{ end }}
 
     <tr>
       <td class="mdl-data-table__cell--non-numeric">
@@ -60,6 +97,9 @@ Edit Page[
 {{ end }}
           </ul>
         </div>
+        <button type="button" class="mdl-button" id="siteTemplateBtn">
+          <span class="material-icons">open_in_new<span>
+        </button>
       </td>
     </tr>
 
@@ -76,28 +116,15 @@ Edit Page[
 {{ end }}
           </ul>
         </div>
-      </td>
-    </tr>
-
-
-    <tr>
-      <td class="mdl-data-table__cell--non-numeric">
-        <!-- Image upload-->
-        <button type="button" id="uploadBtn" class="mdl-button mdl-js-button mdl-button--raised">
-          Image
+        <button type="button" class="mdl-button" id="pageTemplateBtn">
+          <span class="material-icons">open_in_new<span>
         </button>
-        <a href="/file/{{ .Page.Key.Name }}" target="_blank">Page Image</a>
-        <input type="file" name="file" id="file" value="" style="display:none;"/>
-
-        <input type="hidden" name="parentID" id="parentID" value="{{ .Page.Parent }}" />
-        <input type="hidden" name="siteTemplateID" id="siteTemplateID" value="{{ .Page.SiteTemplate }}" />
-        <input type="hidden" name="pageTemplateID" id="pageTemplateID" value="{{ .Page.PageTemplate }}" />
-        <input type="hidden" name="version" id="version" value="{{ .Page.Version }}" />
       </td>
     </tr>
 
-{{ if ne .Page.Name "" }}
 
+{{ if ne .Page.Key.Name "ErrorPage" }}
+  {{ if ne .Page.Name "" }}
 
     <tr>
       <td class="mdl-data-table__cell--non-numeric">
@@ -112,11 +139,9 @@ Edit Page[
         </ul>
         </div>
 
-        <br>
-
-        <a href="/manage/page/tool/{{ .Page.Key.Name }}">
+        <a href="/manage/v1/page/children/{{ .Page.Key.Name }}">
         <button type="button" id="toolBtn" class="mdl-button mdl-js-button mdl-button--raised">
-          Tool
+          <span class="material-icons">list</span>
         </button>
         </a>
 
@@ -146,6 +171,8 @@ Edit Page[
         </div>
       </td>
     </tr>
+
+  {{ end }}
 {{ end }}
 
     <tr>
@@ -159,7 +186,9 @@ Edit Page[
 
     <tr>
       <td class="mdl-data-table__cell--non-numeric">
-        <button type="button" id="contentBtn" class="mdl-button mdl-js-button mdl-button--raised">EditTool</button>
+        <button type="button" id="contentBtn" class="mdl-button mdl-js-button mdl-button--raised">
+          <span class="material-icons">mode_edit</span>
+        </button>
         <br>
         <div class="mdl-textfield mdl-js-textfield" style="width:100%;">
           <textarea class="mdl-textfield__input" type="text" id="pageContent" name="pageContent" rows="10" style="width:100%;">{{ plane .PageData.Content }}</textarea>
@@ -171,15 +200,15 @@ Edit Page[
     <tr>
       <td class="mdl-data-table__cell--non-numeric">
         <button type="button" id="privateBtn" class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent">
-          Private
+          <span class="material-icons">public_off</span>
         </button>
 
         <button type="button" id="removeBtn" class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent">
-          Remove
+          <span class="material-icons">delete_forever</span>
         </button>
 
         <button type="button" id="updateBtn" class="mdl-button mdl-js-button mdl-button--raised mdl-button--primary">
-          Update
+          <span class="material-icons">save</span>
         </button>
       </td>
     </tr>
@@ -220,9 +249,9 @@ Edit Page[
         list[i].addEventListener('click', function(e) {
           var id = e.target.getAttribute("data-id");
           if ( id == "" ) {
-            window.location.href = "/manage/page/add/{{ .Page.Key.Name }}";
+            window.location.href = "/manage/v1/page/add/{{ .Page.Key.Name }}";
           } else {
-            window.location.href = "/manage/page/" + id;
+            window.location.href = "/manage/v1/page/" + id;
           }
         });
     }
@@ -248,28 +277,34 @@ Edit Page[
       return false;
     });
 
+
+    var draftAdd = document.querySelector('#draftAdd');
+    draftAdd.addEventListener('click', function() {
+      confirmFes("Add Draft Page?",function() {
+        window.location.href = "/manage/v1/draft/page/add/{{ .Page.Key.Name }}";
+      });
+    });
+
 {{ if .Publish }}
     var generateBtn = document.querySelector('#generateBtn');
     generateBtn.addEventListener('click', function() {
-      confirmFes(function() {
-        var type = "public";
-        window.location.href = "/manage/page/" + type + "/{{ .Page.Key.Name }}";
+      confirmFes("Publish Page?",function() {
+        window.location.href = "/manage/v1/html/publish/{{ .Page.Key.Name }}";
       });
     });
 {{ end }}
 
     var privateBtn = document.querySelector('#privateBtn');
     privateBtn.addEventListener('click', function() {
-      confirmFes(function() {
-        var type = "private";
-        window.location.href = "/manage/page/" + type + "/{{ .Page.Key.Name }}";
+      confirmFes("Unpublish Page?",function() {
+        window.location.href = "/manage/v1/html/private/{{ .Page.Key.Name }}";
       });
     });
 
     var removeBtn = document.querySelector('#removeBtn');
     removeBtn.addEventListener('click', function() {
-      confirmFes(function() {
-        window.location.href = "/manage/page/delete/{{ .Page.Key.Name }}";
+      confirmFes("Delete Page?",function() {
+        window.location.href = "/manage/v1/page/delete/{{ .Page.Key.Name }}";
       });
     });
 
@@ -281,12 +316,29 @@ Edit Page[
         alertFes("select template");
         return;
       }
-      confirmFes(function() {
+      confirmFes("Save Page?",function() {
         var updateForm = document.querySelector('#editForm');
         updateForm.submit();
       });
     });
 
+    var file = document.querySelector('#file');
+    file.addEventListener('change', function() {
+      var attache = document.querySelector('#attache');
+      attache.style.color = "red";
+    });
+
+    var siteTemplateBtn = document.querySelector('#siteTemplateBtn');
+    siteTemplateBtn.addEventListener('click', function() {
+        var siteID = document.querySelector('#siteTemplateID');
+        window.location.href = "/manage/v1/template/edit/" + siteID.getAttribute("value");
+    });
+
+    var pageTemplateBtn = document.querySelector('#pageTemplateBtn');
+    pageTemplateBtn.addEventListener('click', function() {
+        var pageID = document.querySelector('#pageTemplateID');
+        window.location.href = "/manage/v1/template/edit/" + pageID.getAttribute("value");
+    });
 
 </script>
 {{ end }}

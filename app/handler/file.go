@@ -2,6 +2,7 @@ package handler
 
 import (
 	"app/datastore"
+	"app/handler/manage"
 	"fmt"
 	"net/http"
 
@@ -9,43 +10,40 @@ import (
 )
 
 func fileHandler(w http.ResponseWriter, r *http.Request) {
-
-	w.Header().Set("Cache-Control", "public, max-age=3600")
-	//ファイルを検索
 	vars := mux.Vars(r)
 	id := vars["key"]
 
-	//表示
-	fileData, err := datastore.GetFileData(r.Context(), id)
+	ctx := r.Context()
+	dao := datastore.NewDao()
+	defer dao.Close()
+
+	file, err := dao.SelectFile(ctx, id)
 	if err != nil {
-		errorPage(w, "Datastore:FileData Search Error", err, 500)
+		errorPage(w, r, "Datastore error", err, 500)
+		return
+	}
+	if file == nil {
+		errorPage(w, r, "Datastore:Not Found FileData Error", fmt.Errorf("指定したIDのデータが存在しません。%s", id), 404)
 		return
 	}
 
-	if fileData == nil {
-		errorPage(w, "Datastore:Not Found FileData Error", fmt.Errorf("指定したIDのデータが存在しません。%s", id), 404)
+	setCacheHeaders(w, file.UpdatedAt)
+	if checkNotModified(r, file.UpdatedAt) {
+		w.WriteHeader(http.StatusNotModified)
 		return
 	}
 
-	w.Header().Set("Content-Type", fileData.Mime)
-	_, err = w.Write(fileData.Content)
-	if err != nil {
-		errorPage(w, "Writing FileData Error", err, 500)
-		return
+	if err := manage.FileViewHandler(w, r); err != nil {
+		errorPage(w, r, "Datastore:Not Found FileData Error", fmt.Errorf("指定したIDのデータが存在しません。%s", id), 404)
 	}
-	return
 }
 
+// Deprecated: タイムスタンプ付き URL (/file/{date}/{key}) は既存テンプレートとの互換性のために残しています。
+// 新規テンプレートでは /file/{key} を使用してください。
 func fileDateCacheHandler(w http.ResponseWriter, r *http.Request) {
-	// 60 * 60 * 24 = 86400
-	// * 10 = 864000
-	w.Header().Set("Cache-Control", "public, max-age=864000")
 	fileHandler(w, r)
 }
 
 func fileCacheHandler(w http.ResponseWriter, r *http.Request) {
-	// 60 * 60 * 3  = 10800
-	// 60 * 60 * 6  = 21600
-	w.Header().Set("Cache-Control", "public, max-age=21600")
 	fileHandler(w, r)
 }

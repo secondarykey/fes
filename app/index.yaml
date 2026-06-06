@@ -9,7 +9,6 @@ indexes:
 - kind: Page
   properties:
     - name: Parent
-    - name: Deleted
     - name: Seq
     - name: CreatedAt
       direction: desc
@@ -21,10 +20,6 @@ indexes:
     - name: CreatedAt
       direction: desc
 
-- kind: Page
-  properties:
-    - name: Deleted
-
 - kind: File
   properties:
     - name: Type
@@ -34,4 +29,11 @@ indexes:
   properties:
     - name: Type
     - name: UpdatedAt
+      direction: desc
+
+- kind: DraftPage
+  properties:
+    - name: DraftID
+    - name: Seq
+    - name: CreatedAt 
       direction: desc

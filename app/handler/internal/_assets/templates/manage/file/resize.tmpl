@@ -1,12 +1,11 @@
-{{define "title"}}
-File Resize
-{{end}}
+{{define "title"}}File Resize{{end}}
+{{define "header"}} File Resize {{end}}
 
 {{define "page_template"}}
 
 <canvas id="imageData" width="0" height="0"></canvas>
 
-<form name="convertForm" method="post" action="/manage/file/resize/commit">
+<form name="convertForm" method="post" action="/manage/v1/file/resize/commit">
 <input type="hidden" name="key" value="{{.File.Key.Name}}">
 
 <input type="hidden" name="left" value="0">
@@ -132,7 +131,7 @@ Size:{{ convertSize .File.Size }}
             query += "&height=" + (rectangle.endY + rectangle.startY);
         }
 
-        imageObj.src = '/manage/file/resize/view/{{ .File.Key.Name}}' + query;
+        imageObj.src = '/manage/v1/file/resize/view/{{ .File.Key.Name}}' + query;
 
     },false);
 

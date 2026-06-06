@@ -43,8 +43,6 @@ func GetSession(r *http.Request) (*LoginUser, error) {
 		return nil, xerrors.Errorf("store.Get() error: %w", err)
 	}
 
-	fmt.Println(sess.Options)
-
 	obj := sess.Values["User"]
 	if user, ok := obj.(*LoginUser); ok {
 		return user, nil
@@ -72,4 +70,58 @@ func SetSession(w http.ResponseWriter, r *http.Request, u *LoginUser) error {
 
 func ClearSession(w http.ResponseWriter, r *http.Request) error {
 	return SetSession(w, r, nil)
+}
+
+func SetDraftId(w http.ResponseWriter, r *http.Request, id string) error {
+
+	sess, err := store.Get(r, sessionName)
+	if err != nil {
+		return xerrors.Errorf("store.Get() error: %w", err)
+	}
+
+	age := 86400 * 7
+	sess.Options = getSessionOptions(age)
+	sess.Values["DraftId"] = id
+
+	return sess.Save(r, w)
+}
+
+func GetDraftId(r *http.Request) (string, error) {
+	sess, err := store.Get(r, sessionName)
+	if err != nil {
+		return "", xerrors.Errorf("store.Get() error: %w", err)
+	}
+
+	obj := sess.Values["DraftId"]
+	if id, ok := obj.(string); ok {
+		return id, nil
+	}
+	return "", fmt.Errorf("下書きのID取得失敗")
+}
+
+func SetRedirectCookie(w http.ResponseWriter, redirect string) {
+	http.SetCookie(w, &http.Cookie{
+		Name:     "login_redirect",
+		Value:    redirect,
+		Path:     "/",
+		MaxAge:   600,
+		HttpOnly: true,
+		SameSite: http.SameSiteNoneMode,
+		Secure:   true,
+	})
+}
+
+func PopRedirectCookie(w http.ResponseWriter, r *http.Request) string {
+	c, err := r.Cookie("login_redirect")
+	if err != nil || c.Value == "" {
+		return ""
+	}
+	http.SetCookie(w, &http.Cookie{
+		Name:     "login_redirect",
+		Value:    "",
+		Path:     "/",
+		MaxAge:   -1,
+		HttpOnly: true,
+	})
+	return c.Value
 }

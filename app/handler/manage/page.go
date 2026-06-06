@@ -2,20 +2,23 @@ package manage
 
 import (
 	"app/datastore"
-	"app/logic"
+	"app/handler/manage/form"
 
 	"net/http"
 
 	"github.com/gorilla/mux"
-	uuid "github.com/satori/go.uuid"
 )
 
 func viewRootPageHandler(w http.ResponseWriter, r *http.Request) {
 
-	page, err := datastore.SelectRootPage(r)
+	ctx := r.Context()
+	dao := datastore.NewDao()
+	defer dao.Close()
+
+	page, err := dao.SelectRootPage(ctx)
 	if err != nil {
 		if err == datastore.SiteNotFoundError {
-			http.Redirect(w, r, "/manage/site/", 302)
+			http.Redirect(w, r, "/manage/v1/site/", 302)
 		} else {
 			errorPage(w, "Select Root Page error", err, 500)
 		}
@@ -29,24 +32,65 @@ func addPageHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	parent := vars["key"]
 
-	//新規ページなので
-	page := &datastore.Page{
-		Parent: parent,
-	}
-	page.Deleted = true
+	page := datastore.Page{}
 
-	uid := uuid.NewV4()
+	page.Parent = parent
+	//削除は一覧に表示されない仕様に変更されました
+	page.Deleted = false
 
-	id := uid.String()
-	page.LoadKey(datastore.CreatePageKey(id))
+	page.LoadKey(datastore.CreatePageKey())
 
-	view(w, r, page)
+	view(w, r, &page)
 }
 
 func viewPageHandler(w http.ResponseWriter, r *http.Request) {
 
+	ctx := r.Context()
+	dao := datastore.NewDao()
+	defer dao.Close()
+
 	if POST(r) {
-		err := datastore.PutPage(r)
+
+		vars := mux.Vars(r)
+		id := vars["key"]
+
+		p, err := dao.SelectPage(ctx, id, -1)
+		if err != nil {
+			errorPage(w, "Error CreateFormPage", err, 500)
+			return
+		}
+
+		ps := new(datastore.PageSet)
+		ps.Page = p
+		if p == nil {
+			ps.Page = &datastore.Page{}
+		}
+		ps.PageData = new(datastore.PageData)
+
+		err = form.SetPage(r, ps, id)
+		if err != nil {
+			errorPage(w, "Error CreateFormPage", err, 500)
+			return
+		}
+
+		fs := new(datastore.FileSet)
+
+		err = form.SetFile(r, fs, datastore.FileTypePageImage)
+		if err != nil {
+			errorPage(w, "Error CreateFormFile", err, 500)
+			return
+		}
+
+		ps.ID = id
+		if fs != nil {
+			draftID := datastore.CreateDraftPageImageID(id)
+			fs.ID = draftID
+		}
+
+		ps.FileSet = fs
+		ctx := r.Context()
+
+		err = dao.PutPage(ctx, ps)
 		if err != nil {
 			errorPage(w, "Error Put Page", err, 500)
 			return
@@ -55,11 +99,23 @@ func viewPageHandler(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 	id := vars["key"]
+
 	//ページ検索
-	page, err := datastore.SelectPage(r, id, -1)
+	page, err := dao.SelectPage(ctx, id, -1)
 	if err != nil {
 		errorPage(w, "Error Select Page", err, 500)
 		return
+	}
+
+	if page == nil {
+		if id == datastore.ErrorPageID {
+			page = &datastore.Page{}
+			page.Deleted = true
+			page.Parent = ""
+			page.LoadKey(datastore.CreatePageKey())
+		} else {
+			//TODO ありえないけどどうしよう
+		}
 	}
 
 	view(w, r, page)
@@ -73,9 +129,11 @@ func view(w http.ResponseWriter, r *http.Request, page *datastore.Page) {
 	publish := false
 
 	ctx := r.Context()
+	dao := datastore.NewDao()
+	defer dao.Close()
 
 	//全件検索
-	templates, _, err := datastore.SelectTemplates(ctx, "all", datastore.NoLimitCursor)
+	templates, _, err := dao.SelectTemplates(ctx, "all", datastore.NoLimitCursor)
 	if err != nil {
 		errorPage(w, "Error Select Template", err, 500)
 		return
@@ -87,7 +145,7 @@ func view(w http.ResponseWriter, r *http.Request, page *datastore.Page) {
 
 	id := page.Key.Name
 
-	pageData, err = datastore.SelectPageData(r, id)
+	pageData, err = dao.SelectPageData(ctx, id)
 	if err != nil {
 		errorPage(w, "Error Select PageData", err, 500)
 		return
@@ -95,11 +153,11 @@ func view(w http.ResponseWriter, r *http.Request, page *datastore.Page) {
 
 	if pageData == nil {
 		pageData = &datastore.PageData{}
-		pageData.LoadKey(datastore.CreatePageDataKey(id))
+		pageData.LoadKey(datastore.GetPageDataKey(id))
 	}
 
 	//全件でOK
-	children, _, err = datastore.SelectChildPages(r, id, datastore.NoLimitCursor, 0, true)
+	children, _, err = dao.SelectChildrenPage(ctx, id, datastore.NoLimitCursor, 0, true)
 	if err != nil {
 		errorPage(w, "Error Select Children page", err, 500)
 		return
@@ -130,16 +188,19 @@ func view(w http.ResponseWriter, r *http.Request, page *datastore.Page) {
 	parent := page.Parent
 
 	for {
-		if parent == "" {
+		if parent == "" || parent == datastore.ErrorPageID {
 			break
 		}
-		parentPage, err := datastore.SelectPage(r, parent, -1)
+		parentPage, err := dao.SelectPage(ctx, parent, -1)
 		if err != nil {
 			break
 		}
 		wk = append(wk, *parentPage)
 		parent = parentPage.Parent
 	}
+
+	exist := dao.ExistFile(ctx, id)
+	existDraft := dao.ExistFile(ctx, datastore.CreateDraftPageImageID(id))
 
 	breadcrumbs := make([]datastore.Page, len(wk))
 	for idx, _ := range wk {
@@ -152,10 +213,14 @@ func view(w http.ResponseWriter, r *http.Request, page *datastore.Page) {
 		Children         []datastore.Page
 		Breadcrumbs      []datastore.Page
 		Templates        []datastore.Template
-		Publish          bool
 		SiteTemplateName string
 		PageTemplateName string
-	}{page, pageData, children, breadcrumbs, templates, publish, siteTemplateName, pageTemplateName}
+		ExistFile        bool
+		ExistDraftFile   bool
+		Publish          bool
+	}{page, pageData, children, breadcrumbs,
+		templates, siteTemplateName, pageTemplateName,
+		exist, existDraft, publish}
 
 	viewManage(w, "page/edit.tmpl", dto)
 }
@@ -164,89 +229,14 @@ func deletePageHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["key"]
 
-	err := datastore.RemovePage(r, id)
+	ctx := r.Context()
+	dao := datastore.NewDao()
+	defer dao.Close()
+
+	err := dao.RemovePage(ctx, id)
 	if err != nil {
 		errorPage(w, "Error Delete Page", err, 500)
 		return
 	}
-	http.Redirect(w, r, "/manage/page/", 302)
-}
-
-func changePublicPageHandler(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	id := vars["key"]
-
-	err := logic.PutHTML(r, id)
-	if err != nil {
-		errorPage(w, "Error Publish HTML", err, 500)
-		return
-	}
-	http.Redirect(w, r, "/manage/page/"+id, 302)
-}
-
-func changePrivatePageHandler(w http.ResponseWriter, r *http.Request) {
-
-	vars := mux.Vars(r)
-	id := vars["key"]
-
-	err := datastore.RemoveHTML(r, id)
-	if err != nil {
-		errorPage(w, "Error Private HTML", err, 500)
-		return
-	}
-	http.Redirect(w, r, "/manage/page/"+id, 302)
-}
-
-func toolPageHandler(w http.ResponseWriter, r *http.Request) {
-
-	vars := mux.Vars(r)
-	id := vars["key"]
-
-	children, _, err := datastore.SelectChildPages(r, id, datastore.NoLimitCursor, 0, true)
-	if err != nil {
-		errorPage(w, "Error Select Children page", err, 500)
-		return
-	}
-
-	dto := struct {
-		Parent string
-		Pages  []datastore.Page
-	}{id, children}
-	viewManage(w, "page/tool.tmpl", dto)
-}
-
-func changeSequencePageHandler(w http.ResponseWriter, r *http.Request) {
-
-	id := r.FormValue("id")
-	idCsv := r.FormValue("ids")
-	enablesCsv := r.FormValue("enables")
-	versionsCsv := r.FormValue("versions")
-
-	err := datastore.PutPageSequence(r, idCsv, enablesCsv, versionsCsv)
-	if err != nil {
-		errorPage(w, "Error Page sequence update", err, 500)
-		return
-	}
-
-	http.Redirect(w, r, "/manage/page/tool/"+id, 302)
-}
-
-type Tree struct {
-	Page     *datastore.Page
-	Children []*datastore.Tree
-}
-
-func treePageHandler(w http.ResponseWriter, r *http.Request) {
-
-	tree, err := datastore.PageTree(r.Context())
-	if err != nil {
-		errorPage(w, "Error Page Tree", err, 500)
-		return
-	}
-
-	dto := struct {
-		Tree *datastore.Tree
-	}{tree}
-
-	viewManage(w, "page/tree.tmpl", dto)
+	http.Redirect(w, r, "/manage/v1/page/", 302)
 }

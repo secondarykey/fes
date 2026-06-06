@@ -1,5 +1,17 @@
-{{define "title"}}
-Children Page Tool[<a href="/manage/page/{{ .Parent }}">Parent</a>]
+{{define "title"}}Page Children{{end}}
+
+{{define "header"}}
+
+{{ if ne .Parent "Trash" }}
+Page Tool[<a href="/manage/v1/page/{{ .Parent }}">Parent</a>]
+{{ end }}
+{{ if eq .Parent "Trash" }}
+Trash
+{{ end }}
+        <button type="button" id="sortBtn" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">
+        Sort 
+        </button>
+
         <button type="button" id="generateBtn" class="mdl-button mdl-js-button mdl-button--raised mdl-button--primary">
         Update sequence
         </button>
@@ -9,6 +21,7 @@ Children Page Tool[<a href="/manage/page/{{ .Parent }}">Parent</a>]
 <table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
   <thead>
     <tr>
+      <th style="width:20px;"></th>
       <th class="mdl-data-table__cell--non-numeric">Name</th>
       <th style="width:80px;" class="mdl-data-table__cell--non-numeric">Enabled</th>
       <th style="width:160px;">Create / Update</th>
@@ -16,20 +29,38 @@ Children Page Tool[<a href="/manage/page/{{ .Parent }}">Parent</a>]
       <th style="width:50px;"> </th>
       <th style="width:50px;"> </th>
     </tr>
+    <tr>
+      <td></td>
+      <td></td>
+      <td>
+        <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect">
+          <input type="checkbox" id="allPage" class="mdl-switch__input" checked>
+        </label>
+      </td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
   </thead>
   <tbody id="seqBody">
+
 {{ range $i, $v := .Pages}}
-    <tr class="seqRow" data-index="{{$i}}" data-id="{{.Key.Name}}" data-version="{{.Version}}">
+    <tr dragable="true" class="seqRow" data-index="{{$i}}" data-id="{{.Key.Name}}" data-version="{{.Version}}">
 
       <td class="mdl-data-table__cell--non-numeric">
-        <a href="/manage/page/{{ .Key.Name}}" target="_page_editor" {{if .Deleted}}style="color:red;"{{end}}>{{ .Name }}</a>
+        <span class="material-icons drags"> drag_handle </span>
+      </td>
+
+      <td class="mdl-data-table__cell--non-numeric">
+        <a href="/manage/v1/page/{{ .Key.Name}}" target="_page_editor" {{if .Deleted}}style="color:red;"{{end}}>{{ .Name }}</a>
         <br>
         <span style="font-size:10px;color:#999999;">{{ .Key.Name }}</span>
       </td>
 
-      <td class="mdl-data-table__cell--non-numeric">
+      <td class="dl-data-table__cell--non-numeric">
         <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect">
-          <input type="checkbox" id="{{.Key.Name}}" class="mdl-switch__input" {{if not .Deleted}}checked{{end}}>
+          <input type="checkbox" id="{{.Key.Name}}" class="mdl-switch__input page-check" {{if not .Deleted}}checked{{end}}>
         </label>
       </td>
 
@@ -67,7 +98,12 @@ Children Page Tool[<a href="/manage/page/{{ .Parent }}">Parent</a>]
     </tr>
 {{ end }}
   </tbody>
-  <form id="sequenceForm" name="sequenceForm" method="post" action="/manage/page/tool/sequence">
+
+  <form id="sortForm" name="sortForm" method="post" action="/manage/v1/page/update/sort">
+    <input type="hidden" name="id" value="{{.Parent}}" />
+  </form>
+
+  <form id="sequenceForm" name="sequenceForm" method="post" action="/manage/v1/page/update/sequence">
     <input type="hidden" name="id" value="{{.Parent}}" />
     <input type="hidden" name="ids" id="ids" value="" />
     <input type="hidden" name="versions" id="versions" value="" />
@@ -75,19 +111,68 @@ Children Page Tool[<a href="/manage/page/{{ .Parent }}">Parent</a>]
   </form>
 </table>
 
+<div class="space"></div>
+<div class="mdl-list">
+
+  <div class="mdl-list__item mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect accordion">
+      Advanced<i class="material-icons">settings_applications</i>
+  </div>
+
+  <div class="panel">
+    <form id="moveForm" name="moveForm" method="post" action="/manage/v1/page/update/move" onsubmit="return confirm('realy?');">
+      <input type="hidden" name="id" value="{{.Parent}}" />
+
+      <div class="mdl-textfield mdl-js-textfield">
+        <input class="mdl-textfield__input" type="text" id="targetId" name="targetId" value="Trash">
+      </div>
+
+      <button type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-button--primary">
+        Move
+      </button>
+    </form>
+
+  <textarea class="mdl-textfield__input" rows="20",cols="80">
+{{ range $i, $v := .Pages}}<li><a href="{{ "{{ .Dir }}" }}{{.Key.Name}}">{{.Name}}</a></li>
+{{ end }}
+  </textarea>
+  </div>
+
+  <div class="panel">
+  </div>
+
+</div>
+
+{{ if ne .Parent "Trash" }}
 <!-- view template -->
 <button type="button" id="add-content" class="mdl-button mdl-js-button mdl-button--fab mdl-button--primary">
   <i class="material-icons">add</i>
 </button>
+{{ end }}
 
 <script>
 
+{{ if ne .Parent "Trash" }}
     var addBtn = document.querySelector('#add-content');
     addBtn.addEventListener('click', function() {
-      var url = "/manage/page/add/{{.Parent}}";
+      var url = "/manage/v1/page/add/{{.Parent}}";
       var name = "_page_editor";
       window.open(url,name);
       return false;
+    });
+{{ end }}
+
+    var allBtn = document.querySelector('#allPage');
+    allBtn.addEventListener('change', function() {
+      var pageCheckes = document.querySelectorAll('input.page-check');
+      for (var i=0 ; i<pageCheckes.length; i++) {
+        var check = pageCheckes[i];
+        var label = check.parentElement;
+        if ( allBtn.checked ) {
+          label.MaterialSwitch.on();
+        } else {
+          label.MaterialSwitch.off();
+        }
+      }
     });
 
     var upList = document.querySelectorAll('button.upBtn');
@@ -202,9 +287,17 @@ Children Page Tool[<a href="/manage/page/{{ .Parent }}">Parent</a>]
         }
     }
 
+    var sortBtn = document.querySelector('#sortBtn');
+    sortBtn.addEventListener('click', function() {
+      confirmFes("Sort?",function() {
+        var sortForm = document.querySelector('#sortForm');
+        sortForm.submit();
+      })
+    });
+
     var generateBtn = document.querySelector('#generateBtn');
     generateBtn.addEventListener('click', function() {
-      confirmFes(function() {
+      confirmFes("Save Order?",function() {
         var seqRows = document.querySelectorAll('tr.seqRow');
         var ids = "";
         var enables = "";
@@ -242,6 +335,11 @@ Children Page Tool[<a href="/manage/page/{{ .Parent }}">Parent</a>]
       });
     });
 
+    var dragList = document.querySelectorAll('span.drags');
+    for (var i=0 ; i<dragList.length; i++) {
+      var item = dragList[i];
+      var tr = item.parentElement.parentElement;
+    }
 </script>
 
 {{ end }}
