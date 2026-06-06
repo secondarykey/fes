@@ -2,9 +2,10 @@ package manage
 
 import (
 	"app/datastore"
-	"fmt"
+	"app/handler/manage/form"
 
 	"bytes"
+	"fmt"
 	"image"
 	"image/jpeg"
 	"io"
@@ -13,7 +14,41 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/nfnt/resize"
+	"golang.org/x/xerrors"
 )
+
+func FileViewHandler(w http.ResponseWriter, r *http.Request) error {
+	//ファイルを検索
+	vars := mux.Vars(r)
+	id := vars["key"]
+
+	dao := datastore.NewDao()
+	defer dao.Close()
+
+	//表示
+	fileData, err := dao.GetFileData(r.Context(), id)
+	if err != nil {
+		return xerrors.Errorf("GetFileData() error: %w", err)
+	}
+
+	if fileData == nil {
+		return fmt.Errorf("FileData is nil: %s", id)
+	}
+
+	w.Header().Set("Content-Type", fileData.Mime)
+	_, err = w.Write(fileData.Content)
+	if err != nil {
+		return xerrors.Errorf("Writer Write() error: %w", err)
+	}
+	return nil
+}
+
+func fileViewHandler(w http.ResponseWriter, r *http.Request) {
+	err := FileViewHandler(w, r)
+	if err != nil {
+		errorPage(w, "Error file View", err, 404)
+	}
+}
 
 func viewFileHandler(w http.ResponseWriter, r *http.Request) {
 
@@ -26,7 +61,12 @@ func viewFileHandler(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
 	cursor := q.Get("cursor")
 
-	files, next, err := datastore.SelectFiles(r, t, cursor)
+	ctx := r.Context()
+
+	dao := datastore.NewDao()
+	defer dao.Close()
+
+	files, next, err := dao.SelectFiles(ctx, t, cursor)
 	if err != nil {
 		errorPage(w, "Error Select File", err, 500)
 		return
@@ -43,25 +83,72 @@ func viewFileHandler(w http.ResponseWriter, r *http.Request) {
 //URL = /manage/file/add
 func addFileHandler(w http.ResponseWriter, r *http.Request) {
 
-	err := datastore.SaveFile(r, "", datastore.FileTypeData)
+	fs := new(datastore.FileSet)
+
+	ctx := r.Context()
+	dao := datastore.NewDao()
+	defer dao.Close()
+
+	fs.File = &datastore.File{}
+	fs.FileData = &datastore.FileData{}
+
+	err := form.SetFile(r, fs, datastore.FileTypeData)
+	if err != nil {
+		errorPage(w, "SetFile() Error", err, 500)
+		return
+	}
+
+	err = dao.SaveFile(ctx, fs)
 	if err != nil {
 		errorPage(w, "Error Add File", err, 500)
 		return
 	}
 	//リダイレクト
-	http.Redirect(w, r, "/manage/file/", 302)
+	http.Redirect(w, r, "/manage/v1/file/", 302)
+}
+
+func faviconUploadHandler(w http.ResponseWriter, r *http.Request) {
+
+	ctx := r.Context()
+	dao := datastore.NewDao()
+	defer dao.Close()
+
+	fs := new(datastore.FileSet)
+
+	err := form.SetFile(r, fs, datastore.FileTypeSystem)
+	if err != nil {
+		errorPage(w, "SetFile() Error", err, 500)
+		return
+	}
+
+	fs.ID = datastore.SystemFaviconID
+	fs.Name = datastore.SystemFaviconID
+
+	err = dao.SaveFile(ctx, fs)
+	if err != nil {
+		errorPage(w, "Error Add File", err, 500)
+		return
+	}
+	//リダイレクト
+	http.Redirect(w, r, "/manage/v1/site/", 302)
 }
 
 //URL = /manage/file/delete
 func deleteFileHandler(w http.ResponseWriter, r *http.Request) {
+
 	//リダイレクト
 	id := r.FormValue("fileName")
-	err := datastore.RemoveFile(r, id)
+	ctx := r.Context()
+
+	dao := datastore.NewDao()
+	defer dao.Close()
+
+	err := dao.RemoveFile(ctx, id)
 	if err != nil {
 		errorPage(w, "RemoveFile Error", err, 500)
 		return
 	}
-	http.Redirect(w, r, "/manage/file/", 302)
+	http.Redirect(w, r, "/manage/v1/file/", 302)
 }
 
 type Resize struct {
@@ -79,7 +166,13 @@ func resizeFileHandler(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 	id := vars["key"]
-	file, err := datastore.SelectFile(r, id)
+
+	ctx := r.Context()
+
+	dao := datastore.NewDao()
+	defer dao.Close()
+
+	file, err := dao.SelectFile(ctx, id)
 	if err != nil {
 		errorPage(w, "Select File Error", err, 500)
 		return
@@ -112,13 +205,17 @@ func resizeCommitFileHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = datastore.PutFileData(r, resize.id, writer.Bytes(), "image/jpeg")
+	ctx := r.Context()
+	dao := datastore.NewDao()
+	defer dao.Close()
+
+	err = dao.PutFileData(ctx, resize.id, writer.Bytes(), "image/jpeg")
 	if err != nil {
 		errorPage(w, "Datastore FileData Put Error", err, 500)
 		return
 	}
 
-	http.Redirect(w, r, "/manage/file/resize/"+resize.id, 302)
+	http.Redirect(w, r, "/manage/v1/file/resize/"+resize.id, 302)
 }
 
 func resizeFileViewHandler(w http.ResponseWriter, r *http.Request) {
@@ -146,7 +243,8 @@ func resizeFileViewHandler(w http.ResponseWriter, r *http.Request) {
 
 func writeResize(w io.Writer, r *http.Request, re Resize) error {
 
-	fileData, err := datastore.GetFileData(r.Context(), re.id)
+	dao := datastore.NewDao()
+	fileData, err := dao.GetFileData(r.Context(), re.id)
 	if err != nil {
 		return err
 	}

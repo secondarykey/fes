@@ -1,6 +1,6 @@
-{{define "title"}}
-Variable
-{{end}}
+{{ define "title" }}Variable View{{ end }}
+
+{{define "header"}} Variable {{end}}
 
 {{define "page_template"}}
 
@@ -8,21 +8,19 @@ Variable
   <thead>
     <tr>
       <th class="mdl-data-table__cell--non-numeric">Name</th>
-      <th>Create</th>
-      <th>Update</th>
-      <th> </th>
+      <th style="width:160px;">Create / Update</th>
+      <th style="width:100px;"> </th>
     </tr>
   </thead>
 
   <tbody>
 {{ range .Variables}}
     <tr>
-      <td class="mdl-data-table__cell--non-numeric"><a href="/manage/variable/edit/{{ .Key.Name}}">{{ .Key.Name }}</a></td>
-      <td>{{convertDate .CreatedAt}}</td>
-      <td>{{convertDate .UpdatedAt}}</td>
+      <td class="mdl-data-table__cell--non-numeric"><a href="/manage/v1/variable/edit/{{ .Key.Name}}">{{ .Key.Name }}</a></td>
+      <td>{{convertDate .CreatedAt}}<br>{{convertDate .UpdatedAt}}</td>
       <td>
       <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent removeBtn" data-id="{{ .Key.Name }}">
-        Remove
+        <span class="material-icons">delete_forever</span>
       </button>
       </td>
     </tr>
@@ -31,7 +29,7 @@ Variable
     <tr>
       <td class="mdl-data-table__cell--non-numeric">
 {{if ne .Now ""}}
-        <a href="javascript:history.back();" class="demo-nav__button" title="Older">
+        <a href="javascript:history.back();" class="fes-nav__button" title="Older">
           <button class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon">
              <i class="material-icons">arrow_back</i>
           </button>
@@ -39,9 +37,8 @@ Variable
 {{end}}
       </td>
       <td></td>
-      <td></td>
       <td>
-        <a href="?cursor={{.Next}}" class="demo-nav__button" title="Newer">
+        <a href="?cursor={{.Next}}" class="fes-nav__button" title="Newer">
           <button class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon">
             <i class="material-icons" role="presentation">arrow_forward</i>
           </button>
@@ -53,7 +50,7 @@ Variable
 </table>
 
 
-<a href="/manage/variable/add">
+<a href="/manage/v1/variable/add">
 <button id="add-content" class="mdl-button mdl-js-button mdl-button--fab mdl-button--primary">
   <i class="material-icons">add</i>
 </button>
@@ -65,9 +62,9 @@ Variable
     var removes = document.querySelectorAll('button.removeBtn');
     for (var i=0; i< removes.length; i++) {
         removes[i].addEventListener('click', function(e) {
-            confirmFes(function() {
+            confirmFes("Delete Variable?",function() {
               var id = e.target.parentElement.getAttribute('data-id');
-              window.location.href = "/manage/variable/delete/" + id;
+              window.location.href = "/manage/v1/variable/delete/" + id;
             });
         });
     }

@@ -29,6 +29,7 @@ const (
 	DatastoreEmulatorHost = "DATASTORE_EMULATOR_HOST"
 	DatastoreProjectID    = "DATASTORE_PROJECT_ID"
 	DatastoreDataset      = "DATASTORE_DATASET"
+
 )
 
 func SetProjectID() Option {

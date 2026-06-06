@@ -1,0 +1,846 @@
+
+p = MapPoint.get(34.9254885,138.3796251);
+console.log("KEY=1",p.x,p.y)
+this.shops.push(new Shop("1","official BAR",`ビール、アルコール類`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9253714,138.3801341);
+console.log("KEY=2",p.x,p.y)
+this.shops.push(new Shop("2","キャプテンジャーク",`ジャークチキン
+ライスアンドピーズ
+ジャークチキンオーバーライス`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9253505,138.3800838);
+console.log("KEY=3",p.x,p.y)
+this.shops.push(new Shop("3","GREEDY TACOS",`TACOS、チキンオーバーライス、ナチョス、
+
+https://www.instagram.com/greedy_tacos57?igsh=a3hvd3RldHJ4OWJm`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9253351,138.3800422);
+console.log("KEY=4",p.x,p.y)
+this.shops.push(new Shop("4","Enishi",`大串焼き　唐揚げ　フライドポテト　オムそば　ホルモン焼きそば　海鮮焼き　シャーピン`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9253225,138.379998);
+console.log("KEY=5",p.x,p.y)
+this.shops.push(new Shop("5","TACOCAFE",`こだわりのたこやき
+
+TACOCAFE.jp`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9253109,138.3799544);
+console.log("KEY=6",p.x,p.y)
+this.shops.push(new Shop("6","3 mile Cafe",`ロングポテト　チュロス等`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9252978,138.3799101);
+console.log("KEY=7",p.x,p.y)
+this.shops.push(new Shop("7","晴レノ日ノ",`バイン・ミー　フォー　無農薬自家菜園ホーリーバジルのガパオライス
+
+@harenohi.no`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9252846,138.3798605);
+console.log("KEY=8",p.x,p.y)
+this.shops.push(new Shop("8","うまいもんでぶ屋",`魔法の粉をかけたフライドポテト、ふりふりポテト、肉巻きおにぎり、でぶサンド、チュロス、かき氷、トロピカルジュース等`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9252714,138.3798095);
+console.log("KEY=9",p.x,p.y)
+this.shops.push(new Shop("9","篠原商店",`鶏のからあげ、さといものからあげ、とり皮のからあげ
+
+https://www.instagram.com/wasouzaishinoharasyouten/`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9252582,138.3797572);
+console.log("KEY=10",p.x,p.y)
+this.shops.push(new Shop("10","Mr.Potato Farm",`フレンチフライ・サツマイモチップス・大学芋
+
+Instagram @mr.potatofarm`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9252428,138.3797049);
+console.log("KEY=11",p.x,p.y)
+this.shops.push(new Shop("11","テキーラダイナー",`ハンバーガー、ホットドッグ、ステーキ
+
+https://tequilasdiner.owst.jp/`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9252323,138.3796526);
+console.log("KEY=12",p.x,p.y)
+this.shops.push(new Shop("12","B.B.garden",`カレー`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9252219,138.3795996);
+console.log("KEY=13",p.x,p.y)
+this.shops.push(new Shop("13","29CHORI veg+",`静岡もつ焼きそば、ホルモン焼き
+
+https://www.instagram.com/gido_29chori`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9252131,138.3795561);
+console.log("KEY=14",p.x,p.y)
+this.shops.push(new Shop("14","スレイジースタンド",`ポテトボール（新感覚　揚げじゃがバター）、オリジナルドリンク（フルーツエイド他）
+
+https://www.instagram.com/srazystand?igsh=MWxwcWgyOW96dmVrYw==`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9251966,138.3795138);
+console.log("KEY=15",p.x,p.y)
+this.shops.push(new Shop("15","MIKAKOFFEE",`朝霧牛乳のカフェラテ、コーヒー、自家製シロップのドリンク各種、自家製ティラミス、朝霧牛乳のプリン各種、焼き菓子各種、自家焙煎コーヒー豆
+
+https://www.instagram.com/mikakoffee/profilecard/?igsh=MTRoNWs5cGg0eGNneA==`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.925179,138.3794669);
+console.log("KEY=16",p.x,p.y)
+this.shops.push(new Shop("16","安寧",`長岡式酵素玄米、オーガニックドリンク、燻製各種
+
+https://www.instagram.com/annei_shizuoka?igsh=MThsOWMyZDg1c3VyaA%3D%3D&utm_source=qr`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9251603,138.3794166);
+console.log("KEY=17",p.x,p.y)
+this.shops.push(new Shop("17","BLOOM",`コーヒー、ハンバーガーなど
+
+bloom_work.fitness`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9251427,138.379371);
+console.log("KEY=18",p.x,p.y)
+this.shops.push(new Shop("18","串焼亭",`静岡県産黒毛和牛牛串、はらみ串、牛タン串、かき氷`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9251185,138.3793301);
+console.log("KEY=19",p.x,p.y)
+this.shops.push(new Shop("19","T’s green",`揚げ団子、かりんとう饅頭、抹茶ラテ等
+
+@ts.green_2013`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9250998,138.3792778);
+console.log("KEY=20",p.x,p.y)
+this.shops.push(new Shop("20","とらさんキッチン",`富士山焼きそば、マーボー焼きそば、燻製セット、炊き込みご飯、惣菜各種
+
+torasankitchen78@instagram.jp`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9250811,138.3792288);
+console.log("KEY=21",p.x,p.y)
+this.shops.push(new Shop("21","caffe kofka",`ドリップコーヒー、朝霧牛乳のカフェラテ、季節のフルーツシロップドリンク、ソフトドリンク
+
+https://www.instagram.com/caffe_kofka/`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9250613,138.3791772);
+console.log("KEY=22",p.x,p.y)
+this.shops.push(new Shop("22","ふわいろ（元わたじろう）",`わたあめ（わたあめは許可証は必要ないそうです）
+
+https://www.instagram.com/kiyumi0013`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9255798,138.3801522);
+console.log("KEY=23",p.x,p.y)
+this.shops.push(new Shop("23","ポテイト王国",`ロングポテト　チュロス　チーズボール`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9255666,138.3801093);
+console.log("KEY=24",p.x,p.y)
+this.shops.push(new Shop("24","ぽっぽ屋",`広島焼き
+オムそば
+ロングポテト
+唐揚げ
+フランク
+
+https://instagram.com/umaimono.yatai.poppoya?igshid=MzRlODBiNWFlZA==`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9256161,138.3801307);
+console.log("KEY=25",p.x,p.y)
+this.shops.push(new Shop("25","ふわとろたこ焼き　あじたま",`たこ焼き
+
+https://www.ajitama-takoyaki.com/`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9255963,138.3800798);
+console.log("KEY=26",p.x,p.y)
+this.shops.push(new Shop("26","保科精肉店",`からあげ
+炭火焼きチャーシュー串
+ロングポテト
+
+ゆず蜜ドリンク
+
+https://www.instagram.com/hoshina_seinikuten/profilecard/?igsh=MXhic3RiYjhoNTFjcw==`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.925538,138.3800355);
+console.log("KEY=27",p.x,p.y)
+this.shops.push(new Shop("27","一新食堂",`ラーメン、お弁当、お惣菜、さつまいもチップス、レモンネード、おでん`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9255248,138.3799966);
+console.log("KEY=28",p.x,p.y)
+this.shops.push(new Shop("28","10DER HOUSE",`スモークチキンレッグ・ガーリックシュリンプ・ノンアルコールカクテル
+
+https://www.instagram.com/10derhouse/profilecard/?igsh=MWJ6d2k3dHluenMxcA==`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9255688,138.380014);
+console.log("KEY=29",p.x,p.y)
+this.shops.push(new Shop("29","ル・ジャルダン・ゴロワ",`ハーブグリルソーセージ、ハムチーズクレープ、ワイン、レモネード、キッシュ、チーズケーキ、タルト、シューケットラスク、マシュマロ`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9255534,138.3799698);
+console.log("KEY=30",p.x,p.y)
+this.shops.push(new Shop("30","マサイの風",`京都の山里で自家焙煎した珈琲、メインブレンドの「マサイの風」、他7種類の自家焙煎珈琲。
+
+https://www.instagram.com/danchou.lion/`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9253258,138.3793998);
+console.log("KEY=31",p.x,p.y)
+this.shops.push(new Shop("31","ひので(青葉おでん街)",`静岡おでん(盛り合わせ5種)
+特製おでん出汁おにぎり
+ホルモン煮込み
+炭火焼鶏
+牛ハラミ串
+フランクフルト
+静岡茶
+コカコーラ`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9253087,138.3793556);
+console.log("KEY=32",p.x,p.y)
+this.shops.push(new Shop("32","最高餃子",`餃子、ホットク
+
+https://www.instagram.com/saikou.gyouza315?igsh=MTg2ZGg1dGdzeHk3NA%3D%3D&utm_source=qr`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9253615,138.379377);
+console.log("KEY=33",p.x,p.y)
+this.shops.push(new Shop("33","八ヶ岳スモーク",`スモーク全部盛り（スモークチキン、スモークベーコン、ソーセージ）`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9253456,138.3793308);
+console.log("KEY=34",p.x,p.y)
+this.shops.push(new Shop("34","Fragrant",`コーヒー
+
+https://www.instagram.com/fragrant_coffee_by_tls`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9252076,138.3792583);
+console.log("KEY=35",p.x,p.y)
+this.shops.push(new Shop("35","グランプールテラス静波",`ホットサンド、ポテト、レモネード
+
+https://www.instagram.com/glampool_shizunami`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9251922,138.3792201);
+console.log("KEY=36",p.x,p.y)
+this.shops.push(new Shop("36","オールドソーコ",`ペンネアラビアータ
+鴨肉のスモーク
+鴨マヨピザ
+ガーリックトースト
+スーコン6種
+沼津レモネード、沼津レモンスカッシュ、アイスコーヒー、チャイ、ラッシー、いちごミルク
+
+old.soco`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9252389,138.3792349);
+console.log("KEY=37",p.x,p.y)
+this.shops.push(new Shop("37","ベルラッテ",`豚角煮のちまき、藤枝高級抹茶のクレープ、ドリンク、らくがきせんべい`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.925223,138.3791926);
+console.log("KEY=38",p.x,p.y)
+this.shops.push(new Shop("38","mario coffee labo",`わくわくするこだわりのドリップコーヒーです。ご注文を受けてその場で抽出いたします。少量の焼き豆とドリップバック。`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9254456,138.3792932);
+console.log("KEY=39",p.x,p.y)
+this.shops.push(new Shop("39","極東アンティール",`ジーラポーク、豆カレーorジャークチキン（他店様とのカブリの少ない方）
+
+https://far-east-antilles.com`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9254456,138.3792463);
+console.log("KEY=40",p.x,p.y)
+this.shops.push(new Shop("40","SHANTY",`jamaica料理`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9253989,138.3790592);
+console.log("KEY=41",p.x,p.y)
+this.shops.push(new Shop("41","Ailie の野生コーヒー",`自家焙煎コーヒー`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9255358,138.3804043);
+console.log("KEY=42",p.x,p.y)
+this.shops.push(new Shop("42","LA BALENA VOLANTE",`薪窯で焼くピッツァ、コーヒーその他ソフトドリンク類
+
+https://www.instagram.com/tobekujira/`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9256194,138.3804284);
+console.log("KEY=43",p.x,p.y)
+this.shops.push(new Shop("43","池めん清水町店",`台湾まぜそば、豚骨らーめんなど`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9256282,138.380289);
+console.log("KEY=44",p.x,p.y)
+this.shops.push(new Shop("44","ハワイ食堂LeaLea",`静岡わさびバーガー、他バーガー、モチコチキン（ハワイのからあげ）、ポテト等
+
+https://lealea.crayonsite.com/`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9256722,138.3802219);
+console.log("KEY=45",p.x,p.y)
+this.shops.push(new Shop("45","Pomaikai",`クレープ`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9257073,138.3801656);
+console.log("KEY=46",p.x,p.y)
+this.shops.push(new Shop("46","たこ助",`チョコバナナ　串焼　ポテト　チュロス　丼`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9258151,138.3801334);
+console.log("KEY=47",p.x,p.y)
+this.shops.push(new Shop("47","いちご実　加藤農園",`いちごスイーツ
+
+ichigomi.com`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9257777,138.3800422);
+console.log("KEY=48",p.x,p.y)
+this.shops.push(new Shop("48","48DINER",`スライダーバーガー、チキンオーバーライス、プルコギドッグ
+
+http://www.instagram.com/48diner`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9257469,138.3799752);
+console.log("KEY=49",p.x,p.y)
+this.shops.push(new Shop("49","tomosfactory",`ロングポテト
+チュリトス
+カキ氷`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9257227,138.3799108);
+console.log("KEY=50",p.x,p.y)
+this.shops.push(new Shop("50","中嶋養蜂",`蜂蜜　ハニーレモネード　チュロス　ポテト
+
+@y.nakajimayoho`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9257007,138.3798357);
+console.log("KEY=51",p.x,p.y)
+this.shops.push(new Shop("51","enwa縁和",`ローストビーフサンド・ローストポークサンド・スモーキーチキンサンド・ダブルハムチーズサンドのホットサンド
+フライドポテト
+かき氷
+静岡県産レモンをじっくり煮込んだ
+レモネード&レモンスカッシュ
+クリーミーいちごミルク
+キャラメルマキアート
+ウインナーコーヒー等
+`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.925681,138.3797606);
+console.log("KEY=52",p.x,p.y)
+this.shops.push(new Shop("52","手羽先おおむら",`焼き鳥（手羽先、鶏もも焼き）モツ煮
+
+https://www.instagram.com/tebasaki_oomura/`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9256546,138.3796935);
+console.log("KEY=53",p.x,p.y)
+this.shops.push(new Shop("53","JAH KITCHEN",`ジャマイカンフード、おつまみ`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9254566,138.379955);
+console.log("KEY=54",p.x,p.y)
+this.shops.push(new Shop("54","Tequila Cream Trade Mark",`アパレルブランド
+
+www.tequila-cream.com`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9254379,138.3799121);
+console.log("KEY=55",p.x,p.y)
+this.shops.push(new Shop("55","Shop standard",`オールハンドメイドのBAGやCAP、ウェアを制作しています！今回は刺繍用のミシンを使い、その場で刺繍を施すWORK
+SHOPも行います。
+
+https://www.instagram.com/standard_81/profilecard/?igsh=NXF3MDJjeDlhdnNi`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9254929,138.3799336);
+console.log("KEY=56",p.x,p.y)
+this.shops.push(new Shop("56","ETHNIC TOKYO",`アパレル・アフリカンバスケット・カレンシルバーなど
+
+https://ethnictokyo.com`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9254742,138.3798866);
+console.log("KEY=57",p.x,p.y)
+this.shops.push(new Shop("57","Toko Ramai",`アウトドアウェア、アウトドアグッズ、雑貨、ガラポン
+
+https://www.instagram.com/tokoramai2`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9254149,138.3798424);
+console.log("KEY=58",p.x,p.y)
+this.shops.push(new Shop("58","ATELIER / m-no",`リメイクアパレル
+
+http://instagram.com/atelier_mno/`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9253929,138.3797981);
+console.log("KEY=59",p.x,p.y)
+this.shops.push(new Shop("59","ｅｎ",`オーガニックウエアー販売
+
+https://www.instagram.com/en_shizuoka/`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9254511,138.3798169);
+console.log("KEY=60",p.x,p.y)
+this.shops.push(new Shop("60","流木ジョニー／古着ジェリー",`流木雑貨、古着とレゲエイベント用エスニック雑貨などの販売。
+
+https://@ryubokujohnny`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9254346,138.379774);
+console.log("KEY=61",p.x,p.y)
+this.shops.push(new Shop("61","HAE. vintage with Lab. Paper Dripper",`海外古着とコーヒーと焼き菓子
+
+https://www.instagram.com/hae.vintage/       https://www.instagram.com/lab.paperdripper/`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9251592,138.3791544);
+console.log("KEY=62",p.x,p.y)
+this.shops.push(new Shop("62","アトリエクエスト",`オリジナル木材雑貨、マクラメ作品、七宝作品、パラコード作品、レジン作品等
+
+https://www.create-life.jp/`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9251411,138.3791088);
+console.log("KEY=63",p.x,p.y)
+this.shops.push(new Shop("63","ROTTENING",`レザー、レジン製アクセサリー、着物小物、キッズアクセサリー
+
+https://www.instagram.com/rotten_ing/`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9251916,138.3791296);
+console.log("KEY=64",p.x,p.y)
+this.shops.push(new Shop("64","yuni",`アクセサリー（ピアス、イヤリング）
+
+https://www.instagram.com/yuni__0223/profilecard/?igsh=MXM3aDR3NndlamsxZw==`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9251735,138.379084);
+console.log("KEY=65",p.x,p.y)
+this.shops.push(new Shop("65","sail accessory",`ミニチュアのドリンクカップに毛糸や好きなパーツを１つ１つ選んで詰め込んで、オリジナルのキーホルダーを作ります
+
+https://www.instagram.com/sail.accessory?igsh=YnBld21pZ2VsZnl2&utm_souらrce=qr`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9253104,138.3792677);
+console.log("KEY=66",p.x,p.y)
+this.shops.push(new Shop("66","Freedom&Hope",`羊毛フェルト・アフリカ布雑貨他
+
+https://www.instagram.com/freedom_3_3_hope`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9252928,138.3792194);
+console.log("KEY=67",p.x,p.y)
+this.shops.push(new Shop("67","AYANO knitting",`あみぐるみ・ニット小物・雑貨
+
+https://ayanoknitting.com/`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9253384,138.3792456);
+console.log("KEY=68",p.x,p.y)
+this.shops.push(new Shop("68","MUSUBI★Store",`麻たわし、麻紐雑貨、精麻飾、わらじ、石笛等
+
+https://musubistore.thebase.in/`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9253208,138.3791973);
+console.log("KEY=69",p.x,p.y)
+this.shops.push(new Shop("69","YOPOOHRU",`オリジナルイラストプリントウェア＆グッズ・カッティングステッカー
+
+https://www.instagram.com/yopoohru/`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9252604,138.379143);
+console.log("KEY=70",p.x,p.y)
+this.shops.push(new Shop("70","yatri",`インド伝統染めの手ぬぐい、スカーフ、ターバンなど布雑貨
+
+https://www.instagram.com/yatri_silkroad/`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.925245,138.3791008);
+console.log("KEY=71",p.x,p.y)
+this.shops.push(new Shop("71","武器あります。",`中世ヨーロッパで実際使用されていた武器のモチーフ、ドラゴンやグ+リフォンなど幻、(獣のモチーフシルバーアクセサリーです。
+爪や牙など細部まで表現した作品
+天然石水晶を使用した世界に一つの一点ものも
+ドラゴンベビーや猫やコウモリのイヤーカフなど女性にも人気です。
+
+https://minne.com/@m2sick　Xフォロワー数4000以上 https://x.com/m2sicksilver`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9252923,138.3791195);
+console.log("KEY=72",p.x,p.y)
+this.shops.push(new Shop("72","HIMALAI TRiP MARKET & Sala Mehndi",`タイダイ曼荼羅染め&オリジナルデザインTシャツ、雑貨販売。メヘンディ(ヘナタトゥー)
+
+https://himalai-trip-market.stores.jp/`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9252785,138.379078);
+console.log("KEY=73",p.x,p.y)
+this.shops.push(new Shop("73","Cherie CoCo〜シェリーココ〜",`トルコモザイクガラスワークショップと
+うぉーたーびーずアクアリウムワークショップ
+ハンドメイド雑貨販売
+
+https://www.instagram.com/cherie.coco77?igsh=MWo0dGZlbjhhaHkyMg==`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.925218,138.3790055);
+console.log("KEY=74",p.x,p.y)
+this.shops.push(new Shop("74","c.blue",`オーシャンレジン、マクラメ編みのインテリア雑貨、アクセサリー販売
+
+https://www.instagram.com/d.s.k.666.masonlysurf`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9252543,138.3790049);
+console.log("KEY=75",p.x,p.y)
+this.shops.push(new Shop("75","タソガレリリー・and g",`カラーセラピー、占い、ハンドメイドアクセサリー`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.92524,138.3789646);
+console.log("KEY=76",p.x,p.y)
+this.shops.push(new Shop("76","Qyuncandle(キュンキャンドル",`グラデーションキャンドル作り体験
+
+https://www.instagram.com/qyuncandle`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9251806,138.3789117);
+console.log("KEY=77",p.x,p.y)
+this.shops.push(new Shop("77","KSL RESIN ART",`海のレジンアート販売、ベアアートのワークショップ
+
+https://www.instagram.com/ksl_resinart/profilecard/?igsh=MXRnMGtiYXZkaDU0eg==`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9251609,138.3788694);
+console.log("KEY=78",p.x,p.y)
+this.shops.push(new Shop("78","MOMONA Mermaid",`ハワイアン雑貨、ハワイアンファブリックのハンドメイド布小物`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9252114,138.3788902);
+console.log("KEY=79",p.x,p.y)
+this.shops.push(new Shop("79","Merry",`アクアビーズドームワークショップ　あみぐるみワークショップ
+
+@merry.miyuki1007shop`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9251938,138.378848);
+console.log("KEY=80",p.x,p.y)
+this.shops.push(new Shop("80","花十色-mimi-",`風鈴、ドアベル、キーホルダーのワークショップ
+
+http://instagram.com/hanatoiro_mimi_`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9251306,138.378793);
+console.log("KEY=81",p.x,p.y)
+this.shops.push(new Shop("81","coconuts",`イニシャルキーホルダー、ワイヤーリングキーホルダーワークショップ
+
+@coconuts.handmade66`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.925113,138.3787521);
+console.log("KEY=82",p.x,p.y)
+this.shops.push(new Shop("82","maeum candle",`アロマジェルキャンドル作り、フロートキャンドル作り、キャンドルすくい
+
+http://www.instagram.com/maeum.candle`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9251653,138.3787735);
+console.log("KEY=83",p.x,p.y)
+this.shops.push(new Shop("83","トコトコっち",`スクイーズのデコレーション体験と端材を用いたロボットオブジェ作り体験
+
+https://www.instagram.com/tocotocotti/`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.925151,138.3787279);
+console.log("KEY=84",p.x,p.y)
+this.shops.push(new Shop("84","庵寿玲海Amy",`ミニ水族館ボトリウム`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9254346,138.3791899);
+console.log("KEY=85",p.x,p.y)
+this.shops.push(new Shop("85","HOME BEAT",`ミニサウンド・システム販売`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9254039,138.3791021);
+console.log("KEY=86",p.x,p.y)
+this.shops.push(new Shop("86","CORNERSHOP",`レコード、CD販売`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9253857,138.3790297);
+console.log("KEY=87",p.x,p.y)
+this.shops.push(new Shop("87","ウクレレ移動販売＆出張ワークショップ【イコレレ】",`ウクレレや小物楽器の販売　ウクレレ演奏のワークショップ
+
+https://note.com/iko15ico`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9253764,138.3789982);
+console.log("KEY=88",p.x,p.y)
+this.shops.push(new Shop("88","陶工房修",`陶器、ワークショップ`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9253626,138.378966);
+console.log("KEY=89",p.x,p.y)
+this.shops.push(new Shop("89","Sachiのメタルクリエイト",`アイアン製品(インテリア雑貨)、スツール等アイアン製品の販売。アイアンアートの展示
+
+https://www.instagram.com/sach_imetal/profilecard/?igsh=MXB6aXYxbG1yeG02eA==`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.92535,138.3789298);
+console.log("KEY=90",p.x,p.y)
+this.shops.push(new Shop("90","かなせっけん",`せっけん、豆菓子、木工製品、お茶などの販売
+
+https://kananoie.shop-pro.jp/`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9253362,138.3788956);
+console.log("KEY=91",p.x,p.y)
+this.shops.push(new Shop("91","meChill整体salon",`マッサージと足指裏マッサージ
+
+https://www.instagram.com/mechill_sangobiyou.seitai/profilecard/?igsh=MWNsdmNla3Z2NmF1MA==`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9253192,138.378852);
+console.log("KEY=92",p.x,p.y)
+this.shops.push(new Shop("92","sowaca",`首・肩マッサージ、フットマッサージ、ベットでマッサージ
+
+https://www.instagram.com/p/Cy2Oc_vyvGB/?igsh=MWRldHFxZHcwN2ViMg==`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9253016,138.3788071);
+console.log("KEY=93",p.x,p.y)
+this.shops.push(new Shop("93","spika永田町",`ハンドトリート20分、お肌の分析30分
+
+https://www.instagram.com/pola_spika/profilecard/?igsh=MWg3bjF1Zzh6bTc5eg==`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9252857,138.3787641);
+console.log("KEY=94",p.x,p.y)
+this.shops.push(new Shop("94","足流療術",`足流療術`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.925267,138.3787165);
+console.log("KEY=95",p.x,p.y)
+this.shops.push(new Shop("95","FUMIHEALING:GROUP",`深リンパケア/スピリチュアル鑑定
+
+ALL10分1000円
+
+https://www.instagram.com/fumihealing_deeplymph_school?igsh=NXVkd3BxZW4zYWtk`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9252384,138.378687);
+console.log("KEY=96",p.x,p.y)
+this.shops.push(new Shop("96","精神と時の部屋",`テントサウナ`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9252032,138.3786401);
+console.log("KEY=97",p.x,p.y)
+this.shops.push(new Shop("97","明治安田",`健康チェックブース`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9251669,138.3786092);
+console.log("KEY=98",p.x,p.y)
+this.shops.push(new Shop("98","toooa+",`うぉーたーぷにぷにワークショップ
+ぷにぷに石鹸ワークショップ
+ぷにぷにすくい
+光るおもちゃくじ
+
+@toooa.plus`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9251273,138.3785925);
+console.log("KEY=99",p.x,p.y)
+this.shops.push(new Shop("99","MRK Caricatures",`その場で似顔絵を描きます
+
+https://instagram.com/mrk_caricatures`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9250855,138.3785764);
+console.log("KEY=100",p.x,p.y)
+this.shops.push(new Shop("100","バルーンゆっぴー",`バルーン販売`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9250443,138.378561);
+console.log("KEY=101",p.x,p.y)
+this.shops.push(new Shop("101","用宗を楽しくする会",`用宗＆広野PRブース、食品晩梅`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9250003,138.3785429);
+console.log("KEY=102",p.x,p.y)
+this.shops.push(new Shop("102","縁日処",`射的、スーパーボールすくい
+
+https://www.instagram.com/ennichi_docoro?igsh=cGlmZ2V2YmljMWpm&utm_source=qr`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9255138,138.3805652);
+console.log("KEY=103",p.x,p.y)
+this.shops.push(new Shop("103","フィリップモリス　アイコス",`アイコス紹介/販促`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9255138,138.3796828);
+console.log("KEY=104",p.x,p.y)
+this.shops.push(new Shop("104","4541 Village",`杉本青果
+(野菜販売)
+デルクス
+39
+(衣類販売)
+運動するところ
+(マッサージ)
+大黒屋
+(駄菓子販売)
+RAI
+4
+(ベーコン等)
+4541
+(雑貨販売)`,
+            new Rect(p.x,p.y,30,50)));
+
+
+p = MapPoint.get(34.9248519,138.3787118);
+console.log("KEY=105",p.x,p.y)
+this.shops.push(new Shop("105","Harbor Art Billage",`よいこ共和国
+(無農薬栽培コーヒー、
+豆乳チャイ)
+栄養灯台堂
+(キャンドルワークショップ、販売)
+黄桜じーじのガラス玉とけん玉屋さん
+(けん玉販売やWS)
+Green
+Island
+(おやつ、雑貨販売
+)
+KUKU
+(信州産りんごパイ、
+焼き菓子、
+三年番茶)
+東静岡アートラボ
+(お絵描きワークショップ)
+HAPPY
+MONSTA
+(リサイクルペットボトル食器アート)
+お祭り【酒-sai-】
+(射的、
+型抜き、ふんどし販売)`,
+            new Rect(p.x,p.y,30,50)));
+

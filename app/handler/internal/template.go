@@ -2,14 +2,14 @@ package internal
 
 import (
 	"app/api"
-	"io"
-	"os"
 
 	"embed"
 	"html/template"
+	"io"
 	"io/fs"
 	"log"
 	"net/http"
+	"os"
 
 	"golang.org/x/xerrors"
 )
@@ -45,7 +45,11 @@ func ViewManage(w http.ResponseWriter, dto interface{}, name string) error {
 	}
 
 	tmpl := template.New(api.SiteTemplateName).Funcs(funcMap)
-	return writeTemplate(w, tmpl, dto, "manage/layout.tmpl", "manage/"+name)
+	err := writeTemplate(w, tmpl, dto, "manage/layout.tmpl", "manage/"+name)
+	if err != nil {
+		return xerrors.Errorf("writeTemplate() error: %w", err)
+	}
+	return nil
 }
 
 func writeTemplate(w io.Writer, root *template.Template, dto interface{}, names ...string) error {

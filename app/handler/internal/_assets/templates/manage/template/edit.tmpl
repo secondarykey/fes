@@ -1,13 +1,11 @@
-{{define "title"}}
-Edit Template
+{{define "title"}}Edit Template{{end}}
 
-        <button type="button" id="generateBtn" class="mdl-button mdl-js-button mdl-button--raised mdl-button--primary">
-        Update reference
-        </button>
+{{define "header"}}
+Edit Template
 {{end}}
 
 {{define "page_template"}}
-<form method="post" action="/manage/template/edit/{{ .Template.Key.Name }}" name="updateForm">
+<form method="post" action="/manage/v1/template/edit/{{ .Template.Key.Name }}" name="updateForm">
 
 <table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp" width="100%">
   <tbody>
@@ -35,8 +33,11 @@ Edit Template
 
     <tr>
       <td class="mdl-data-table__cell--non-numeric">
-        <button type="button" id="templateTxt" class="mdl-button mdl-js-button mdl-button--raised">EditTool</button>
+
+        <button type="button" id="templateTxt" class="mdl-button mdl-js-button mdl-button--raised"> <span class="material-icons">mode_edit</span> </button>
+
         <br>
+
         <div class="mdl-textfield mdl-js-textfield" style="width:100%;">
           <textarea class="mdl-textfield__input" type="text" id="templateData" name="template" rows="10" style="width:100%;">{{ plane .TemplateData.Content }}</textarea>
           <label class="mdl-textfield__label" for="pageContent">Template Data...</label>
@@ -45,9 +46,15 @@ Edit Template
     </tr>
 
     <tr>
+      <td class="mdl-data-table__cell--non-numeric">
+      <a href="/manage/v1/template/reference/{{.Template.Type}}/{{ .Template.Key.Name }}">Reference(Pages)</a>
+      </td>
+    </tr>
+
+    <tr>
       <td>
         <button type="button" id="updateBtn" class="mdl-button mdl-js-button mdl-button--raised mdl-button--primary">
-          Update
+          <span class="material-icons">save</span>
         </button>
       </td>
     </tr>
@@ -57,11 +64,6 @@ Edit Template
   <input type="hidden" name="version" value="{{ .Template.Version }}">
   <input type="hidden" name="templateType" value="{{ .Template.Type }}">
 
-</form>
-
-<!-- Reference -->
-<form id="referenceForm" name="referenceForm" method="post" action="/manage/template/reference/{{.Template.Key.Name}}">
-  <input type="hidden" name="type" id="referenceType" value="{{.Template.Type}}" />
 </form>
 
 <script>
@@ -87,7 +89,7 @@ Edit Template
         return;
       }
 
-      confirmFes(function() {
+      confirmFes("Save Template?",function() {
         var form = document.forms.updateForm;
         var typeTag = document.querySelector('#templateTypeName');
         var typeName = typeTag.value;
@@ -101,12 +103,5 @@ Edit Template
       });
     });
 
-    var generateBtn = document.querySelector('#generateBtn');
-    generateBtn.addEventListener('click', function() {
-      confirmFes(function() {
-        var form = document.querySelector('#referenceForm');
-        form.submit();
-      });
-    });
 </script>
 {{ end }}
