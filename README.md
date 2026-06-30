@@ -6,12 +6,6 @@ fes is Festival Edit System.
 
 # Implement
 
-- 掃除機能
-
-  ごみ箱を準備
-
-- ページ移動のドラッグアンドドロップ
-
 - 公開日の更新方法
 
   指定日付と自動日付
