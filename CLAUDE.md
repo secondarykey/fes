@@ -65,7 +65,7 @@ Pages form a parent-child tree. `HTML` stores pre-rendered output to avoid re-re
 `app/handler/internal/_assets/` is embedded with `//go:embed`. It contains:
 - `environment.json` — OAuth2 credentials (CLIENT_ID, CLIENT_SECRET)
 - `archives/` — static archive zips（ZIP 形式の旧アーカイブ）
-- `manage-v2/` — 管理画面 SPA の Vite ビルド成果物
+- `manage/` — 管理画面 SPA の Vite ビルド成果物
 
 ### GCS アーカイブ配信
 
@@ -85,20 +85,20 @@ Pages form a parent-child tree. `HTML` stores pre-rendered output to avoid re-re
 
 Google OAuth2 via credentials embedded in `environment.json`. Sessions managed with Gorilla sessions. JWT used for token handling.
 
-## manage-v2/ — 管理画面 SPA
+## manage/ — 管理画面 SPA
 
 React (Vite + MUI) ベースの SPA 管理画面。`/manage/` で配信され、メインの管理 UI として使用。旧テンプレートベースの管理画面 (V1) は `/manage/v1/` に移動済み。
 
 ### コマンド
 
 ```powershell
-cd manage-v2
+cd manage
 npm install
 npm run dev       # 開発サーバー (Vite proxy 不要、Go サーバー経由で動作確認)
-npm run build     # manage-v2/dist/ に出力
+npm run build     # manage/dist/ に出力
 
 # ビルド後、Go embed 用にコピーしてから go build する
-Copy-Item -Recurse -Force manage-v2\dist\* app\handler\internal\_assets\manage-v2\
+Copy-Item -Recurse -Force manage\dist\* app\handler\internal\_assets\manage\
 cd app; go build ./...
 ```
 
@@ -116,7 +116,7 @@ cd app; go build ./...
 
 | ファイル | 役割 |
 |---|---|
-| `app/handler/internal/manage_spa.go` | `_assets/manage-v2/` の embed + 静的配信 + SPA catch-all |
+| `app/handler/internal/manage_spa.go` | `_assets/manage/` の embed + 静的配信 + SPA catch-all |
 | `app/handler/manage/api.go` | API ルート登録 (`/manage/api/` + `/manage/` catch-all) |
 | `app/handler/manage/api_page.go` | JSON API ハンドラ (Page CRUD・公開・非公開) |
 

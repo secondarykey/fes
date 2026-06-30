@@ -8,13 +8,13 @@ import (
 	"strings"
 )
 
-//go:embed _assets/manage-v2
+//go:embed _assets/manage
 var embManageSPA embed.FS
 var manageSPAFs fs.FS
 
 func init() {
 	var err error
-	manageSPAFs, err = fs.Sub(embManageSPA, "_assets/manage-v2")
+	manageSPAFs, err = fs.Sub(embManageSPA, "_assets/manage")
 	if err != nil {
 		log.Printf("manage-spa init error: %+v", err)
 	}
