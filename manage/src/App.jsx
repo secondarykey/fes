@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { createTheme, ThemeProvider, useMediaQuery } from '@mui/material'
 import CssBaseline from '@mui/material/CssBaseline'
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router'
 import { ColorModeContext } from './context/ColorMode'
 import Layout from './components/Layout'
 import PageList from './pages/PageList'

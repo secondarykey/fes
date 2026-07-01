@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import PropTypes from 'prop-types'
-import { Link as RouterLink, useNavigate } from 'react-router-dom'
+import { Link as RouterLink, useNavigate } from 'react-router'
 import {
   Typography, Box, Paper, List, ListItem, ListItemButton,
   ListItemText, ListItemIcon, Chip, IconButton, Collapse,

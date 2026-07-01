@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useParams, Link as RouterLink } from 'react-router-dom'
+import { useParams, Link as RouterLink } from 'react-router'
 import {
   Box, Paper, Typography, TextField, Button,
   Breadcrumbs, Link, Divider, CircularProgress,

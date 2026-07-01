@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import PropTypes from 'prop-types'
-import { Link as RouterLink, useNavigate } from 'react-router-dom'
+import { Link as RouterLink, useNavigate } from 'react-router'
 import {
   Typography, Box, Paper, Table, TableHead, TableBody, TableRow, TableCell,
   TableContainer, IconButton, Button, Tooltip, CircularProgress, Alert,
@@ -234,12 +234,12 @@ export default function TemplateList() {
         </Alert>
       )}
 
-      <TableContainer component={Paper} variant="outlined">
-        <Table size="small">
-          {tableHead}
-          {isSingleType ? (
-            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-              <SortableContext items={templates.map(t => t.id)} strategy={verticalListSortingStrategy}>
+      {isSingleType ? (
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <SortableContext items={templates.map(t => t.id)} strategy={verticalListSortingStrategy}>
+            <TableContainer component={Paper} variant="outlined">
+              <Table size="small">
+                {tableHead}
                 <TableBody>
                   {loading && templates.length === 0 ? (
                     <TableRow>
@@ -259,9 +259,14 @@ export default function TemplateList() {
                     ))
                   )}
                 </TableBody>
-              </SortableContext>
-            </DndContext>
-          ) : (
+              </Table>
+            </TableContainer>
+          </SortableContext>
+        </DndContext>
+      ) : (
+        <TableContainer component={Paper} variant="outlined">
+          <Table size="small">
+            {tableHead}
             <TableBody>
               {loading && templates.length === 0 ? (
                 <TableRow>
@@ -281,9 +286,9 @@ export default function TemplateList() {
                 ))
               )}
             </TableBody>
-          )}
-        </Table>
-      </TableContainer>
+          </Table>
+        </TableContainer>
+      )}
 
       {typeTab === 'all' && nextCursor && (
         <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>

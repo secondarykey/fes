@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import PropTypes from 'prop-types'
-import { useParams, Link as RouterLink, useNavigate } from 'react-router-dom'
+import { useParams, Link as RouterLink, useNavigate } from 'react-router'
 import {
   Box, Paper, Typography, Breadcrumbs, Link, CircularProgress,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
@@ -368,27 +368,27 @@ export default function PageChildren() {
             子ページがありません
           </Typography>
         ) : (
-          <TableContainer>
-            <Table size="small">
-              <TableHead>
-                <TableRow>
-                  <TableCell padding="checkbox">
-                    <Checkbox
-                      size="small"
-                      checked={allSelected}
-                      indeterminate={someSelected}
-                      onChange={toggleSelectAll}
-                    />
-                  </TableCell>
-                  <TableCell sx={{ width: 40 }} />
-                  <TableCell>ページ名</TableCell>
-                  <TableCell sx={{ width: 60 }} align="center">有効</TableCell>
-                  <TableCell sx={{ width: 100 }} align="center">作成日</TableCell>
-                  <TableCell sx={{ width: 40 }} />
-                </TableRow>
-              </TableHead>
-              <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                <SortableContext items={items.map(i => i.id)} strategy={verticalListSortingStrategy}>
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <SortableContext items={items.map(i => i.id)} strategy={verticalListSortingStrategy}>
+              <TableContainer>
+                <Table size="small">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell padding="checkbox">
+                        <Checkbox
+                          size="small"
+                          checked={allSelected}
+                          indeterminate={someSelected}
+                          onChange={toggleSelectAll}
+                        />
+                      </TableCell>
+                      <TableCell sx={{ width: 40 }} />
+                      <TableCell>ページ名</TableCell>
+                      <TableCell sx={{ width: 60 }} align="center">有効</TableCell>
+                      <TableCell sx={{ width: 100 }} align="center">作成日</TableCell>
+                      <TableCell sx={{ width: 40 }} />
+                    </TableRow>
+                  </TableHead>
                   <TableBody>
                     {items.map((item, idx) => (
                       <SortableRow
@@ -403,10 +403,10 @@ export default function PageChildren() {
                       />
                     ))}
                   </TableBody>
-                </SortableContext>
-              </DndContext>
-            </Table>
-          </TableContainer>
+                </Table>
+              </TableContainer>
+            </SortableContext>
+          </DndContext>
         )}
 
         {/* 移動・削除エリア */}

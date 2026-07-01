@@ -167,6 +167,23 @@ func (gen *Generator) createHTMLDto(ctx context.Context, page *datastore.Page, p
 	}
 	dto.Children = children
 
+	if page.Parent != "" {
+		siblings, _, err := gen.dao.SelectChildrenPage(ctx, page.Parent, "", -1, view)
+		if err == nil {
+			for i, s := range siblings {
+				if s.Key.Name == id {
+					if i > 0 {
+						dto.Prev = dir + siblings[i-1].Key.Name
+					}
+					if i < len(siblings)-1 {
+						dto.Next = dir + siblings[i+1].Key.Name
+					}
+					break
+				}
+			}
+		}
+	}
+
 	dtos := make([]*HTMLDto, 0)
 	dtos = append(dtos, &dto)
 
