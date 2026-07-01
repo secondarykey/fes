@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Link as RouterLink, useNavigate } from 'react-router-dom'
+import { Link as RouterLink, useNavigate } from 'react-router'
 import {
   Typography, Box, Paper, Table, TableHead, TableBody, TableRow, TableCell,
   TableContainer, IconButton, Button, Tooltip, CircularProgress, Alert,

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useParams, Link as RouterLink, useNavigate } from 'react-router-dom'
+import { useParams, Link as RouterLink, useNavigate } from 'react-router'
 import PropTypes from 'prop-types'
 import {
   Box, Paper, Typography, TextField, Button, Breadcrumbs, Link,
@@ -199,23 +199,23 @@ export default function DraftEdit() {
           ページ一覧 <Chip label={pages.length} size="small" sx={{ ml: 0.5 }} />
         </Typography>
 
-        <TableContainer variant="outlined" component={Paper} sx={{ mb: 3 }}>
-          <Table size="small">
-            <TableHead>
-              <TableRow>
-                <TableCell sx={{ width: 40 }} />
-                <TableCell sx={{ width: 40 }}>順</TableCell>
-                <TableCell>ページ名</TableCell>
-                <TableCell sx={{ width: 130 }} align="center">
-                  <Tooltip title="オンにすると公開日時を現在時刻で更新します">
-                    <span>公開日を更新</span>
-                  </Tooltip>
-                </TableCell>
-                <TableCell align="center" sx={{ width: 56 }}>操作</TableCell>
-              </TableRow>
-            </TableHead>
-            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-              <SortableContext items={pages.map(p => p.id)} strategy={verticalListSortingStrategy}>
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <SortableContext items={pages.map(p => p.id)} strategy={verticalListSortingStrategy}>
+            <TableContainer variant="outlined" component={Paper} sx={{ mb: 3 }}>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell sx={{ width: 40 }} />
+                    <TableCell sx={{ width: 40 }}>順</TableCell>
+                    <TableCell>ページ名</TableCell>
+                    <TableCell sx={{ width: 130 }} align="center">
+                      <Tooltip title="オンにすると公開日時を現在時刻で更新します">
+                        <span>公開日を更新</span>
+                      </Tooltip>
+                    </TableCell>
+                    <TableCell align="center" sx={{ width: 56 }}>操作</TableCell>
+                  </TableRow>
+                </TableHead>
                 <TableBody>
                   {pages.length === 0 ? (
                     <TableRow>
@@ -235,10 +235,10 @@ export default function DraftEdit() {
                     ))
                   )}
                 </TableBody>
-              </SortableContext>
-            </DndContext>
-          </Table>
-        </TableContainer>
+              </Table>
+            </TableContainer>
+          </SortableContext>
+        </DndContext>
 
         <Divider sx={{ mb: 2 }} />
 
