@@ -27,6 +27,18 @@ export default defineConfig({
         target: 'http://localhost:8080',
         changeOrigin: true,
       },
+      '/manage/page/view': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      },
+      '/page': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      },
+      '/file': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      },
     },
   },
 })
