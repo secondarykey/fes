@@ -3,6 +3,7 @@ package datastore
 import (
 	"app/config"
 	"context"
+	"errors"
 
 	"cloud.google.com/go/datastore"
 	"golang.org/x/xerrors"
@@ -40,10 +41,29 @@ func (dao *Dao) createClient(ctx context.Context, opts ...option.ClientOption) (
 		c := config.Get()
 		dao.cli, err = datastore.NewClient(ctx, c.ProjectID, opts...)
 		if err != nil {
-			return nil, xerrors.Errorf("datastore.CreateClient() error: %w")
+			return nil, xerrors.Errorf("datastore.CreateClient() error: %w", err)
 		}
 	}
 	return dao.cli, nil
+}
+
+// IsNoSuchEntity は err が「エンティティが存在しない」エラーのみで構成されているかを返す。
+// GetMulti が返す MultiError で一部のみ欠損している場合も true になる。
+// この場合、結果スライスの欠損分はゼロ値(Key が nil)のままになっている。
+func IsNoSuchEntity(err error) bool {
+	if err == nil {
+		return false
+	}
+	var merr datastore.MultiError
+	if errors.As(err, &merr) {
+		for _, e := range merr {
+			if e != nil && !errors.Is(e, datastore.ErrNoSuchEntity) {
+				return false
+			}
+		}
+		return true
+	}
+	return errors.Is(err, datastore.ErrNoSuchEntity)
 }
 
 func PutMulti(tx *datastore.Transaction, dsts []HasKey) error {

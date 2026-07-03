@@ -64,8 +64,6 @@ func (dao *Dao) SelectAllPages(ctx context.Context) ([]*Page, error) {
 		_, err := t.Next(&page)
 		if errors.Is(err, iterator.Done) {
 			break
-
-			return pages, nil
 		}
 		if err != nil {
 			return nil, err
@@ -590,7 +588,8 @@ func (dao *Dao) GetPageData(ctx context.Context, ids ...string) ([]PageData, err
 	data := make([]PageData, len(keys))
 	err = cli.GetMulti(ctx, keys, data)
 	if err != nil {
-		return nil, xerrors.Errorf("client.GetAll() error: %w", err)
+		// 部分エラー(MultiError)の場合、取得できた分は data に入っている
+		return data, xerrors.Errorf("client.GetMulti() error: %w", err)
 	}
 	return data, nil
 }

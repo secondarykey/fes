@@ -175,6 +175,7 @@ func privateHandler(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 	dao := datastore.NewDao()
+	defer dao.Close()
 
 	site, err := dao.SelectSite(ctx, -1)
 	if err != nil {
@@ -206,8 +207,6 @@ func pageView(w http.ResponseWriter, r *http.Request, id string) {
 			page = p
 		}
 	}
-
-	logic.ClearTemplateCache()
 
 	//管理用の書き出し
 	err := logic.WriteManageHTML(w, r, id, page, nil)

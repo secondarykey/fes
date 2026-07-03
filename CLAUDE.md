@@ -79,7 +79,7 @@ Pages form a parent-child tree. `HTML` stores pre-rendered output to avoid re-re
 
 ### テンプレートキャッシュの注意点
 
-`logic/html.go` の `PutHTMLs()` はページ HTML を一括生成する。テンプレートの参照先ページを更新した後に HTML 公開を行っても古い内容が反映される問題があったため、`PutHTMLs()` の先頭で `startTemplateCache()` を呼び出してキャッシュをクリアするようにしている。パッケージレベル変数 `cacheTemplateData` が原因だった。
+`logic/html.go` のテンプレートキャッシュは `Generator` のフィールド (`tmpCache`) としてリクエスト単位で保持する。以前はパッケージレベル変数 `cacheTemplateData` だったため、テンプレート更新後も古い内容が反映される問題と、並行リクエスト時のデータレースがあった。キャッシュを共有化する場合はこの経緯に注意すること。
 
 ### Authentication
 

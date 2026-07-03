@@ -32,7 +32,7 @@ func CreateStaticSite(dir string, opts ...config.Option) error {
 
 	err = http.ListenAndServe(":3000", nil)
 	if err != nil {
-		return xerrors.Errorf("http.ListenAndServe error: %w")
+		return xerrors.Errorf("http.ListenAndServe error: %w", err)
 	}
 	return nil
 }

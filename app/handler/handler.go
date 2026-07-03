@@ -33,7 +33,7 @@ func setEnvironment() {
 	for k, v := range m {
 		err := os.Setenv(k, v)
 		if err != nil {
-			log.Println("os.Setenv() error: %v", err)
+			log.Printf("os.Setenv() error: %v", err)
 		}
 	}
 }
