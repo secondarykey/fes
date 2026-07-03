@@ -10,7 +10,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/golang-jwt/jwt/v4"
+	"golang.org/x/xerrors"
+	"google.golang.org/api/idtoken"
 )
 
 func loginHandler(w http.ResponseWriter, r *http.Request) {
@@ -56,22 +57,30 @@ func sessionHandler(w http.ResponseWriter, r *http.Request) {
 
 	tokenString := r.FormValue("credential")
 
-	claims := jwt.MapClaims{}
-	_, err = jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
-		secret := os.Getenv("CLIENT_SECRET")
-		return secret, nil
-	})
-
+	// Google ID トークンを検証する（署名・有効期限・audience）。
+	// audience には自身の CLIENT_ID を指定し、他アプリ向けに発行された
+	// トークンでのログインを防ぐ。
+	payload, err := idtoken.Validate(ctx, tokenString, os.Getenv("CLIENT_ID"))
 	if err != nil {
-		// TODO key is of invalid type
-		//errorPage(w, "JWT解析エラー", err, 500)
-		//return
+		errorPage(w, r, "認証エラー", xerrors.Errorf("idtoken.Validate() error: %w", err), 401)
+		return
 	}
 
-	emailV, ok := claims["email"]
-	email := ""
-	if ok {
-		email = fmt.Sprintf("%v", emailV)
+	// 発行者が Google であることを確認
+	if payload.Issuer != "accounts.google.com" && payload.Issuer != "https://accounts.google.com" {
+		errorPage(w, r, "認証エラー", fmt.Errorf("invalid issuer: %s", payload.Issuer), 401)
+		return
+	}
+
+	email, _ := payload.Claims["email"].(string)
+	if email == "" {
+		errorPage(w, r, "認証エラー", fmt.Errorf("email claim not found"), 401)
+		return
+	}
+
+	if verified, _ := payload.Claims["email_verified"].(bool); !verified {
+		errorPage(w, r, "認証エラー", fmt.Errorf("email not verified: %s", email), 403)
+		return
 	}
 
 	flag := false
@@ -84,11 +93,12 @@ func sessionHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	} else {
+		//TODO Managers 未設定時は初期セットアップのため全許可（要見直し）
 		flag = true
 	}
 
 	if !flag {
-		errorPage(w, r, "認証エラー", err, 403)
+		errorPage(w, r, "認証エラー", fmt.Errorf("管理者として登録されていません: %s", email), 403)
 		return
 	}
 	//Cookieの作成
