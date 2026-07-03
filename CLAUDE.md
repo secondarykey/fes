@@ -63,7 +63,7 @@ Pages form a parent-child tree. `HTML` stores pre-rendered output to avoid re-re
 ### Embedded assets
 
 `app/handler/internal/_assets/` is embedded with `//go:embed`. It contains:
-- `environment.json` — OAuth2 credentials (CLIENT_ID, CLIENT_SECRET) とセッション署名鍵 (SESSION_KEY)
+- `environment.json` — OAuth2 credentials (CLIENT_ID, CLIENT_SECRET)、セッション署名鍵 (SESSION_KEY)、初期管理者メール (MANAGERS)
 - `archives/` — static archive zips（ZIP 形式の旧アーカイブ）
 - `manage/` — 管理画面 SPA の Vite ビルド成果物
 
@@ -84,6 +84,8 @@ Pages form a parent-child tree. `HTML` stores pre-rendered output to avoid re-re
 ### Authentication
 
 Google Identity Services (GIS) によるログイン。`/session` に POST された ID トークンを `google.golang.org/api/idtoken` で検証する（署名・有効期限・audience=CLIENT_ID・発行者・email_verified）。CLIENT_ID は `environment.json` から環境変数経由で設定。セッションは Gorilla sessions で管理し、署名鍵は環境変数 `SESSION_KEY`（`environment.json` 由来）を使用する。本番（`DevelopMode=false`）で `SESSION_KEY` 未設定なら `manage.Register()` が起動時にエラーを返す。開発時は未設定でもランダム鍵で起動する（再起動でセッション無効化）。
+
+管理者判定はフェイルクローズ。`Site.Managers` が設定されていればそれで判定し、未設定（初期セットアップ）時のみ `environment.json` の `MANAGERS`（カンマ区切りのメール一覧）をブートストラップ用に使用する。どちらにも該当しないメールは 403。初期管理者は `MANAGERS` に自分のメールを記述してデプロイ→ログイン後、Site Settings から他の管理者を追加する（追加後は Datastore の `Site.Managers` が優先される）。
 
 ## manage/ — 管理画面 SPA
 

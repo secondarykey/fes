@@ -83,21 +83,19 @@ func sessionHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	flag := false
-
-	if site != nil && len(site.Managers) != 0 {
-		for _, mail := range site.Managers {
-			if email == mail {
-				flag = true
-				break
-			}
-		}
-	} else {
-		//TODO Managers 未設定時は初期セットアップのため全許可（要見直し）
-		flag = true
+	// 管理者判定。Site.Managers が設定されていればそれを使う。
+	// 未設定（初期セットアップ）の場合のみ、environment.json の MANAGERS
+	// （ブートストラップ用メール一覧）で判定する。どちらにも該当しなければ拒否
+	// （フェイルクローズ）。
+	var managers []string
+	if site != nil {
+		managers = site.Managers
+	}
+	if len(managers) == 0 {
+		managers = bootstrapManagers()
 	}
 
-	if !flag {
+	if !containsEmail(managers, email) {
 		errorPage(w, r, "認証エラー", fmt.Errorf("管理者として登録されていません: %s", email), 403)
 		return
 	}
@@ -114,4 +112,29 @@ func sessionHandler(w http.ResponseWriter, r *http.Request) {
 		redirect = "/manage/"
 	}
 	http.Redirect(w, r, redirect, 302)
+}
+
+// bootstrapManagers は environment.json の MANAGERS（カンマ区切りの
+// メールアドレス一覧）を返す。Site.Managers 未設定時の初期管理者判定に使う。
+func bootstrapManagers() []string {
+	raw := os.Getenv("MANAGERS")
+	if raw == "" {
+		return nil
+	}
+	var mails []string
+	for _, m := range strings.Split(raw, ",") {
+		if m = strings.TrimSpace(m); m != "" {
+			mails = append(mails, m)
+		}
+	}
+	return mails
+}
+
+func containsEmail(mails []string, email string) bool {
+	for _, m := range mails {
+		if m == email {
+			return true
+		}
+	}
+	return false
 }
