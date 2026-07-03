@@ -111,7 +111,7 @@ func printMultiArg(dst interface{}) {
 
 	fmt.Println("arg.Type()", arg.Type())
 	if arg.Type() == typeOfPropertyList {
-		fmt.Printf("v.Type() is  typeOfPropertyList[%v]\n")
+		fmt.Printf("v.Type() is  typeOfPropertyList[%v]\n", arg.Type())
 		return
 	}
 

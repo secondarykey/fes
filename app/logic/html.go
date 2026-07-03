@@ -5,6 +5,7 @@ import (
 	"app/datastore"
 	"context"
 	"io"
+	"log"
 	"time"
 
 	"bytes"
@@ -18,7 +19,8 @@ import (
 func WriteManageHTML(w io.Writer, r *http.Request, id string, page int, ve *ErrorDto) error {
 
 	gen := newGenerator()
-	var err error
+	defer gen.dao.Close()
+
 	ctx := r.Context()
 
 	htmls, err := gen.createHTMLs(ctx, true, ve, id)
@@ -26,13 +28,18 @@ func WriteManageHTML(w io.Writer, r *http.Request, id string, page int, ve *Erro
 		return xerrors.Errorf("createHTMLs() error: %w", err)
 	}
 
-	if len(htmls) >= page {
-		page -= 1
-	} else {
-		page = len(htmls) - 1
+	if len(htmls) == 0 {
+		return xerrors.Errorf("HTML not generated [%s]", id)
 	}
 
-	_, err = w.Write(htmls[page].Content)
+	//page は 1 始まり。範囲外は端に丸める
+	if page < 1 {
+		page = 1
+	} else if page > len(htmls) {
+		page = len(htmls)
+	}
+
+	_, err = w.Write(htmls[page-1].Content)
 	if err != nil {
 		return xerrors.Errorf("writer Write() error: %w", err)
 	}
@@ -61,8 +68,6 @@ func NewPageInfos(ids ...string) []*PageInfo {
 
 func PutHTMLs(ctx context.Context, infos ...*PageInfo) error {
 
-	startTemplateCache()
-
 	gen := newGenerator()
 	defer gen.dao.Close()
 
@@ -73,13 +78,17 @@ func PutHTMLs(ctx context.Context, infos ...*PageInfo) error {
 
 	//一旦公開日用にページに更新をかける
 	ps, err := gen.dao.SelectPages(ctx, ids...)
-	if err != nil {
+	if err != nil && !datastore.IsNoSuchEntity(err) {
 		return xerrors.Errorf("datasore.SelectPages() error: %w", err)
 	}
 
 	now := time.Now()
 	up := make([]*datastore.Page, 0)
 	for _, page := range ps {
+		//存在しないページ(欠損)はスキップ
+		if page.Key == nil {
+			continue
+		}
 		if page.Publish.IsZero() {
 			page.Publish = now
 		}
@@ -190,44 +199,28 @@ func (gen *Generator) createHTMLDto(ctx context.Context, page *datastore.Page, p
 	return dtos, nil
 }
 
-func ClearTemplateCache() {
-	startTemplateCache()
-}
-
-var (
-	cacheTemplateData = make(map[string]string)
-)
-
-func startTemplateCache() {
-	cacheTemplateData = make(map[string]string)
-}
-
-func deleteTemplateCache() {
-	cacheTemplateData = nil
-}
-
 func (gen *Generator) createTemplate(ctx context.Context, page *datastore.Page, mng bool, dto interface{}) (*template.Template, error) {
 
 	var ok bool
 	var siteTmpData string
 	var pageTmpData string
 
-	if siteTmpData, ok = cacheTemplateData[page.SiteTemplate]; !ok {
+	if siteTmpData, ok = gen.tmpCache[page.SiteTemplate]; !ok {
 		siteTmp, err := gen.dao.SelectTemplateData(ctx, page.SiteTemplate)
 		if err != nil {
 			return nil, xerrors.Errorf("datastore.SelectTemplateData(Site) error: %w", err)
 		}
 		siteTmpData = string(siteTmp.Content)
-		cacheTemplateData[page.SiteTemplate] = siteTmpData
+		gen.tmpCache[page.SiteTemplate] = siteTmpData
 	}
 
-	if pageTmpData, ok = cacheTemplateData[page.PageTemplate]; !ok {
+	if pageTmpData, ok = gen.tmpCache[page.PageTemplate]; !ok {
 		pageTmp, err := gen.dao.SelectTemplateData(ctx, page.PageTemplate)
 		if err != nil {
 			return nil, xerrors.Errorf("datastore.SelectTemplateData(Page) error: %w", err)
 		}
 		pageTmpData = string(pageTmp.Content)
-		cacheTemplateData[page.PageTemplate] = pageTmpData
+		gen.tmpCache[page.PageTemplate] = pageTmpData
 	}
 
 	siteTmpData = fmt.Sprintf(`{{ define "%s" }}%s{{end}}`, api.SiteTemplateName, siteTmpData)
@@ -253,25 +246,30 @@ func (gen *Generator) createTemplate(ctx context.Context, page *datastore.Page, 
 	return tmpl, nil
 }
 
+// Generator はテンプレートキャッシュを自身で保持する。
+// 生成処理(リクエスト)単位で作り捨てることで、並行アクセス時の
+// データレースと、テンプレート更新が反映されない問題を防ぐ。
 type Generator struct {
-	dao *datastore.Dao
+	dao      *datastore.Dao
+	tmpCache map[string]string
 }
 
 func newGenerator() *Generator {
 	var gen Generator
 	gen.dao = datastore.NewDao()
+	gen.tmpCache = make(map[string]string)
 	return &gen
 }
 
 func (gen *Generator) createHTMLs(ctx context.Context, mng bool, ve *ErrorDto, ids ...string) ([]*datastore.HTML, error) {
 
 	pages, err := gen.dao.SelectPages(ctx, ids...)
-	if err != nil {
+	if err != nil && !datastore.IsNoSuchEntity(err) {
 		return nil, xerrors.Errorf("datasore.SelectPages() error: %w", err)
 	}
 
 	data, err := gen.dao.GetPageData(ctx, ids...)
-	if err != nil {
+	if err != nil && !datastore.IsNoSuchEntity(err) {
 		return nil, xerrors.Errorf("datasore.GetPageData() error: %w", err)
 	}
 
@@ -284,6 +282,12 @@ func (gen *Generator) createHTMLs(ctx context.Context, mng bool, ve *ErrorDto, i
 
 	//Page数回繰り返す
 	for idx, elm := range pages {
+
+		//ページまたはページデータが欠損している場合はスキップ
+		if elm.Key == nil || data[idx].Key == nil {
+			log.Printf("createHTMLs: page or data not found, skip [%s]", ids[idx])
+			continue
+		}
 
 		if elm.Deleted {
 			continue
