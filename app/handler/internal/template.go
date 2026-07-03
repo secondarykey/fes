@@ -1,8 +1,6 @@
 package internal
 
 import (
-	"app/api"
-
 	"embed"
 	"html/template"
 	"io"
@@ -32,24 +30,6 @@ func View(w http.ResponseWriter, dto interface{}, names ...string) error {
 	}
 	tmpl := template.New(names[0]).Funcs(funcMap)
 	return writeTemplate(w, tmpl, dto, names...)
-}
-
-func ViewManage(w http.ResponseWriter, dto interface{}, name string) error {
-
-	funcMap := template.FuncMap{
-		"plane":               api.ConvertString,
-		"html":                api.ConvertHTML,
-		"convertDate":         api.ConvertDate,
-		"convertSize":         api.ConvertSize,
-		"convertTemplateType": api.ConvertTemplateType,
-	}
-
-	tmpl := template.New(api.SiteTemplateName).Funcs(funcMap)
-	err := writeTemplate(w, tmpl, dto, "manage/layout.tmpl", "manage/"+name)
-	if err != nil {
-		return xerrors.Errorf("writeTemplate() error: %w", err)
-	}
-	return nil
 }
 
 func writeTemplate(w io.Writer, root *template.Template, dto interface{}, names ...string) error {

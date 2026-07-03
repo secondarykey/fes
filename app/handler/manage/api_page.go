@@ -487,11 +487,11 @@ func apiGetPageImage(w http.ResponseWriter, r *http.Request) {
 
 	draftID := datastore.CreateDraftPageImageID(id)
 	if dao.ExistFile(ctx, draftID) {
-		apiJSON(w, apiImageRes{URL: "/manage/v1/file/view/" + draftID, Draft: true})
+		apiJSON(w, apiImageRes{URL: "/manage/file/view/" + draftID, Draft: true})
 		return
 	}
 	if dao.ExistFile(ctx, id) {
-		apiJSON(w, apiImageRes{URL: "/manage/v1/file/view/" + id, Draft: false})
+		apiJSON(w, apiImageRes{URL: "/manage/file/view/" + id, Draft: false})
 		return
 	}
 	apiJSON(w, apiImageRes{})
@@ -552,7 +552,7 @@ func apiUploadPageImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	apiJSON(w, apiImageRes{URL: "/manage/v1/file/view/" + draftID, Draft: true})
+	apiJSON(w, apiImageRes{URL: "/manage/file/view/" + draftID, Draft: true})
 }
 
 func apiDeletePageImage(w http.ResponseWriter, r *http.Request) {
@@ -584,11 +584,11 @@ func apiDeletePageImage(w http.ResponseWriter, r *http.Request) {
 	// 削除後の現在の画像状態を返す
 	draftID2 := datastore.CreateDraftPageImageID(id)
 	if dao.ExistFile(ctx, draftID2) {
-		apiJSON(w, apiImageRes{URL: "/manage/v1/file/view/" + draftID2, Draft: true})
+		apiJSON(w, apiImageRes{URL: "/manage/file/view/" + draftID2, Draft: true})
 		return
 	}
 	if dao.ExistFile(ctx, id) {
-		apiJSON(w, apiImageRes{URL: "/manage/v1/file/view/" + id, Draft: false})
+		apiJSON(w, apiImageRes{URL: "/manage/file/view/" + id, Draft: false})
 		return
 	}
 	apiJSON(w, apiImageRes{})
