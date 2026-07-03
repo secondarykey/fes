@@ -2,7 +2,7 @@ package manage
 
 import (
 	"app/datastore"
-	. "app/handler/internal"
+	"app/handler/internal"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -23,6 +23,7 @@ type apiSiteRes struct {
 	Description       string    `json:"description"`
 	Root              string    `json:"root"`
 	ManageURL         string    `json:"manageURL"`
+	BaseURL           string    `json:"baseURL"`
 	Managers          []string  `json:"managers"`
 	ArchiveBucket     string    `json:"archiveBucket"`
 	ArchiveNames      []string  `json:"archiveNames"`
@@ -45,6 +46,7 @@ func toAPISiteRes(s *datastore.Site) apiSiteRes {
 		Description:       s.Description,
 		Root:              s.Root,
 		ManageURL:         s.ManageURL,
+		BaseURL:           s.BaseURL,
 		Managers:          managers,
 		ArchiveBucket:     s.ArchiveBucket,
 		ArchiveNames:      archiveNames,
@@ -76,6 +78,7 @@ type apiSiteUpdateReq struct {
 	Description       string   `json:"description"`
 	Root              string   `json:"root"`
 	ManageURL         string   `json:"manageURL"`
+	BaseURL           string   `json:"baseURL"`
 	Managers          []string `json:"managers"`
 	ArchiveBucket     string   `json:"archiveBucket"`
 	ArchiveNames      []string `json:"archiveNames"`
@@ -108,6 +111,7 @@ func apiUpdateSite(w http.ResponseWriter, r *http.Request) {
 	site.Description = req.Description
 	site.Root = req.Root
 	site.ManageURL = req.ManageURL
+	site.BaseURL = strings.TrimSpace(req.BaseURL)
 
 	managers := req.Managers
 	if managers == nil {
@@ -144,12 +148,12 @@ func apiUpdateSite(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// GCS アーカイブルーターを動的に更新
-	if GCSArchiveRouter != nil {
-		GCSArchiveRouter.Update(site.ArchiveBucket, site.ArchiveNames)
+	if internal.GCSArchiveRouter != nil {
+		internal.GCSArchiveRouter.Update(site.ArchiveBucket, site.ArchiveNames)
 		if site.ArchiveDailyLimit > 0 {
-			GCSArchiveRouter.SetLimit(int64(site.ArchiveDailyLimit))
+			internal.GCSArchiveRouter.SetLimit(int64(site.ArchiveDailyLimit))
 		} else {
-			GCSArchiveRouter.SetLimit(DefaultArchiveDailyLimit)
+			internal.GCSArchiveRouter.SetLimit(internal.DefaultArchiveDailyLimit)
 		}
 	}
 

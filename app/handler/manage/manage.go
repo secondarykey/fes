@@ -2,13 +2,14 @@ package manage
 
 import (
 	"app/datastore"
-	. "app/handler/internal"
+	"app/handler/internal"
 	"app/logic"
 
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
+	"net/http/pprof"
 	"strconv"
 	"strings"
 
@@ -16,9 +17,9 @@ import (
 	"golang.org/x/xerrors"
 )
 
-func Register() error {
+func Register(root *http.ServeMux) error {
 
-	err := RegisterManageStatic()
+	err := internal.RegisterManageStatic(root)
 	if err != nil {
 		return xerrors.Errorf("error: %w", err)
 	}
@@ -111,13 +112,21 @@ func Register() error {
 	s.HandleFunc("/page/view/{key}", privatePageHandler).Methods("GET")
 	s.HandleFunc("/page/view/", privateHandler).Methods("GET")
 
+	// pprof（/manage/ 配下のためログイン必須）— SPA catch-all より前に登録
+	d := s.PathPrefix("/debug/pprof").Subrouter()
+	d.HandleFunc("/cmdline", pprof.Cmdline)
+	d.HandleFunc("/profile", pprof.Profile)
+	d.HandleFunc("/symbol", pprof.Symbol)
+	d.HandleFunc("/trace", pprof.Trace)
+	d.PathPrefix("/").Handler(http.StripPrefix("/manage", http.HandlerFunc(pprof.Index)))
+
 	// SPA + API (/manage/api/ + /manage/ キャッチオール)
-	if err := registerAPI(s); err != nil {
+	if err := registerAPI(s, root); err != nil {
 		return xerrors.Errorf("registerAPI() error: %w", err)
 	}
 
 	h := NewHandler(s)
-	http.Handle("/manage/", h)
+	root.Handle("/manage/", h)
 
 	return nil
 }
@@ -217,7 +226,7 @@ func pageView(w http.ResponseWriter, r *http.Request, id string) {
 }
 
 func viewManage(w http.ResponseWriter, tName string, obj interface{}) {
-	err := ViewManage(w, obj, tName)
+	err := internal.ViewManage(w, obj, tName)
 	if err != nil {
 		log.Printf("viewManage() error:\n%+v\n", err)
 	}

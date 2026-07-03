@@ -209,6 +209,17 @@ export default function SiteEdit() {
           onChange={e => setForm(f => ({ ...f, manageURL: e.target.value }))}
           fullWidth
           size="small"
+          sx={{ mb: 2 }}
+        />
+
+        <TextField
+          label="公開ベース URL"
+          value={form.baseURL || ''}
+          onChange={e => setForm(f => ({ ...f, baseURL: e.target.value }))}
+          fullWidth
+          size="small"
+          placeholder="https://example.com/"
+          helperText="sitemap や robots.txt に出力される URL のベース。未設定時はアクセスされたホスト名を使用します。"
           sx={{ mb: 3 }}
         />
 

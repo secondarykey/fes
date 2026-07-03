@@ -4,6 +4,7 @@ import (
 	"app/config"
 	"context"
 	"errors"
+	"sync"
 
 	"cloud.google.com/go/datastore"
 	"golang.org/x/xerrors"
@@ -13,7 +14,6 @@ import (
 const NoLimitCursor = "NoLimit"
 
 type Dao struct {
-	cli *datastore.Client
 }
 
 func NewDao() *Dao {
@@ -21,13 +21,16 @@ func NewDao() *Dao {
 	return &dao
 }
 
+// クライアントはスレッドセーフなためアプリ全体で1つを共有する。
+// リクエスト毎に生成すると gRPC コネクション確立のコストが毎回かかる。
+var (
+	cliOnce   sync.Once
+	sharedCli *datastore.Client
+	cliErr    error
+)
+
+// Close は互換性のために残している。クライアントは共有のため何もしない。
 func (dao *Dao) Close() error {
-	if dao.cli != nil {
-		err := dao.cli.Close()
-		if err != nil {
-			return xerrors.Errorf("dao Close() error: %w", err)
-		}
-	}
 	return nil
 }
 
@@ -36,15 +39,15 @@ func (dao *Dao) Close() error {
 // cli, err := createClient(ctx, option.WithGRPCDialOption(grpc.WithMaxMsgSize(10_000_000)))
 //
 func (dao *Dao) createClient(ctx context.Context, opts ...option.ClientOption) (*datastore.Client, error) {
-	var err error
-	if dao.cli == nil {
+	cliOnce.Do(func() {
 		c := config.Get()
-		dao.cli, err = datastore.NewClient(ctx, c.ProjectID, opts...)
-		if err != nil {
-			return nil, xerrors.Errorf("datastore.CreateClient() error: %w", err)
-		}
+		// リクエストの context と寿命を切り離すため Background を使用する
+		sharedCli, cliErr = datastore.NewClient(context.Background(), c.ProjectID, opts...)
+	})
+	if cliErr != nil {
+		return nil, xerrors.Errorf("datastore.CreateClient() error: %w", cliErr)
 	}
-	return dao.cli, nil
+	return sharedCli, nil
 }
 
 // IsNoSuchEntity は err が「エンティティが存在しない」エラーのみで構成されているかを返す。

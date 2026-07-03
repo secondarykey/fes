@@ -4,13 +4,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sync/atomic"
 
 	"golang.org/x/xerrors"
 
 	"cloud.google.com/go/datastore"
 )
 
-var cacheSite *Site
+// 並行リクエストから読み書きされるため atomic.Pointer で保持する
+var cacheSite atomic.Pointer[Site]
 
 func (dao *Dao) PutSite(ctx context.Context, site *Site) error {
 
@@ -47,7 +49,7 @@ func (dao *Dao) PutSite(ctx context.Context, site *Site) error {
 		if err != nil {
 			return xerrors.Errorf("site put error: %w", err)
 		}
-		cacheSite = site
+		cacheSite.Store(site)
 
 		return nil
 	})
@@ -63,8 +65,8 @@ func (dao *Dao) SelectSite(ctx context.Context, version int) (*Site, error) {
 
 	//バージョン指定がない場合
 	if version < 0 {
-		if cacheSite != nil {
-			return cacheSite, nil
+		if site := cacheSite.Load(); site != nil {
+			return site, nil
 		}
 	}
 
@@ -91,6 +93,6 @@ func (dao *Dao) SelectSite(ctx context.Context, version int) (*Site, error) {
 		site.TargetVersion = fmt.Sprintf("%d", version)
 	}
 
-	cacheSite = &site
+	cacheSite.Store(&site)
 	return &site, nil
 }

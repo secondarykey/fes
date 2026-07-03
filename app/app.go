@@ -17,7 +17,7 @@ func Listen(opts ...config.Option) error {
 		return xerrors.Errorf("config.Set() error: %w", err)
 	}
 
-	err = registerHandler()
+	mux, err := registerHandler()
 	if err != nil {
 		return xerrors.Errorf("registerHandler() error: %w", err)
 	}
@@ -26,21 +26,24 @@ func Listen(opts ...config.Option) error {
 	serve := fmt.Sprintf(":%d", conf.Port)
 
 	fmt.Printf("Fes Start! Listen[%s]\n", serve)
-	err = http.ListenAndServe(serve, nil)
+	err = http.ListenAndServe(serve, mux)
 	if err != nil {
 		return xerrors.Errorf("http.ListenAndServe error: %w", err)
 	}
 	return nil
 }
 
-func registerHandler() error {
-	err := manage.Register()
+// registerHandler は全ハンドラを登録した ServeMux を返す。
+// DefaultServeMux は使用しない（pprof 等が意図せず公開されるのを防ぐ）。
+func registerHandler() (*http.ServeMux, error) {
+	mux := http.NewServeMux()
+	err := manage.Register(mux)
 	if err != nil {
-		return xerrors.Errorf("manage handler register error: %w", err)
+		return nil, xerrors.Errorf("manage handler register error: %w", err)
 	}
-	err = handler.Register()
+	err = handler.Register(mux)
 	if err != nil {
-		return xerrors.Errorf("handler register error: %w", err)
+		return nil, xerrors.Errorf("handler register error: %w", err)
 	}
-	return nil
+	return mux, nil
 }
