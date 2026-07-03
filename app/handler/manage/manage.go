@@ -10,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"net/http/pprof"
+	"net/url"
 	"strconv"
 	"strings"
 
@@ -18,6 +19,10 @@ import (
 )
 
 func Register(root *http.ServeMux) error {
+
+	if err := InitSessionStore(); err != nil {
+		return xerrors.Errorf("InitSessionStore() error: %w", err)
+	}
 
 	r := mux.NewRouter()
 	s := r.PathPrefix("/manage").Subrouter()
@@ -58,6 +63,18 @@ func NewHandler(r *mux.Router) ManageHandler {
 
 func (h ManageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
+	//CSRF 対策: 状態変更リクエストは同一オリジンからのみ受け付ける
+	if !isSafeMethod(r.Method) && !isSameOrigin(r) {
+		log.Printf("cross-origin request rejected: %s %s (Origin=%q Referer=%q)",
+			r.Method, r.URL.Path, r.Header.Get("Origin"), r.Header.Get("Referer"))
+		if isAPIPath(r.URL.Path) {
+			apiError(w, "forbidden: cross-origin request", http.StatusForbidden)
+			return
+		}
+		http.Error(w, "Forbidden", http.StatusForbidden)
+		return
+	}
+
 	//セッションの存在を確認
 	u, err := GetSession(r)
 	if err != nil {
@@ -85,6 +102,33 @@ func (h ManageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func isAPIPath(path string) bool {
 	return strings.HasPrefix(path, "/manage/api/")
+}
+
+func isSafeMethod(m string) bool {
+	switch m {
+	case http.MethodGet, http.MethodHead, http.MethodOptions:
+		return true
+	}
+	return false
+}
+
+// isSameOrigin は Origin ヘッダ（無ければ Referer）のホストがリクエストの
+// Host と一致するかを返す。どちらも無い場合は拒否する。
+// ブラウザの fetch / フォーム送信は POST 時に必ず Origin を付けるため、
+// 正規の SPA からのリクエストが弾かれることはない。
+func isSameOrigin(r *http.Request) bool {
+	src := r.Header.Get("Origin")
+	if src == "" {
+		src = r.Header.Get("Referer")
+	}
+	if src == "" {
+		return false
+	}
+	u, err := url.Parse(src)
+	if err != nil {
+		return false
+	}
+	return u.Host == r.Host
 }
 
 func apiUnauthorized(w http.ResponseWriter) {

@@ -63,7 +63,7 @@ Pages form a parent-child tree. `HTML` stores pre-rendered output to avoid re-re
 ### Embedded assets
 
 `app/handler/internal/_assets/` is embedded with `//go:embed`. It contains:
-- `environment.json` — OAuth2 credentials (CLIENT_ID, CLIENT_SECRET)
+- `environment.json` — OAuth2 credentials (CLIENT_ID, CLIENT_SECRET) とセッション署名鍵 (SESSION_KEY)
 - `archives/` — static archive zips（ZIP 形式の旧アーカイブ）
 - `manage/` — 管理画面 SPA の Vite ビルド成果物
 
@@ -83,7 +83,7 @@ Pages form a parent-child tree. `HTML` stores pre-rendered output to avoid re-re
 
 ### Authentication
 
-Google Identity Services (GIS) によるログイン。`/session` に POST された ID トークンを `google.golang.org/api/idtoken` で検証する（署名・有効期限・audience=CLIENT_ID・発行者・email_verified）。CLIENT_ID は `environment.json` から環境変数経由で設定。セッションは Gorilla sessions で管理。
+Google Identity Services (GIS) によるログイン。`/session` に POST された ID トークンを `google.golang.org/api/idtoken` で検証する（署名・有効期限・audience=CLIENT_ID・発行者・email_verified）。CLIENT_ID は `environment.json` から環境変数経由で設定。セッションは Gorilla sessions で管理し、署名鍵は環境変数 `SESSION_KEY`（`environment.json` 由来）を使用する。本番（`DevelopMode=false`）で `SESSION_KEY` 未設定なら `manage.Register()` が起動時にエラーを返す。開発時は未設定でもランダム鍵で起動する（再起動でセッション無効化）。
 
 ## manage/ — 管理画面 SPA
 
@@ -137,6 +137,7 @@ POST   /html/unpublish/{key}    HTML 非公開
 
 - 認証は既存の Gorilla セッションをそのまま使用。`/manage/` 配下全体を `ManageHandler` が保護。
 - `/manage/api/` への未認証アクセスはリダイレクトではなく JSON 401 を返す。
+- CSRF 対策: セッション Cookie は `SameSite=Lax`（本番は `Secure` 付き）。`/manage/` 配下の非 GET リクエストは `ManageHandler` が Origin / Referer の同一オリジン検証を行い、不一致は 403。GIS のログイン POST（`/session`）はクロスサイトのため検証対象外。
 
 ## maps/ — 独立した React アプリ
 
