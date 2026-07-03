@@ -19,8 +19,8 @@ func init() {
 	}
 }
 
-func RegisterMaps() error {
+func RegisterMaps(mux *http.ServeMux) error {
 	fs := http.FileServer(http.FS(mapsFs))
-	http.Handle("/maps/", http.StripPrefix("/maps/", fs))
+	mux.Handle("/maps/", http.StripPrefix("/maps/", fs))
 	return nil
 }

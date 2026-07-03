@@ -20,8 +20,8 @@ func init() {
 	}
 }
 
-func RegisterManageSPAStatic() error {
-	http.Handle("/manage/assets/", http.StripPrefix("/manage/", http.FileServer(http.FS(manageSPAFs))))
+func RegisterManageSPAStatic(mux *http.ServeMux) error {
+	mux.Handle("/manage/assets/", http.StripPrefix("/manage/", http.FileServer(http.FS(manageSPAFs))))
 	return nil
 }
 

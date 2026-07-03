@@ -180,5 +180,8 @@ npm run preview   # 本番ビルドのプレビュー
 
 - Management UI, comments, and commit messages are in Japanese.
 - The DAO layer separates metadata entities from data entities (e.g., `Page` + `PageData`, `File` + `FileData`) to reduce read costs.
+- Datastore クライアントはアプリ全体で 1 つを共有する（`datastore.Dao` はステートレスで、`Close()` は互換性のための no-op）。
+- ルーティングは `app.go` の `registerHandler()` が生成する専用の `http.ServeMux` に登録する。`http.DefaultServeMux` はメインサーバーでは使用しない（pprof は `/manage/debug/pprof/` 配下・要ログイン）。
+- Site エンティティの `BaseURL` を設定すると sitemap / robots.txt がその URL で生成される。未設定時はリクエストの Host ヘッダから組み立てる。
 - Template rendering uses Go's `html/template` with custom functions registered in `api/helper.go`.
 - No test files exist in the repo; manual/integration testing is the current approach.

@@ -2,16 +2,17 @@ package handler
 
 import (
 	"app/datastore"
-	. "app/handler/internal"
+	"app/handler/internal"
 	"app/logic"
 
 	"context"
 	"fmt"
 	"log"
 	"net/http"
-	_ "net/http/pprof"
 	"os"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/gorilla/mux"
 	"golang.org/x/xerrors"
@@ -23,7 +24,7 @@ func init() {
 
 func setEnvironment() {
 
-	m := GetEnvironmentMap()
+	m := internal.GetEnvironmentMap()
 
 	if m == nil {
 		log.Println("GetEnvironmentMap() is nil")
@@ -38,7 +39,7 @@ func setEnvironment() {
 	}
 }
 
-func Register() error {
+func Register(root *http.ServeMux) error {
 
 	//20260523 廃止
 	/*
@@ -49,15 +50,15 @@ func Register() error {
 	*/
 
 	bucket, names, dailyLimit := loadArchiveConfig()
-	archiveHandler, err := InitGCSArchive(bucket, names)
+	archiveHandler, err := internal.InitGCSArchive(bucket, names)
 	if err != nil {
 		log.Printf("InitGCSArchive() error: %+v", err)
 	}
-	if GCSArchiveRouter != nil && dailyLimit > 0 {
-		GCSArchiveRouter.SetLimit(int64(dailyLimit))
+	if internal.GCSArchiveRouter != nil && dailyLimit > 0 {
+		internal.GCSArchiveRouter.SetLimit(int64(dailyLimit))
 	}
 
-	err = RegisterMaps()
+	err = internal.RegisterMaps(root)
 	if err != nil {
 		return xerrors.Errorf("RegisterMaps() error: %w", err)
 	}
@@ -65,7 +66,7 @@ func Register() error {
 	//外部アクセス
 	r := mux.NewRouter()
 
-	err = RegisterStatic()
+	err = internal.RegisterStatic(root)
 	if err != nil {
 		return xerrors.Errorf("RegisterStatic() error: %w", err)
 	}
@@ -92,9 +93,9 @@ func Register() error {
 
 	if archiveHandler != nil {
 		// アーカイブルーターが先に判定し、該当しなければ mux ルーターに委譲
-		http.Handle("/", archiveFallback(archiveHandler, r))
+		root.Handle("/", archiveFallback(archiveHandler, r))
 	} else {
-		http.Handle("/", r)
+		root.Handle("/", r)
 	}
 
 	return nil
@@ -103,7 +104,7 @@ func Register() error {
 // archiveFallback はアーカイブ名に一致するリクエストを archive に、それ以外を fallback に委譲する。
 func archiveFallback(archive http.Handler, fallback http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if GCSArchiveRouter != nil && GCSArchiveRouter.Match(r.URL.Path) {
+		if internal.GCSArchiveRouter != nil && internal.GCSArchiveRouter.Match(r.URL.Path) {
 			archive.ServeHTTP(w, r)
 			return
 		}
@@ -168,32 +169,55 @@ func solidError(w http.ResponseWriter, title, msg string) {
 	w.Write([]byte(htm))
 }
 
+// favicon は変更頻度が低いためメモリにキャッシュする
+var faviconCache struct {
+	sync.Mutex
+	data    []byte
+	expires time.Time
+}
+
+const faviconCacheTTL = 10 * time.Minute
+
 func favicon(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Cache-Control", "public, max-age=86400")
 
-	ctx := r.Context()
+	b, err := loadFavicon(r.Context())
+	if err != nil {
+		log.Printf("loadFavicon error: %+v", err)
+		return
+	}
+	w.Write(b)
+}
+
+func loadFavicon(ctx context.Context) ([]byte, error) {
+
+	faviconCache.Lock()
+	defer faviconCache.Unlock()
+
+	if faviconCache.data != nil && time.Now().Before(faviconCache.expires) {
+		return faviconCache.data, nil
+	}
+
 	dao := datastore.NewDao()
 	defer dao.Close()
 
 	//ファイルが存在するか？
-	fav, err := dao.GetFavicon(ctx)
+	b, err := dao.GetFavicon(ctx)
 	if err != nil {
-		log.Printf("GetFavicon error: %+v", err)
-		return
+		return nil, xerrors.Errorf("GetFavicon() error: %w", err)
 	}
 
-	if fav != nil {
-		w.Write(fav)
-		return
+	if b == nil {
+		b, err = internal.GetSystemFavicon()
+		if err != nil {
+			return nil, xerrors.Errorf("GetSystemFavicon() error: %w", err)
+		}
 	}
 
-	b, err := GetSystemFavicon()
-	if err != nil {
-		log.Printf("GetSystemFavicon error: %+v", err)
-		return
-	}
-	w.Write(b)
+	faviconCache.data = b
+	faviconCache.expires = time.Now().Add(faviconCacheTTL)
+	return b, nil
 }
 
 func robotTxt(w http.ResponseWriter, r *http.Request) {
@@ -217,13 +241,30 @@ func sitemap(w http.ResponseWriter, r *http.Request) {
 	root := getHost(r)
 	// 60 * 60 * 24
 	w.Header().Set("Cache-Control", "public, max-age=86400")
-	err := GenerateSitemap(r.Context(), root, w)
+	err := internal.GenerateSitemap(r.Context(), root, w)
 	if err != nil {
 		errorPage(w, r, "Generate sitemap error", err, 500)
 	}
 }
 
+// getHost はサイトのベース URL（末尾スラッシュ付き）を返す。
+// Site 設定の BaseURL を優先し、未設定時のみ Host ヘッダから組み立てる。
+// Host ヘッダはクライアントが自由に指定できるため、公開 URL の生成には
+// BaseURL を設定しておくことが望ましい。
 func getHost(r *http.Request) string {
+
+	dao := datastore.NewDao()
+	defer dao.Close()
+
+	site, err := dao.SelectSite(r.Context(), -1)
+	if err == nil && site.BaseURL != "" {
+		base := site.BaseURL
+		if !strings.HasSuffix(base, "/") {
+			base += "/"
+		}
+		return base
+	}
+
 	scheme := "http"
 	if strings.Index(r.Host, "localhost") == -1 {
 		scheme = "https"

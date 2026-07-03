@@ -22,6 +22,10 @@ type Site struct {
 	ManageURL   string
 	Managers    []string
 
+	//公開 URL のベース（例 https://example.com/）。sitemap や robots.txt の生成に使用。
+	//未設定時はリクエストの Host ヘッダから組み立てる。
+	BaseURL string
+
 	ArchiveBucket    string
 	ArchiveNames     []string
 	ArchiveDailyLimit int

@@ -2,7 +2,7 @@ package handler
 
 import (
 	"app/datastore"
-	. "app/handler/internal"
+	"app/handler/internal"
 	"app/handler/manage"
 	"os"
 	"strings"
@@ -24,7 +24,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		manage.SetRedirectCookie(w, redirect)
 	}
 
-	err = View(w, nil, "authentication.tmpl")
+	err = internal.View(w, nil, "authentication.tmpl")
 	if err != nil {
 		errorPage(w, r, "描画エラー", fmt.Errorf("認証ページの表示に失敗 %v", err), 500)
 	}

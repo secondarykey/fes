@@ -1,14 +1,15 @@
 package manage
 
 import (
-	. "app/handler/internal"
+	"app/handler/internal"
+	"net/http"
 
 	"github.com/gorilla/mux"
 	"golang.org/x/xerrors"
 )
 
-func registerAPI(s *mux.Router) error {
-	if err := RegisterManageSPAStatic(); err != nil {
+func registerAPI(s *mux.Router, root *http.ServeMux) error {
+	if err := internal.RegisterManageSPAStatic(root); err != nil {
 		return xerrors.Errorf("RegisterManageSPAStatic() error: %w", err)
 	}
 
@@ -23,7 +24,7 @@ func registerAPI(s *mux.Router) error {
 	registerToolAPI(api)
 
 	// SPA キャッチオール — /manage/ 配下のすべての非API/非アセット/非v1パスに index.html を返す
-	s.PathPrefix("/").HandlerFunc(ServeManageSPA)
+	s.PathPrefix("/").HandlerFunc(internal.ServeManageSPA)
 
 	return nil
 }

@@ -27,20 +27,20 @@ func init() {
 	}
 }
 
-func RegisterStatic() error {
+func RegisterStatic(mux *http.ServeMux) error {
 	//TODO Deprecated
 	fs := http.StripPrefix("/images/", http.FileServer(http.FS(publicFs)))
-	http.Handle("/images/", fs)
+	mux.Handle("/images/", fs)
 	return nil
 }
 
-func RegisterManageStatic() error {
+func RegisterManageStatic(mux *http.ServeMux) error {
 
 	fs := http.StripPrefix("/manage/v1/", http.FileServer(http.FS(manageFs)))
 
-	http.Handle("/manage/v1/favicon.ico", fs)
-	http.Handle("/manage/v1/js/", fs)
-	http.Handle("/manage/v1/css/", fs)
+	mux.Handle("/manage/v1/favicon.ico", fs)
+	mux.Handle("/manage/v1/js/", fs)
+	mux.Handle("/manage/v1/css/", fs)
 
 	return nil
 }

@@ -2,7 +2,7 @@ package manage
 
 import (
 	"app/datastore"
-	. "app/handler/internal"
+	"app/handler/internal"
 	"app/logic"
 	"archive/zip"
 	"bytes"
@@ -242,8 +242,8 @@ func apiArchiveStorage(w http.ResponseWriter, r *http.Request) {
 		"archives":     archives,
 	}
 
-	if GCSArchiveRouter != nil {
-		info := GCSArchiveRouter.GetAccessInfo()
+	if internal.GCSArchiveRouter != nil {
+		info := internal.GCSArchiveRouter.GetAccessInfo()
 		res["access"] = info
 	}
 
