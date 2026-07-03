@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"io"
 	"net/http"
 	"strings"
 	"time"
@@ -248,6 +249,39 @@ func apiArchiveStorage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	apiJSON(w, res)
+}
+
+func createGob(closer *zip.Reader) (datastore.BackupData, error) {
+
+	rtn := make(datastore.BackupData)
+	for _, elm := range closer.File {
+
+		name := elm.Name
+		fileReader, err := elm.Open()
+		if err != nil {
+			return nil, err
+		}
+
+		nameArray := strings.Split(name, "/")
+		//Fileをパスにしたら駄目
+		kind := nameArray[0]
+		key := nameArray[1]
+
+		writer := bytes.NewBuffer(nil)
+		_, err = io.Copy(writer, fileReader)
+		if err != nil {
+			return nil, err
+		}
+
+		gob, ok := rtn[kind]
+		if !ok {
+			gob = make(datastore.GobKind)
+		}
+		gob[key] = writer.Bytes()
+
+		rtn[kind] = gob
+	}
+	return rtn, nil
 }
 
 func appendPageListItems(ctx context.Context, dao *datastore.Dao, parentID string, buf *bytes.Buffer) error {

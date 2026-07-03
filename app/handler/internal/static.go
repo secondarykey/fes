@@ -34,17 +34,6 @@ func RegisterStatic(mux *http.ServeMux) error {
 	return nil
 }
 
-func RegisterManageStatic(mux *http.ServeMux) error {
-
-	fs := http.StripPrefix("/manage/v1/", http.FileServer(http.FS(manageFs)))
-
-	mux.Handle("/manage/v1/favicon.ico", fs)
-	mux.Handle("/manage/v1/js/", fs)
-	mux.Handle("/manage/v1/css/", fs)
-
-	return nil
-}
-
 func GetSystemFavicon() ([]byte, error) {
 
 	fp, err := manageFs.Open("favicon.ico")

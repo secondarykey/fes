@@ -87,7 +87,7 @@ Google OAuth2 via credentials embedded in `environment.json`. Sessions managed w
 
 ## manage/ — 管理画面 SPA
 
-React (Vite + MUI) ベースの SPA 管理画面。`/manage/` で配信され、メインの管理 UI として使用。旧テンプレートベースの管理画面 (V1) は `/manage/v1/` に移動済み。
+React (Vite + MUI) ベースの SPA 管理画面。`/manage/` で配信され、唯一の管理 UI として使用。旧テンプレートベースの管理画面 (V1) は削除済み。
 
 ### コマンド
 
@@ -137,7 +137,6 @@ POST   /html/unpublish/{key}    HTML 非公開
 
 - 認証は既存の Gorilla セッションをそのまま使用。`/manage/` 配下全体を `ManageHandler` が保護。
 - `/manage/api/` への未認証アクセスはリダイレクトではなく JSON 401 を返す。
-- V1 管理画面は `/manage/v1/` でアクセス可能（テンプレートベース）。
 
 ## maps/ — 独立した React アプリ
 
