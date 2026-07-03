@@ -83,7 +83,7 @@ Pages form a parent-child tree. `HTML` stores pre-rendered output to avoid re-re
 
 ### Authentication
 
-Google OAuth2 via credentials embedded in `environment.json`. Sessions managed with Gorilla sessions. JWT used for token handling.
+Google Identity Services (GIS) によるログイン。`/session` に POST された ID トークンを `google.golang.org/api/idtoken` で検証する（署名・有効期限・audience=CLIENT_ID・発行者・email_verified）。CLIENT_ID は `environment.json` から環境変数経由で設定。セッションは Gorilla sessions で管理。
 
 ## manage/ — 管理画面 SPA
 
