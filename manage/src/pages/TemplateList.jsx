@@ -205,7 +205,7 @@ export default function TemplateList() {
   return (
     <Box>
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1 }}>
-        <Typography variant="h5" fontWeight={600} sx={{ flexGrow: 1 }}>Templates</Typography>
+        <Typography variant="h5" sx={{ fontWeight: 600, flexGrow: 1 }}>Templates</Typography>
         {isSingleType && (
           <Button
             variant="outlined"

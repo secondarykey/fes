@@ -75,7 +75,7 @@ export default function VariableList() {
   return (
     <Box>
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1 }}>
-        <Typography variant="h5" fontWeight={600} sx={{ flexGrow: 1 }}>Variables</Typography>
+        <Typography variant="h5" sx={{ fontWeight: 600, flexGrow: 1 }}>Variables</Typography>
         <Button variant="contained" startIcon={<AddIcon />} onClick={() => setNewDialog(true)}>
           新規作成
         </Button>
@@ -120,8 +120,7 @@ export default function VariableList() {
                       <Typography
                         variant="body2"
                         color="primary"
-                        fontFamily="monospace"
-                        sx={{ '&:hover': { textDecoration: 'underline' } }}
+                        sx={{ fontFamily: 'monospace', '&:hover': { textDecoration: 'underline' } }}
                       >
                         {v.id}
                       </Typography>
@@ -173,7 +172,7 @@ export default function VariableList() {
             fullWidth
             size="small"
             autoFocus
-            inputProps={{ style: { fontFamily: 'monospace' } }}
+            slotProps={{ htmlInput: { style: { fontFamily: 'monospace' } } }}
           />
         </DialogContent>
         <DialogActions>
