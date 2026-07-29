@@ -13,7 +13,7 @@ require (
 	github.com/secondarykey/zipfs v0.0.0-20250516035801-dc65038207f2
 	golang.org/x/xerrors v0.0.0-20240903120638-7835f813f4da
 	google.golang.org/api v0.286.0
-	google.golang.org/grpc v1.82.0
+	google.golang.org/grpc v1.82.1
 )
 
 require (
