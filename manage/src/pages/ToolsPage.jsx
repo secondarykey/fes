@@ -40,7 +40,7 @@ function ToolCard({ title, description, actions, chip }) {
     <Card variant="outlined" sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <CardContent sx={{ flexGrow: 1 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-          <Typography variant="subtitle1" fontWeight={600}>{title}</Typography>
+          <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>{title}</Typography>
           {chip && <Chip label={chip} size="small" color="warning" variant="outlined" />}
         </Box>
         <Typography variant="body2" color="text.secondary">{description}</Typography>
@@ -124,12 +124,12 @@ export default function ToolsPage() {
 
   return (
     <Box>
-      <Typography variant="h5" fontWeight={600} gutterBottom>Tools</Typography>
+      <Typography variant="h5" sx={{ fontWeight: 600 }} gutterBottom>Tools</Typography>
 
       <Grid container spacing={2}>
 
         {/* サイトクリーン */}
-        <Grid item xs={12} sm={6} md={4}>
+        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
           <ToolCard
             title="サイトクリーン"
             description="ページが存在しない孤立した HTML・ページ画像を検出して削除します。"
@@ -149,7 +149,7 @@ export default function ToolsPage() {
         </Grid>
 
         {/* GC */}
-        <Grid item xs={12} sm={6} md={4}>
+        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
           <ToolCard
             title="ガベージコレクション"
             description="Go ランタイムの GC を手動実行します。メモリ使用量の統計をログに記録します。"
@@ -169,7 +169,7 @@ export default function ToolsPage() {
         </Grid>
 
         {/* データ管理 */}
-        <Grid item xs={12} sm={6} md={4}>
+        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
           <ToolCard
             title="データ管理"
             description="Datastore のバックアップ（ZIP ダウンロード）とリストアを行います。リストアは全データを上書きします。"

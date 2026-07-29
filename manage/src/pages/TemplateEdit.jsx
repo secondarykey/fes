@@ -5,7 +5,7 @@ import {
   FormControl, InputLabel, Button, Breadcrumbs, Link,
   Divider, CircularProgress, Snackbar, Alert,
   Dialog, DialogTitle, DialogContent, DialogActions,
-  List, ListItem, ListItemText, ListItemIcon, Checkbox,
+  List, ListItem, ListItemButton, ListItemText, ListItemIcon, Checkbox,
 } from '@mui/material'
 import SaveIcon from '@mui/icons-material/Save'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
@@ -158,7 +158,7 @@ export default function TemplateEdit() {
           multiline
           rows={30}
           size="small"
-          inputProps={{ style: { fontFamily: 'monospace', fontSize: 13 } }}
+          slotProps={{ htmlInput: { style: { fontFamily: 'monospace', fontSize: 13 } } }}
           sx={{ mb: 3 }}
         />
 
@@ -206,26 +206,23 @@ export default function TemplateEdit() {
           ) : (
             <List dense disablePadding>
               {refPages.map(p => (
-                <ListItem
-                  key={p.id}
-                  button
-                  onClick={() => toggleRefPage(p.id)}
-                  sx={{ px: 0 }}
-                >
-                  <ListItemIcon sx={{ minWidth: 36 }}>
-                    <Checkbox
-                      size="small"
-                      checked={refSelected.has(p.id)}
-                      onChange={() => toggleRefPage(p.id)}
-                      onClick={e => e.stopPropagation()}
+                <ListItem key={p.id} disablePadding sx={{ px: 0 }}>
+                  <ListItemButton onClick={() => toggleRefPage(p.id)} sx={{ px: 0 }}>
+                    <ListItemIcon sx={{ minWidth: 36 }}>
+                      <Checkbox
+                        size="small"
+                        checked={refSelected.has(p.id)}
+                        onChange={() => toggleRefPage(p.id)}
+                        onClick={e => e.stopPropagation()}
+                      />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={
+                        <Typography variant="body2">{p.name}</Typography>
+                      }
+                      secondary={p.id}
                     />
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={
-                      <Typography variant="body2">{p.name}</Typography>
-                    }
-                    secondary={p.id}
-                  />
+                  </ListItemButton>
                 </ListItem>
               ))}
             </List>

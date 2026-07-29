@@ -191,6 +191,7 @@ function App() {
     location.reload();
   }
 
+  // eslint-disable-next-line no-unused-vars -- デバッグボタン (コメントアウト中) 用に残す
   const handleDebug = () => {
     setDebugDisplay(true);
   }

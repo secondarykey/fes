@@ -181,7 +181,7 @@ export default function FileList() {
   return (
     <Box>
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1 }}>
-        <Typography variant="h5" fontWeight={600} sx={{ flexGrow: 1 }}>Files</Typography>
+        <Typography variant="h5" sx={{ fontWeight: 600, flexGrow: 1 }}>Files</Typography>
         <input
           type="file"
           ref={fileInputRef}
@@ -381,7 +381,7 @@ export default function FileList() {
             size="small"
             autoFocus
             sx={{ mt: 1 }}
-            inputProps={{ style: { fontFamily: 'monospace' } }}
+            slotProps={{ htmlInput: { style: { fontFamily: 'monospace' } } }}
           />
         </DialogContent>
         <DialogActions>

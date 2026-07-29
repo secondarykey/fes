@@ -85,7 +85,7 @@ export default function PageList() {
 
   return (
     <Box>
-      <Typography variant="h5" fontWeight={600} gutterBottom>Pages</Typography>
+      <Typography variant="h5" sx={{ fontWeight: 600 }} gutterBottom>Pages</Typography>
       <Paper variant="outlined">
         <List dense disablePadding>
           <PageNode
@@ -189,10 +189,12 @@ function PageNode({ page, childrenMap, onExpand, onAddChild, onPublish, isRoot, 
           </ListItemIcon>
           <ListItemText
             primary={page.name || '(名前なし)'}
-            primaryTypographyProps={{
-              sx: {
-                textDecoration: page.deleted ? 'line-through' : 'none',
-                color: page.deleted ? 'text.disabled' : 'text.primary',
+            slotProps={{
+              primary: {
+                sx: {
+                  textDecoration: page.deleted ? 'line-through' : 'none',
+                  color: page.deleted ? 'text.disabled' : 'text.primary',
+                },
               },
             }}
           />
@@ -216,7 +218,7 @@ function PageNode({ page, childrenMap, onExpand, onAddChild, onPublish, isRoot, 
             <ListItem sx={{ pl: (depth + 1) * 3 + 1 }}>
               <ListItemText
                 primary="子ページなし"
-                primaryTypographyProps={{ variant: 'caption', color: 'text.disabled' }}
+                slotProps={{ primary: { variant: 'caption', color: 'text.disabled' } }}
               />
             </ListItem>
           )}
