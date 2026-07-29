@@ -3,9 +3,11 @@ import { Outlet, Link as RouterLink, useLocation } from 'react-router'
 import {
   AppBar, Toolbar, IconButton, Typography, Drawer,
   List, ListItem, ListItemButton, ListItemIcon, ListItemText,
-  Box, Divider, useTheme,
+  Box, Divider, Tooltip, useTheme,
 } from '@mui/material'
 import MenuIcon from '@mui/icons-material/Menu'
+import PreviewIcon from '@mui/icons-material/Preview'
+import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import ArticleIcon from '@mui/icons-material/Article'
 import FolderIcon from '@mui/icons-material/Folder'
 import CodeIcon from '@mui/icons-material/Code'
@@ -51,6 +53,32 @@ export default function Layout() {
           <Typography variant="h6" noWrap component="div" sx={{ fontWeight: 600, flexGrow: 1 }}>
             FES{siteName ? `（${siteName}）` : ''}
           </Typography>
+
+          {/* トップページのプレビュー（未公開の編集内容を含む）と公開ページを別タブで開く */}
+          <Tooltip title="トップページをプレビュー">
+            <IconButton
+              color="inherit"
+              component="a"
+              href="/manage/page/view/"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="トップページをプレビュー"
+            >
+              <PreviewIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="公開ページを開く">
+            <IconButton
+              color="inherit"
+              component="a"
+              href="/"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="公開ページを開く"
+            >
+              <OpenInNewIcon />
+            </IconButton>
+          </Tooltip>
         </Toolbar>
       </AppBar>
 
