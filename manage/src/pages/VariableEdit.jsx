@@ -61,7 +61,7 @@ export default function VariableEdit() {
         <Link component={RouterLink} to="/variable" underline="hover" color="inherit">
           Variables
         </Link>
-        <Typography color="text.primary" fontFamily="monospace">{data.id}</Typography>
+        <Typography color="text.primary" sx={{ fontFamily: 'monospace' }}>{data.id}</Typography>
       </Breadcrumbs>
 
       <Paper sx={{ p: 3 }}>
@@ -71,7 +71,7 @@ export default function VariableEdit() {
           fullWidth
           size="small"
           disabled
-          inputProps={{ style: { fontFamily: 'monospace' } }}
+          slotProps={{ htmlInput: { style: { fontFamily: 'monospace' } } }}
           sx={{ mb: 2 }}
         />
 
@@ -83,7 +83,7 @@ export default function VariableEdit() {
           multiline
           rows={20}
           size="small"
-          inputProps={{ style: { fontFamily: 'monospace', fontSize: 13 } }}
+          slotProps={{ htmlInput: { style: { fontFamily: 'monospace', fontSize: 13 } } }}
           sx={{ mb: 3 }}
         />
 

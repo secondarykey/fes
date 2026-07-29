@@ -425,7 +425,7 @@ export default function PageChildren() {
                     onChange={e => setMoveTargetId(e.target.value)}
                     size="small"
                     sx={{ width: 260 }}
-                    inputProps={{ style: { fontFamily: 'monospace' } }}
+                    slotProps={{ htmlInput: { style: { fontFamily: 'monospace' } } }}
                   />
                   <Button
                     variant="outlined"
@@ -484,7 +484,7 @@ export default function PageChildren() {
             fullWidth
             minRows={4}
             maxRows={20}
-            inputProps={{ readOnly: true, style: { fontFamily: 'monospace', fontSize: 13 } }}
+            slotProps={{ htmlInput: { readOnly: true, style: { fontFamily: 'monospace', fontSize: 13 } } }}
           />
         )}
 

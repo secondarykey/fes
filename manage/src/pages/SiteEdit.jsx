@@ -167,7 +167,7 @@ export default function SiteEdit() {
   return (
     <Box sx={{ maxWidth: 720 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-        <Typography variant="h5" fontWeight={600}>Site Settings</Typography>
+        <Typography variant="h5" sx={{ fontWeight: 600 }}>Site Settings</Typography>
         <IconButton size="small" onClick={toggleColorMode} sx={{ color: isDark ? 'grey.400' : 'grey.600' }}>
           {isDark ? <LightModeIcon fontSize="small" /> : <DarkModeIcon fontSize="small" />}
         </IconButton>
@@ -225,7 +225,7 @@ export default function SiteEdit() {
 
         <Divider sx={{ mb: 2 }} />
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-          <Typography variant="subtitle1" fontWeight={600}>Archive</Typography>
+          <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>Archive</Typography>
           {storageInfo && (() => {
             const archives = storageInfo.archives || []
             const totalSize = archives.reduce((s, a) => s + (a.size || 0), 0)
@@ -325,14 +325,16 @@ export default function SiteEdit() {
               onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddArchiveName() } }}
               size="small"
               fullWidth
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton size="small" onClick={handleAddArchiveName} color="primary">
-                      <AddIcon fontSize="small" />
-                    </IconButton>
-                  </InputAdornment>
-                ),
+              slotProps={{
+                input: {
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton size="small" onClick={handleAddArchiveName} color="primary">
+                        <AddIcon fontSize="small" />
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                },
               }}
             />
           </Box>
@@ -390,14 +392,16 @@ export default function SiteEdit() {
               onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddManager() } }}
               size="small"
               fullWidth
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton size="small" onClick={handleAddManager} color="primary">
-                      <AddIcon fontSize="small" />
-                    </IconButton>
-                  </InputAdornment>
-                ),
+              slotProps={{
+                input: {
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton size="small" onClick={handleAddManager} color="primary">
+                        <AddIcon fontSize="small" />
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                },
               }}
             />
           </Box>
@@ -416,12 +420,12 @@ export default function SiteEdit() {
       </Paper>
 
       {/* Tools */}
-      <Typography variant="h6" fontWeight={600} sx={{ mt: 4, mb: 2 }}>Tools</Typography>
+      <Typography variant="h6" sx={{ fontWeight: 600, mt: 4, mb: 2 }}>Tools</Typography>
       <Grid container spacing={2}>
-        <Grid item xs={12} sm={6}>
+        <Grid size={{ xs: 12, sm: 6 }}>
           <Card variant="outlined" sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
             <CardContent sx={{ flexGrow: 1 }}>
-              <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 0.5 }}>サイトクリーン</Typography>
+              <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 0.5 }}>サイトクリーン</Typography>
               <Typography variant="body2" color="text.secondary">ページが存在しない孤立した HTML・ページ画像を検出して削除します。</Typography>
             </CardContent>
             <Divider />
@@ -434,10 +438,10 @@ export default function SiteEdit() {
             </CardActions>
           </Card>
         </Grid>
-        <Grid item xs={12} sm={6}>
+        <Grid size={{ xs: 12, sm: 6 }}>
           <Card variant="outlined" sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
             <CardContent sx={{ flexGrow: 1 }}>
-              <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 0.5 }}>ガベージコレクション</Typography>
+              <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 0.5 }}>ガベージコレクション</Typography>
               <Typography variant="body2" color="text.secondary">Go ランタイムの GC を手動実行します。</Typography>
             </CardContent>
             <Divider />
@@ -450,11 +454,11 @@ export default function SiteEdit() {
             </CardActions>
           </Card>
         </Grid>
-        <Grid item xs={12} sm={6}>
+        <Grid size={{ xs: 12, sm: 6 }}>
           <Card variant="outlined" sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
             <CardContent sx={{ flexGrow: 1 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-                <Typography variant="subtitle1" fontWeight={600}>データ管理</Typography>
+                <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>データ管理</Typography>
                 <Chip label="注意" size="small" color="warning" variant="outlined" />
               </Box>
               <Typography variant="body2" color="text.secondary">Datastore のバックアップ（ZIP）とリストアを行います。</Typography>
