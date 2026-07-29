@@ -66,7 +66,7 @@ function DraftCard({ draft, onPublished }) {
       <Paper variant="outlined" sx={{ p: 2.5, opacity: 0.6 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <CheckCircleIcon color="success" />
-          <Typography variant="subtitle1" fontWeight={600}>
+          <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
             {draft.name || '(名前なし)'}
           </Typography>
           <Chip label="公開済み" size="small" color="success" />
@@ -90,7 +90,7 @@ function DraftCard({ draft, onPublished }) {
       >
         <Box sx={{ flexGrow: 1 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Typography variant="subtitle1" fontWeight={600}>
+            <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
               {draft.name || '(名前なし)'}
             </Typography>
             {isLocked && <Chip icon={<LockIcon />} label="作業中" size="small" color="warning" variant="outlined" />}
@@ -217,14 +217,14 @@ export default function PublishPage() {
 
   useEffect(() => { load() }, [load])
 
-  const handlePublished = (id) => {
+  const handlePublished = (_id) => {
     setSnack({ open: true, message: '公開しました', severity: 'success' })
   }
 
   return (
     <Box>
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-        <Typography variant="h5" fontWeight={600} sx={{ flexGrow: 1 }}>公開</Typography>
+        <Typography variant="h5" sx={{ fontWeight: 600, flexGrow: 1 }}>公開</Typography>
         <Button
           variant="outlined"
           size="small"

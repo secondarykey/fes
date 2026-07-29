@@ -113,6 +113,30 @@ cd app; go build ./...
 | `src/pages/PageList.jsx` | ページツリー一覧 (遅延展開) |
 | `src/pages/PageEdit.jsx` | ページ編集フォーム・公開/非公開操作 |
 | `src/api/page.js` | API クライアント (fetch wrapper) |
+| `eslint.config.js` | ESLint flat config（React 19 / ESLint 10 構成） |
+
+### ESLint 構成
+
+`maps/` と同じく ESLint 10 の flat config を使用する。`eslint-plugin-react` は脆弱性アドバイザリと ESLint 10 非対応のため採用していない（詳細は maps 側の「ESLint 構成」を参照）。
+
+`eslint-plugin-react-hooks` v7 の `set-state-in-effect` / `immutability` は、各ページの「マウント時にフェッチして setState」パターンが抵触するため `off`。リファクタ後に個別に有効化すること。
+
+### MUI v9 の注意点
+
+MUI は v9 系を使用する。v5 から移行済みで、以下は v5 の書き方をすると**ビルドは通るが実行時に無視される**ため注意すること。
+
+| 旧 (v5) | 新 (v9) |
+|---|---|
+| `<Grid item xs={12} sm={6}>` | `<Grid size={{ xs: 12, sm: 6 }}>` |
+| `<TextField InputProps={{...}}>` | `<TextField slotProps={{ input: {...} }}>` |
+| `<TextField inputProps={{...}}>` | `<TextField slotProps={{ htmlInput: {...} }}>` |
+| `<ListItemText primaryTypographyProps={{...}}>` | `<ListItemText slotProps={{ primary: {...} }}>` |
+| `<ListItem button onClick=...>` | `<ListItem disablePadding><ListItemButton onClick=...>` |
+| `<Typography fontWeight={600}>` | `<Typography sx={{ fontWeight: 600 }}>` |
+
+特に `Typography` は v9 で `extendSxProp` が外れ、`fontWeight` / `fontFamily` などのシステムプロパティを直接渡すと**スタイルが当たらず不正な HTML 属性として出力される**（`Box` は従来どおりシステムプロパティ対応）。`sx` を使うこと。
+
+`vite.config.js` にあった `@mui/icons-material` → `@mui/icons-material/esm` のエイリアスは、v9 で `esm/` ディレクトリが廃止されたため削除済み。復活させるとビルドが壊れる。
 
 ### Go 側の対応ファイル
 
