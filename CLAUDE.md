@@ -165,6 +165,15 @@ npm run preview   # 本番ビルドのプレビュー
 | `src/MapPoint.jsx` | 店舗データ定義・GPS 座標 ↔ 画像座標の変換ロジック |
 | `src/SVGButton.jsx` | SVG アイコンの汎用ボタン |
 | `src/Window.jsx` | ウィンドウサイズの監視 hook |
+| `eslint.config.js` | ESLint flat config（React 19 / ESLint 10 構成） |
+
+### ESLint 構成
+
+ESLint 10 の flat config (`eslint.config.js`) を使用する。`eslint-plugin-react` は依存する `minimatch@3` → `brace-expansion@1` に脆弱性アドバイザリが残り、かつ ESLint 10 を peer に持たないため採用していない（`eslint-plugin-react-hooks` + `eslint-plugin-react-refresh` + `@eslint/js` で構成）。
+
+`eslint-plugin-react-hooks` v7 で追加された `set-state-in-effect` / `static-components` / `immutability` と `exhaustive-deps` は既存コード（`App.jsx` / `Map.jsx` / `SVGButton.jsx`）が多数抵触するため `off`。該当箇所をリファクタしたら個別に有効化すること。
+
+店舗名・説明文に全角スペース (U+3000) を使うため `no-irregular-whitespace` は `skipStrings` / `skipTemplates` を有効にしている。
 
 ### 座標変換の仕組み
 

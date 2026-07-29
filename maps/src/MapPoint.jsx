@@ -378,6 +378,7 @@ https://www.instagram.com/tebasaki_oomura/`,
             new Rect(585, 470, 40, 70)));
 
 
+        // eslint-disable-next-line no-unused-vars -- 矩形算出用の座標メモとして残す
         p = MapPoint.get(34.9256546, 138.3796935);
         this.shops.push(new Shop("53", "JAH KITCHEN", `ジャマイカンフード、おつまみ`,
             new Rect(630, 490, 75, 60)));
