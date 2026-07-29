@@ -103,7 +103,7 @@ export default function DraftList() {
   return (
     <Box>
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1 }}>
-        <Typography variant="h5" fontWeight={600} sx={{ flexGrow: 1 }}>Drafts</Typography>
+        <Typography variant="h5" sx={{ fontWeight: 600, flexGrow: 1 }}>Drafts</Typography>
         <Button variant="outlined" color="success" component={RouterLink} to="/publish">
           公開ページ
         </Button>

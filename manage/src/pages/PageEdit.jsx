@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useSearchParams, useNavigate, Link as RouterLink } from 'react-router'
 import {
   Box, Paper, Typography, TextField, Select, MenuItem,
@@ -517,7 +517,7 @@ export default function PageEdit() {
             multiline
             rows={contentExpanded ? expandedRows : 4}
             size="small"
-            inputProps={{ style: { fontFamily: 'monospace', fontSize: contentFontSize, whiteSpace: wordWrap ? 'pre-wrap' : 'pre', overflowX: wordWrap ? 'hidden' : 'auto' } }}
+            slotProps={{ htmlInput: { style: { fontFamily: 'monospace', fontSize: contentFontSize, whiteSpace: wordWrap ? 'pre-wrap' : 'pre', overflowX: wordWrap ? 'hidden' : 'auto' } } }}
             sx={{
               '& textarea': {
                 transition: 'height 0.3s ease',
