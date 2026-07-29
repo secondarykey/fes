@@ -2,12 +2,14 @@ import { useEffect, useRef, useState } from 'react';
 import map from './assets/map.jpg'
 import point from './assets/point.png'
 import useWindowSize from './Window';
+// eslint-disable-next-line no-unused-vars -- Point はデバッグ描画で使うため残す
 import MapPoint, { Point } from './MapPoint';
 
 const iconSize = 48;
 
 const Map = (props) => {
 
+  // eslint-disable-next-line no-unused-vars -- setDebug はデバッグ表示切り替え用に残す
   const [debug, setDebug] = useState(false);
 
   const [fit, setFit] = useState(false);
@@ -56,6 +58,7 @@ const Map = (props) => {
    */
   const drawPointer = (img, pointer) => {
 
+    // eslint-disable-next-line no-unused-vars -- centering() 復帰用に残す
     var layer = document.querySelector("#layer");
 
     const current = view.current;
@@ -117,6 +120,7 @@ const Map = (props) => {
           fadeIn = true;
         }
       }
+      // eslint-disable-next-line no-constant-condition -- 停止条件を差し込めるよう残す
       if (true) {
         requestAnimationFrame(fade);
       }
@@ -166,6 +170,7 @@ const Map = (props) => {
     props.onShop(Math.trunc(x), Math.trunc(y));
   }
 
+  // eslint-disable-next-line no-unused-vars -- 現在地センタリングは未有効化のため残す
   const centering = (elm,x) => {
     
     console.log("center",x);
