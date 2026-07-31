@@ -6,6 +6,21 @@ export default defineConfig({
   base: '/manage/',
   // MUI v9 では esm/ ディレクトリが廃止され、パッケージ直下の .mjs が
   // exports 経由で解決されるため、旧来の esm エイリアスは不要。
+  build: {
+    rollupOptions: {
+      output: {
+        // ライブラリごとにチャンクを分けて、アプリ更新時に vendor 側の
+        // ブラウザキャッシュが無効化されないようにする。
+        // @emotion は MUI と初期化順序の依存があるため同一チャンクに置く。
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return
+          if (id.includes('@mui') || id.includes('@emotion')) return 'mui'
+          if (id.includes('@dnd-kit')) return 'dnd-kit'
+          return 'vendor'
+        },
+      },
+    },
+  },
   server: {
     proxy: {
       '/manage/api': {
