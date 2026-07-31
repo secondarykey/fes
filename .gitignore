@@ -13,3 +13,4 @@ app/handler/internal/_assets/environment.json
 app/handler/internal/_assets/maps/*
 .*
 *.exe
+!.gitignore
