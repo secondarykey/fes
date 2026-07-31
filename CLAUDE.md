@@ -98,11 +98,23 @@ cd manage
 npm install
 npm run dev       # 開発サーバー (Vite proxy 不要、Go サーバー経由で動作確認)
 npm run build     # manage/dist/ に出力
-
-# ビルド後、Go embed 用にコピーしてから go build する
-Copy-Item -Recurse -Force manage\dist\* app\handler\internal\_assets\manage\
-cd app; go build ./...
 ```
+
+ビルドから embed 用ディレクトリへの反映までは `go generate` で行う（robocopy を使う `npm run deploy` は廃止した）。
+
+```powershell
+cd app
+go generate ./handler/internal
+go build ./...
+```
+
+`app/handler/internal/manage_spa.go` の `//go:generate` が `app/_cmd/managebuild/main.go` を呼び、次を実行する。
+
+1. `manage/node_modules` が無ければ `npm install`
+2. `manage/` で `npm run build`
+3. `app/handler/internal/_assets/manage/` を削除して `manage/dist/` を丸ごとコピー（旧ファイルが embed に残らないようにするため）
+
+`-skip-build` を付けるとビルドを行わず既存の `dist/` の同期だけを行う。`-src` / `-dst` でパスを変更できる（既定値は `go generate` の実行ディレクトリ = `app/handler/internal` 基準）。
 
 ### 構成
 
