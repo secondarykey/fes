@@ -8,6 +8,12 @@ import (
 	"strings"
 )
 
+// 管理画面 SPA (manage/) のビルドと _assets/manage への同期。
+//
+//	go generate ./handler/internal
+//
+//go:generate go run ../../_cmd/managebuild/main.go
+
 //go:embed _assets/manage
 var embManageSPA embed.FS
 var manageSPAFs fs.FS
