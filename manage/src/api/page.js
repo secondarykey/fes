@@ -45,8 +45,8 @@ export const sequencePages = (key, items) =>
 export const sortPages = (key) =>
   apiFetch(`/page/${key}/sort`, { method: 'POST' })
 
-export const movePage = (key, targetId) =>
-  apiFetch(`/page/${key}/move`, { method: 'POST', body: JSON.stringify({ targetId }) })
+export const movePages = (ids, targetId) =>
+  apiFetch('/page/move', { method: 'POST', body: JSON.stringify({ ids, targetId }) })
 
 export const getPageListHtml = (parentId) =>
   apiFetch(`/tool/page-list?parent=${encodeURIComponent(parentId)}`)

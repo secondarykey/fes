@@ -33,7 +33,7 @@ import {
   arrayMove,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { getPage, getChildren, newPage, sequencePages, movePage, deletePages, getPageListHtml } from '../api/page'
+import { getPage, getChildren, newPage, sequencePages, movePages, deletePages, getPageListHtml } from '../api/page'
 import { addDraftPages, getCurrentDraft } from '../api/draft'
 
 SortableRow.propTypes = {
@@ -236,9 +236,10 @@ export default function PageChildren() {
 
   const handleMove = async () => {
     setMoveDialog(false)
+    const ids = [...selected]
     try {
-      await Promise.all([...selected].map(id => movePage(id, moveTargetId)))
-      showSnack(`${selected.size} 件移動しました`)
+      await movePages(ids, moveTargetId.trim())
+      showSnack(`${ids.length} 件移動しました`)
       setMoveTargetId('Trash')
       await load()
     } catch (e) {
