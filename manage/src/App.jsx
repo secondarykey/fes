@@ -1,21 +1,34 @@
-import { useMemo, useState } from 'react'
+import { lazy, Suspense, useMemo, useState } from 'react'
 import { createTheme, ThemeProvider, useMediaQuery } from '@mui/material'
+import Box from '@mui/material/Box'
+import CircularProgress from '@mui/material/CircularProgress'
 import CssBaseline from '@mui/material/CssBaseline'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router'
 import { ColorModeContext } from './context/ColorMode'
 import Layout from './components/Layout'
-import PageList from './pages/PageList'
-import PageEdit from './pages/PageEdit'
-import FileList from './pages/FileList'
-import TemplateList from './pages/TemplateList'
-import TemplateEdit from './pages/TemplateEdit'
-import SiteEdit from './pages/SiteEdit'
-import VariableList from './pages/VariableList'
-import VariableEdit from './pages/VariableEdit'
-import DraftList from './pages/DraftList'
-import DraftEdit from './pages/DraftEdit'
-import PublishPage from './pages/PublishPage'
-import PageChildren from './pages/PageChildren'
+
+// 各ページはルート単位で遅延ロードし、初回のチャンクサイズを抑える。
+// 特に DraftEdit / PageChildren は @dnd-kit を引き込むため分離の効果が大きい。
+const PageList = lazy(() => import('./pages/PageList'))
+const PageEdit = lazy(() => import('./pages/PageEdit'))
+const FileList = lazy(() => import('./pages/FileList'))
+const TemplateList = lazy(() => import('./pages/TemplateList'))
+const TemplateEdit = lazy(() => import('./pages/TemplateEdit'))
+const SiteEdit = lazy(() => import('./pages/SiteEdit'))
+const VariableList = lazy(() => import('./pages/VariableList'))
+const VariableEdit = lazy(() => import('./pages/VariableEdit'))
+const DraftList = lazy(() => import('./pages/DraftList'))
+const DraftEdit = lazy(() => import('./pages/DraftEdit'))
+const PublishPage = lazy(() => import('./pages/PublishPage'))
+const PageChildren = lazy(() => import('./pages/PageChildren'))
+
+function PageFallback() {
+  return (
+    <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+      <CircularProgress size={32} />
+    </Box>
+  )
+}
 
 const STORAGE_KEY = 'fes-color-mode'
 
@@ -67,25 +80,27 @@ export default function App() {
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <BrowserRouter basename="/manage">
-          <Routes>
-            <Route path="/" element={<Layout />}>
-              <Route index element={<Navigate to="/page" replace />} />
-              <Route path="page" element={<PageList />} />
-              <Route path="page/new" element={<PageEdit />} />
-              <Route path="page/:key/children" element={<PageChildren />} />
-              <Route path="page/:key" element={<PageEdit />} />
-              <Route path="file" element={<FileList />} />
-              <Route path="template" element={<TemplateList />} />
-              <Route path="template/new" element={<TemplateEdit />} />
-              <Route path="template/:key" element={<TemplateEdit />} />
-              <Route path="site" element={<SiteEdit />} />
-              <Route path="variable" element={<VariableList />} />
-              <Route path="variable/:key" element={<VariableEdit />} />
-              <Route path="draft" element={<DraftList />} />
-              <Route path="draft/:key" element={<DraftEdit />} />
-              <Route path="publish" element={<PublishPage />} />
-            </Route>
-          </Routes>
+          <Suspense fallback={<PageFallback />}>
+            <Routes>
+              <Route path="/" element={<Layout />}>
+                <Route index element={<Navigate to="/page" replace />} />
+                <Route path="page" element={<PageList />} />
+                <Route path="page/new" element={<PageEdit />} />
+                <Route path="page/:key/children" element={<PageChildren />} />
+                <Route path="page/:key" element={<PageEdit />} />
+                <Route path="file" element={<FileList />} />
+                <Route path="template" element={<TemplateList />} />
+                <Route path="template/new" element={<TemplateEdit />} />
+                <Route path="template/:key" element={<TemplateEdit />} />
+                <Route path="site" element={<SiteEdit />} />
+                <Route path="variable" element={<VariableList />} />
+                <Route path="variable/:key" element={<VariableEdit />} />
+                <Route path="draft" element={<DraftList />} />
+                <Route path="draft/:key" element={<DraftEdit />} />
+                <Route path="publish" element={<PublishPage />} />
+              </Route>
+            </Routes>
+          </Suspense>
         </BrowserRouter>
       </ThemeProvider>
     </ColorModeContext.Provider>
