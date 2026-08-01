@@ -42,12 +42,13 @@ func apiSiteClean(w http.ResponseWriter, r *http.Request) {
 	defer dao.Close()
 
 	result := struct {
-		DeletedHTMLs   []string `json:"deletedHtmls"`
-		DeletedImages  []string `json:"deletedImages"`
-		Errors         []string `json:"errors"`
+		DeletedHTMLs  []string `json:"deletedHtmls"`
+		DisabledHTMLs []string `json:"disabledHtmls"`
+		DeletedImages []string `json:"deletedImages"`
+		Errors        []string `json:"errors"`
 	}{}
 
-	// 孤立HTML削除
+	// 孤立HTML・無効化済みページの残存HTML削除
 	htmlIDs, err := dao.GetHTMLs(ctx)
 	if err != nil {
 		apiError(w, err.Error(), 500)
@@ -60,6 +61,15 @@ func apiSiteClean(w http.ResponseWriter, r *http.Request) {
 				result.Errors = append(result.Errors, fmt.Sprintf("HTML[%s]: %v", id, err))
 			} else {
 				result.DeletedHTMLs = append(result.DeletedHTMLs, id)
+			}
+			continue
+		}
+		// 無効化より前に公開されたまま残っているHTML
+		if page.Deleted {
+			if err := dao.RemoveHTML(ctx, id); err != nil {
+				result.Errors = append(result.Errors, fmt.Sprintf("HTML[%s]: %v", id, err))
+			} else {
+				result.DisabledHTMLs = append(result.DisabledHTMLs, id)
 			}
 		}
 	}

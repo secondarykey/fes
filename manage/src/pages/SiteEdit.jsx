@@ -426,7 +426,7 @@ export default function SiteEdit() {
           <Card variant="outlined" sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
             <CardContent sx={{ flexGrow: 1 }}>
               <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 0.5 }}>サイトクリーン</Typography>
-              <Typography variant="body2" color="text.secondary">ページが存在しない孤立した HTML・ページ画像を検出して削除します。</Typography>
+              <Typography variant="body2" color="text.secondary">孤立した HTML・ページ画像と、無効なページに残っている公開 HTML を検出して削除します。</Typography>
             </CardContent>
             <Divider />
             <CardActions sx={{ p: 1.5 }}>
@@ -484,8 +484,8 @@ export default function SiteEdit() {
       {restoreError && <Alert severity="error" sx={{ mt: 2 }} onClose={() => setRestoreError(null)}>{restoreError}</Alert>}
       {cleanResult && (
         <Alert severity="success" sx={{ mt: 2 }} onClose={() => setCleanResult(null)}>
-          HTML削除: {cleanResult.deletedHtmls?.length ?? 0} 件 / 画像削除: {cleanResult.deletedImages?.length ?? 0} 件
-          {(cleanResult.deletedHtmls?.length === 0 && cleanResult.deletedImages?.length === 0) && ' — 孤立データはありませんでした。'}
+          孤立HTML削除: {cleanResult.deletedHtmls?.length ?? 0} 件 / 無効ページのHTML削除: {cleanResult.disabledHtmls?.length ?? 0} 件 / 画像削除: {cleanResult.deletedImages?.length ?? 0} 件
+          {!cleanResult.deletedHtmls?.length && !cleanResult.disabledHtmls?.length && !cleanResult.deletedImages?.length && ' — 削除対象はありませんでした。'}
         </Alert>
       )}
       {cleanError && <Alert severity="error" sx={{ mt: 2 }} onClose={() => setCleanError(null)}>{cleanError}</Alert>}
@@ -499,7 +499,7 @@ export default function SiteEdit() {
       {/* クリーン確認 */}
       <Dialog open={cleanDialog} onClose={() => setCleanDialog(false)}>
         <DialogTitle>サイトクリーンを実行しますか？</DialogTitle>
-        <DialogContent><DialogContentText>孤立した HTML・ページ画像を削除します。取り消せません。</DialogContentText></DialogContent>
+        <DialogContent><DialogContentText>孤立した HTML・ページ画像と、無効なページに残っている公開 HTML を削除します。対象ページは公開側で 404 になります。取り消せません。</DialogContentText></DialogContent>
         <DialogActions>
           <Button onClick={() => setCleanDialog(false)}>キャンセル</Button>
           <Button onClick={handleClean} color="warning" variant="contained">実行</Button>
