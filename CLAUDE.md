@@ -60,6 +60,19 @@ Core kinds: `Page` / `PageData`, `HTML` (cached render), `File` / `FileData`, `T
 
 Pages form a parent-child tree. `HTML` stores pre-rendered output to avoid re-rendering on each request.
 
+### ページの無効化と公開HTML
+
+公開側の `pageView()` は `HTML` エンティティのみを参照し、`Page.Deleted` を見ない。そのため `Deleted` を立てるだけでは公開ページが残り続ける。
+
+これを避けるため、ページを無効化する経路では `HTML` を同時に削除する。
+
+- `PutPage()` — ページ編集画面の保存（`Deleted=true` で保存した場合）
+- `PutPageSequence()` — 子ページ管理の「有効」スイッチ OFF ＋保存
+
+いずれも `Page.Publish` / `Republish` をゼロ値に戻す。以前は「公開ページごと消えてしまう」ことを懸念して削除を見送っていた（`PutPage()` に TODO として残っていた）が、無効化＝公開停止という運用に合わせて削除する方針に変更した。一時的に隠して後で戻す場合は、再度有効化してから公開し直す必要がある。
+
+この変更以前に無効化されたページには `HTML` が残っている。Site Settings の「サイトクリーン」（`apiSiteClean`）が孤立 HTML とあわせてこれらを削除する。
+
 ### Embedded assets
 
 `app/handler/internal/_assets/` is embedded with `//go:embed`. It contains:

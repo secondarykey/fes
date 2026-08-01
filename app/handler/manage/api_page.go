@@ -25,7 +25,8 @@ func registerPageAPI(r *mux.Router) {
 	r.HandleFunc("/page/{key}/image", apiDeletePageImage).Methods("DELETE")
 	r.HandleFunc("/page/{key}/sequence", apiPageSequence).Methods("POST")
 	r.HandleFunc("/page/{key}/sort", apiPageSort).Methods("POST")
-	r.HandleFunc("/page/{key}/move", apiPageMove).Methods("POST")
+	// /page/move は /page/{key} (POST) より先に登録する
+	r.HandleFunc("/page/move", apiPageMove).Methods("POST")
 	r.HandleFunc("/page/{key}", apiGetPage).Methods("GET")
 	r.HandleFunc("/page/{key}", apiUpdatePage).Methods("POST")
 	r.HandleFunc("/page/{key}", apiDeletePage).Methods("DELETE")
@@ -453,13 +454,13 @@ func apiPageSort(w http.ResponseWriter, r *http.Request) {
 }
 
 type apiMoveReq struct {
-	TargetID string `json:"targetId"`
+	IDs      []string `json:"ids"`
+	TargetID string   `json:"targetId"`
 }
 
 func apiPageMove(w http.ResponseWriter, r *http.Request) {
-	id := mux.Vars(r)["key"]
 	var req apiMoveReq
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil || len(req.IDs) == 0 || req.TargetID == "" {
 		apiError(w, "invalid request body", 400)
 		return
 	}
@@ -467,11 +468,11 @@ func apiPageMove(w http.ResponseWriter, r *http.Request) {
 	dao := datastore.NewDao()
 	defer dao.Close()
 
-	if err := dao.MovePage(ctx, id, req.TargetID); err != nil {
+	if err := dao.MovePages(ctx, req.IDs, req.TargetID); err != nil {
 		apiError(w, err.Error(), 500)
 		return
 	}
-	apiJSON(w, map[string]string{"status": "ok"})
+	apiJSON(w, map[string]interface{}{"status": "moved", "count": len(req.IDs)})
 }
 
 type apiImageRes struct {

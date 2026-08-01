@@ -132,7 +132,7 @@ export default function ToolsPage() {
         <Grid size={{ xs: 12, sm: 6, md: 4 }}>
           <ToolCard
             title="サイトクリーン"
-            description="ページが存在しない孤立した HTML・ページ画像を検出して削除します。"
+            description="孤立した HTML・ページ画像と、無効なページに残っている公開 HTML を検出して削除します。"
             actions={
               <Button
                 size="small"
@@ -228,15 +228,15 @@ export default function ToolsPage() {
       {cleanResult && (
         <Alert severity="success" sx={{ mt: 3 }} onClose={() => setCleanResult(null)}>
           <Typography variant="body2" sx={{ mb: 0.5 }}>
-            HTML削除: {cleanResult.deletedHtmls?.length ?? 0} 件 / 画像削除: {cleanResult.deletedImages?.length ?? 0} 件
+            孤立HTML削除: {cleanResult.deletedHtmls?.length ?? 0} 件 / 無効ページのHTML削除: {cleanResult.disabledHtmls?.length ?? 0} 件 / 画像削除: {cleanResult.deletedImages?.length ?? 0} 件
           </Typography>
           {cleanResult.errors?.length > 0 && (
             <Typography variant="body2" color="error.main">
               エラー: {cleanResult.errors.join(', ')}
             </Typography>
           )}
-          {(cleanResult.deletedHtmls?.length === 0 && cleanResult.deletedImages?.length === 0) && (
-            <Typography variant="body2">孤立データはありませんでした。</Typography>
+          {!cleanResult.deletedHtmls?.length && !cleanResult.disabledHtmls?.length && !cleanResult.deletedImages?.length && (
+            <Typography variant="body2">削除対象はありませんでした。</Typography>
           )}
         </Alert>
       )}
@@ -265,7 +265,7 @@ export default function ToolsPage() {
         <DialogTitle>サイトクリーンを実行しますか？</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            ページが存在しない孤立した HTML エンティティとページ画像を検出して削除します。この操作は取り消せません。
+            ページが存在しない孤立した HTML エンティティとページ画像に加え、無効なページに残っている公開 HTML を削除します。対象ページは公開側で 404 になります。この操作は取り消せません。
           </DialogContentText>
         </DialogContent>
         <DialogActions>

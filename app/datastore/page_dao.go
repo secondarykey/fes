@@ -8,6 +8,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	"golang.org/x/xerrors"
 	"google.golang.org/api/iterator"
@@ -173,6 +174,12 @@ func (dao *Dao) PutPage(ctx context.Context, p *PageSet) error {
 		return xerrors.Errorf("createClient() error: %w", err)
 	}
 
+	//無効化されたページは公開済みHTMLを削除する（公開ページごと消える）
+	if p.Page.Deleted {
+		p.Page.Publish = time.Time{}
+		p.Page.Republish = time.Time{}
+	}
+
 	_, err = cli.RunInTransaction(ctx, func(tx *datastore.Transaction) error {
 
 		_, err = tx.Put(p.Page.GetKey(), p.Page)
@@ -193,9 +200,12 @@ func (dao *Dao) PutPage(ctx context.Context, p *PageSet) error {
 			}
 		}
 
-		//TODO Deletedにされている場合、HTMLを検索して削除
-		//     このタイミングで削除を行うと、公開ページごと削除されてしまう。
-		//     公開ページを更新時に削除する仕組みか、テスト中に表示できる仕組みを他で用意する
+		//存在しないキーの削除はエラーにならない
+		if p.Page.Deleted {
+			if err := tx.Delete(GetHTMLKey(id)); err != nil {
+				return xerrors.Errorf("HTML Delete() error: %w", err)
+			}
+		}
 		return nil
 	})
 
@@ -440,18 +450,42 @@ func (dao *Dao) PutPageSequence(ctx context.Context, ids string, enables string,
 		page.SetTargetVersion(versions[idx])
 	}
 
+	//無効化されたページは公開済みHTMLを削除する（公開ページごと消える）
+	htmlKeys := make([]*datastore.Key, 0, len(keys))
 	for idx, page := range pages {
 		page.Seq = idx + 1
 		page.Deleted = deleteds[idx]
+		if page.Deleted {
+			htmlKeys = append(htmlKeys, GetHTMLKey(idArray[idx]))
+			page.Publish = time.Time{}
+			page.Republish = time.Time{}
+		}
 	}
+
 	_, err = cli.PutMulti(ctx, keys, pages)
 	if err != nil {
 		return xerrors.Errorf("page PutMulti() error: %w", err)
 	}
+
+	//存在しないキーの削除はエラーにならない
+	if len(htmlKeys) > 0 {
+		if err := cli.DeleteMulti(ctx, htmlKeys); err != nil {
+			return xerrors.Errorf("HTML DeleteMulti() error: %w", err)
+		}
+	}
 	return nil
 }
 
-func (dao *Dao) MovePage(ctx context.Context, id string, targetId string) error {
+// ページツリーを辿る際の最大深度（循環していた場合の保険）
+const maxPageDepth = 100
+
+// MovePages は ids のページ自身を targetId のページ配下へ移動する。
+// 並び順は移動先の末尾に追加する。
+func (dao *Dao) MovePages(ctx context.Context, ids []string, targetId string) error {
+
+	if len(ids) == 0 {
+		return nil
+	}
 
 	cli, err := dao.createClient(ctx)
 	if err != nil {
@@ -459,38 +493,89 @@ func (dao *Dao) MovePage(ctx context.Context, id string, targetId string) error 
 	}
 
 	//新しい親を検索
-	root, err := dao.SelectPage(ctx, targetId, -1)
+	parent, err := dao.SelectPage(ctx, targetId, -1)
 	if err != nil {
 		return xerrors.Errorf("SelectPage(new parent page) error: %w", err)
 	}
-
-	if root == nil {
-		return xerrors.Errorf("SelectPage(new parent page) error: %w", err)
+	if parent == nil {
+		return fmt.Errorf("move target page not found[%s]", targetId)
 	}
 
-	//IDを親に持つページを検索
-	children, _, err := dao.SelectChildrenPage(ctx, id, NoLimitCursor, -1, true)
+	//移動対象のページを検索
+	pages := make([]*Page, 0, len(ids))
+	for _, id := range ids {
+		if id == targetId {
+			return fmt.Errorf("cannot move a page into itself[%s]", id)
+		}
 
-	fmt.Println("ID", id)
-	fmt.Println("length", len(children))
+		page, err := dao.SelectPage(ctx, id, -1)
+		if err != nil {
+			return xerrors.Errorf("SelectPage(move page) error: %w", err)
+		}
+		if page == nil {
+			return fmt.Errorf("page not found[%s]", id)
+		}
+
+		//移動先が自身の子孫の場合、ツリーが循環するため移動できない
+		loop, err := dao.hasPageAncestor(ctx, parent, id)
+		if err != nil {
+			return xerrors.Errorf("hasPageAncestor() error: %w", err)
+		}
+		if loop {
+			return fmt.Errorf("cannot move a page into its own descendant[%s]", id)
+		}
+
+		pages = append(pages, page)
+	}
+
+	//移動先の末尾へ並べるため現在の最大 Seq を取得
+	children, _, err := dao.SelectChildrenPage(ctx, targetId, NoLimitCursor, -1, true)
+	if err != nil {
+		return xerrors.Errorf("SelectChildrenPage() error: %w", err)
+	}
+	maxSeq := 0
+	for _, c := range children {
+		if c.Seq > maxSeq {
+			maxSeq = c.Seq
+		}
+	}
 
 	//TODO 排他チェック
 	_, err = cli.RunInTransaction(ctx, func(tx *datastore.Transaction) error {
-		for _, p := range children {
+		for idx, p := range pages {
 			p.Parent = targetId
-			_, err = tx.Put(p.GetKey(), &p)
-			if err != nil {
-				return xerrors.Errorf("File Put() error: %w", err)
+			p.Seq = maxSeq + idx + 1
+			if err := Put(tx, p); err != nil {
+				return xerrors.Errorf("Page Put() error: %w", err)
 			}
 		}
 		return nil
 	})
 
 	if err != nil {
-		return xerrors.Errorf("children page update error: %w", err)
+		return xerrors.Errorf("move page transaction error: %w", err)
 	}
 
 	return nil
+}
+
+// hasPageAncestor は page 自身、またはその祖先に id のページが存在するかを返す。
+func (dao *Dao) hasPageAncestor(ctx context.Context, page *Page, id string) (bool, error) {
+	cur := page
+	for i := 0; cur != nil && i < maxPageDepth; i++ {
+		if key := cur.GetKey(); key != nil && key.Name == id {
+			return true, nil
+		}
+		if cur.Parent == "" {
+			return false, nil
+		}
+		p, err := dao.SelectPage(ctx, cur.Parent, -1)
+		if err != nil {
+			return false, xerrors.Errorf("SelectPage(ancestor) error: %w", err)
+		}
+		cur = p
+	}
+	return false, nil
 }
 
 func (dao *Dao) SortPage(ctx context.Context, id string) error {
