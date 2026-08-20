@@ -218,8 +218,8 @@ export default function PageEdit() {
     requestAnimationFrame(() => {
       el.focus()
       el.scrollTop = scrollTop
-      const pos = selectionStart + wrapped.length
-      el.setSelectionRange(pos, pos)
+      // 挿入したタグを含めて選択を維持し、続けて操作できるようにする
+      el.setSelectionRange(selectionStart, selectionStart + wrapped.length)
     })
   }
 
@@ -237,8 +237,8 @@ export default function PageEdit() {
     requestAnimationFrame(() => {
       el.focus()
       el.scrollTop = scrollTop
-      const pos = selectionStart + replaced.length
-      el.setSelectionRange(pos, pos)
+      // 挿入したタグを含めて選択を維持し、続けて操作できるようにする
+      el.setSelectionRange(selectionStart, selectionStart + replaced.length)
     })
   }
 
