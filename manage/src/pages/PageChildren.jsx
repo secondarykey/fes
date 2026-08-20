@@ -21,6 +21,7 @@ import ListIcon from '@mui/icons-material/List'
 import AddIcon from '@mui/icons-material/Add'
 import SearchIcon from '@mui/icons-material/Search'
 import ClearIcon from '@mui/icons-material/Clear'
+import PublishIcon from '@mui/icons-material/Publish'
 import {
   DndContext,
   closestCenter,
@@ -37,6 +38,7 @@ import {
 import { CSS } from '@dnd-kit/utilities'
 import { getPage, getChildren, newPage, sequencePages, movePages, deletePages, getPageListHtml } from '../api/page'
 import { addDraftPages, getCurrentDraft } from '../api/draft'
+import { publishPages } from '../api/template'
 
 SortableRow.propTypes = {
   item: PropTypes.object.isRequired,
@@ -138,6 +140,7 @@ export default function PageChildren() {
   const [listLoading, setListLoading] = useState(false)
   const [snack, setSnack] = useState({ open: false, message: '', severity: 'success' })
   const [draftRegistering, setDraftRegistering] = useState(false)
+  const [publishing, setPublishing] = useState(false)
 
   const sensors = useSensors(useSensor(PointerSensor))
 
@@ -313,6 +316,19 @@ export default function PageChildren() {
     }
   }
 
+  const handlePublish = async () => {
+    setPublishing(true)
+    const ids = [...selected]
+    try {
+      await publishPages(ids)
+      showSnack(`${ids.length} 件を公開しました`)
+    } catch (e) {
+      showSnack(e.message, 'error')
+    } finally {
+      setPublishing(false)
+    }
+  }
+
   const handleDelete = async () => {
     setDeleteDialog(false)
     setDeleting(true)
@@ -474,6 +490,30 @@ export default function PageChildren() {
                 {filtering && selected.size !== visibleSelectedCount && `（表示中 ${visibleSelectedCount} 件）`}
               </Typography>
               {key !== 'Trash' && (
+                <Button
+                  variant="outlined"
+                  color="info"
+                  disabled={selected.size === 0 || draftRegistering}
+                  onClick={handleAddToDraft}
+                >
+                  ドラフトに登録
+                </Button>
+              )}
+              {key !== 'Trash' && (
+                <Button
+                  variant="outlined"
+                  color="success"
+                  startIcon={publishing ? <CircularProgress size={14} /> : <PublishIcon />}
+                  disabled={selected.size === 0 || publishing}
+                  onClick={handlePublish}
+                >
+                  {publishing ? '公開中...' : '公開'}
+                </Button>
+              )}
+            </Box>
+
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 1.5, flexWrap: 'wrap' }}>
+              {key !== 'Trash' && (
                 <>
                   <TextField
                     label="移動先ページID"
@@ -503,16 +543,6 @@ export default function PageChildren() {
               >
                 削除
               </Button>
-              {key !== 'Trash' && (
-                <Button
-                  variant="outlined"
-                  color="info"
-                  disabled={selected.size === 0 || draftRegistering}
-                  onClick={handleAddToDraft}
-                >
-                  ドラフトに登録
-                </Button>
-              )}
             </Box>
           </>
         )}
