@@ -14,6 +14,7 @@ import UnpublishedIcon from '@mui/icons-material/Unpublished'
 import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import PreviewIcon from '@mui/icons-material/Preview'
 import AccountTreeIcon from '@mui/icons-material/AccountTree'
+import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import BookmarkAddIcon from '@mui/icons-material/BookmarkAdd'
 import AddIcon from '@mui/icons-material/Add'
 import ImageIcon from '@mui/icons-material/Image'
@@ -470,7 +471,19 @@ export default function PageEdit() {
         {/* 子ページ管理 + 保存/公開 */}
         <Box ref={actionsBarRef} sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
           {!isNew ? (
-            <Box sx={{ display: 'flex', gap: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              {form.parentId && (
+                <Tooltip title="親ページの子ページ管理へ戻る">
+                  <IconButton
+                    size="small"
+                    component={RouterLink}
+                    to={`/page/${form.parentId}/children`}
+                    aria-label="親ページの子ページ管理へ戻る"
+                  >
+                    <ArrowBackIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+              )}
               <Button
                 variant="text"
                 size="small"
