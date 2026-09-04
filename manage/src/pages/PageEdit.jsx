@@ -22,6 +22,7 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore'
 import UnfoldLessIcon from '@mui/icons-material/UnfoldLess'
 import WrapTextIcon from '@mui/icons-material/WrapText'
+import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import TextIncreaseIcon from '@mui/icons-material/TextIncrease'
 import TextDecreaseIcon from '@mui/icons-material/TextDecrease'
 import { useRef } from 'react'
@@ -161,6 +162,27 @@ export default function PageEdit() {
       showSnack('HTMLを公開しました')
       await Promise.all([refreshPage(), refreshImage(key)])
     } catch (e) { showSnack(e.message, 'error') }
+  }
+
+  const handleCopyContent = async () => {
+    const text = form.content ?? ''
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text)
+      } else {
+        //http 経由など secure context でない場合のフォールバック
+        const textarea = contentRef.current?.querySelector('textarea')
+        if (!textarea) throw new Error('textarea not found')
+        const { selectionStart, selectionEnd } = textarea
+        textarea.select()
+        const ok = document.execCommand('copy')
+        textarea.setSelectionRange(selectionStart, selectionEnd)
+        if (!ok) throw new Error('execCommand copy failed')
+      }
+      showSnack('コンテンツをコピーしました')
+    } catch {
+      showSnack('コピーに失敗しました', 'error')
+    }
   }
 
   const handleImageSelect = async (e) => {
@@ -641,6 +663,22 @@ export default function PageEdit() {
               }}
             >
               <WrapTextIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="コンテンツをコピー">
+            <IconButton
+              size="small"
+              onClick={handleCopyContent}
+              sx={{
+                position: 'absolute',
+                bottom: 8,
+                right: 8,
+                bgcolor: 'background.paper',
+                opacity: 0.7,
+                '&:hover': { opacity: 1, bgcolor: 'background.paper' },
+              }}
+            >
+              <ContentCopyIcon fontSize="small" />
             </IconButton>
           </Tooltip>
         </Box>
