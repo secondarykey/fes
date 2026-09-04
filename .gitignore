@@ -14,3 +14,6 @@ app/handler/internal/_assets/maps/*
 .*
 *.exe
 !.gitignore
+
+app/handler/internal/_assets/manage/assets
+manage/dist/assets
