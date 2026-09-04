@@ -103,6 +103,12 @@ func PutHTMLs(ctx context.Context, infos ...*PageInfo) error {
 		if err != nil {
 			return xerrors.Errorf("datastore.PutPages(): %w", err)
 		}
+
+		//親ページを同時に公開する場合、子ページ検索が更新前の値を返すことが
+		//ある為、更新済みのページを保持して描画時に上書きする
+		for _, page := range up {
+			gen.published[page.Key.Name] = page
+		}
 	}
 
 	htmls, err := gen.createHTMLs(ctx, false, nil, ids...)
@@ -174,6 +180,7 @@ func (gen *Generator) createHTMLDto(ctx context.Context, page *datastore.Page, p
 	if err != nil {
 		return nil, xerrors.Errorf("SelectChildPages() error: %w", err)
 	}
+	gen.applyPublished(children)
 	dto.Children = children
 
 	if page.Parent != "" {
@@ -252,13 +259,39 @@ func (gen *Generator) createTemplate(ctx context.Context, page *datastore.Page, 
 type Generator struct {
 	dao      *datastore.Dao
 	tmpCache map[string]string
+	//同一バッチで公開日を更新したページ (ID -> Page)
+	published map[string]*datastore.Page
 }
 
 func newGenerator() *Generator {
 	var gen Generator
 	gen.dao = datastore.NewDao()
 	gen.tmpCache = make(map[string]string)
+	gen.published = make(map[string]*datastore.Page)
 	return &gen
+}
+
+// applyPublished は同一バッチで更新した公開日を子ページ一覧に反映する。
+// 子ページ検索は祖先指定のないクエリの為、PutPages() の直後でも
+// 更新前の値が返ることがあり、親ページの HTML に古い公開日が焼き込まれる。
+func (gen *Generator) applyPublished(pages []datastore.Page) {
+	if len(gen.published) == 0 {
+		return
+	}
+	for idx := range pages {
+		key := pages[idx].Key
+		if key == nil {
+			continue
+		}
+		up, ok := gen.published[key.Name]
+		if !ok {
+			continue
+		}
+		pages[idx].Publish = up.Publish
+		pages[idx].Republish = up.Republish
+		pages[idx].Version = up.Version
+		pages[idx].UpdatedAt = up.UpdatedAt
+	}
 }
 
 func (gen *Generator) createHTMLs(ctx context.Context, mng bool, ve *ErrorDto, ids ...string) ([]*datastore.HTML, error) {
