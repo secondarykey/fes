@@ -84,12 +84,15 @@ func PutHTMLs(ctx context.Context, infos ...*PageInfo) error {
 
 	now := time.Now()
 	up := make([]*datastore.Page, 0)
-	for _, page := range ps {
+	//ps は ids と同じ並びで返る為、infos と添字が対応する
+	for idx, page := range ps {
 		//存在しないページ(欠損)はスキップ
 		if page.Key == nil {
 			continue
 		}
-		if page.Publish.IsZero() {
+		//公開日は新規公開時のみ設定する。
+		//「公開日を更新」が指定された場合は打ち直して最新にする
+		if page.Publish.IsZero() || infos[idx].Publish {
 			page.Publish = now
 		}
 		page.Republish = now

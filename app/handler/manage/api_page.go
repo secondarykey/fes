@@ -341,7 +341,17 @@ func apiDeletePage(w http.ResponseWriter, r *http.Request) {
 
 func apiPublishPage(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["key"]
-	if err := logic.PutHTMLs(r.Context(), logic.NewPageInfo(id)); err != nil {
+
+	//ボディは任意。未指定・不正時は公開日を更新しない
+	var req struct {
+		PublishUpdate bool `json:"publishUpdate"`
+	}
+	_ = json.NewDecoder(r.Body).Decode(&req)
+
+	info := logic.NewPageInfo(id)
+	info.Publish = req.PublishUpdate
+
+	if err := logic.PutHTMLs(r.Context(), info); err != nil {
 		apiError(w, err.Error(), 500)
 		return
 	}
@@ -369,13 +379,20 @@ func apiDeletePages(w http.ResponseWriter, r *http.Request) {
 
 func apiPublishPages(w http.ResponseWriter, r *http.Request) {
 	var req struct {
-		IDs []string `json:"ids"`
+		IDs           []string `json:"ids"`
+		PublishUpdate bool     `json:"publishUpdate"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil || len(req.IDs) == 0 {
 		apiError(w, "invalid request body", 400)
 		return
 	}
-	if err := logic.PutHTMLs(r.Context(), logic.NewPageInfos(req.IDs...)...); err != nil {
+
+	infos := logic.NewPageInfos(req.IDs...)
+	for _, info := range infos {
+		info.Publish = req.PublishUpdate
+	}
+
+	if err := logic.PutHTMLs(r.Context(), infos...); err != nil {
 		apiError(w, err.Error(), 500)
 		return
 	}

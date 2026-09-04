@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useSearchParams, useNavigate, Link as RouterLink } from 'react-router'
 import {
   Box, Paper, Typography, TextField, Select, MenuItem,
-  FormControl, InputLabel, FormControlLabel, Switch,
+  FormControl, InputLabel, FormControlLabel, Switch, Checkbox,
   Button, Breadcrumbs, Link, Divider, CircularProgress,
   Snackbar, Alert, Chip,
   Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions,
@@ -58,6 +58,8 @@ export default function PageEdit() {
   const [data, setData] = useState(null)
   const [form, setForm] = useState({})
   const [saving, setSaving] = useState(false)
+  //公開日の打ち直しは既定でオフ
+  const [publishUpdate, setPublishUpdate] = useState(false)
   const [deleteDialog, setDeleteDialog] = useState(false)
   const [disableDialog, setDisableDialog] = useState(false)
   const [image, setImage] = useState(null)
@@ -155,7 +157,7 @@ export default function PageEdit() {
 
   const handlePublish = async () => {
     try {
-      await publishPage(key)
+      await publishPage(key, publishUpdate)
       showSnack('HTMLを公開しました')
       await Promise.all([refreshPage(), refreshImage(key)])
     } catch (e) { showSnack(e.message, 'error') }
@@ -497,15 +499,30 @@ export default function PageEdit() {
           ) : <Box />}
           <Box sx={{ ml: 'auto', display: 'flex', gap: 1 }}>
             {!isNew && data.page.canPublish && (
-              <Button
-                variant="outlined"
-                size="small"
-                color="success"
-                startIcon={<PublishIcon />}
-                onClick={handlePublish}
-              >
-                公開
-              </Button>
+              <>
+                <Tooltip title="オンにすると公開日を現在時刻で打ち直します。オフの場合は最終公開日のみ更新されます">
+                  <FormControlLabel
+                    sx={{ mr: 0 }}
+                    control={
+                      <Checkbox
+                        size="small"
+                        checked={publishUpdate}
+                        onChange={e => setPublishUpdate(e.target.checked)}
+                      />
+                    }
+                    label={<Typography variant="body2">公開日を更新</Typography>}
+                  />
+                </Tooltip>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  color="success"
+                  startIcon={<PublishIcon />}
+                  onClick={handlePublish}
+                >
+                  公開
+                </Button>
+              </>
             )}
             <Button
               variant="contained"

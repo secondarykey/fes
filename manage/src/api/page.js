@@ -33,8 +33,11 @@ export const deletePage = (key) =>
 export const deletePages = (ids) =>
   apiFetch('/page/', { method: 'DELETE', body: JSON.stringify({ ids }) })
 
-export const publishPage = (key) =>
-  apiFetch(`/html/publish/${key}`, { method: 'POST' })
+export const publishPage = (key, publishUpdate = false) =>
+  apiFetch(`/html/publish/${key}`, {
+    method: 'POST',
+    body: JSON.stringify({ publishUpdate }),
+  })
 
 export const unpublishPage = (key) =>
   apiFetch(`/html/unpublish/${key}`, { method: 'POST' })

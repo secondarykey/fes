@@ -6,7 +6,7 @@ import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   Switch, Button, Tooltip, Snackbar, Alert,
   Dialog, DialogTitle, DialogContent, DialogContentText,
-  DialogActions, TextField, Checkbox, Divider,
+  DialogActions, TextField, Checkbox, Divider, FormControlLabel,
   IconButton, Menu, MenuItem, InputAdornment,
 } from '@mui/material'
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator'
@@ -141,6 +141,8 @@ export default function PageChildren() {
   const [snack, setSnack] = useState({ open: false, message: '', severity: 'success' })
   const [draftRegistering, setDraftRegistering] = useState(false)
   const [publishing, setPublishing] = useState(false)
+  //公開日の打ち直しは既定でオフ
+  const [publishUpdate, setPublishUpdate] = useState(false)
 
   const sensors = useSensors(useSensor(PointerSensor))
 
@@ -320,7 +322,7 @@ export default function PageChildren() {
     setPublishing(true)
     const ids = [...selected]
     try {
-      await publishPages(ids)
+      await publishPages(ids, publishUpdate)
       showSnack(`${ids.length} 件を公開しました`)
     } catch (e) {
       showSnack(e.message, 'error')
@@ -500,15 +502,30 @@ export default function PageChildren() {
                 </Button>
               )}
               {key !== 'Trash' && (
-                <Button
-                  variant="outlined"
-                  color="success"
-                  startIcon={publishing ? <CircularProgress size={14} /> : <PublishIcon />}
-                  disabled={selected.size === 0 || publishing}
-                  onClick={handlePublish}
-                >
-                  {publishing ? '公開中...' : '公開'}
-                </Button>
+                <>
+                  <Tooltip title="オンにすると公開日を現在時刻で打ち直します。オフの場合は最終公開日のみ更新されます">
+                    <FormControlLabel
+                      sx={{ mr: 0 }}
+                      control={
+                        <Checkbox
+                          size="small"
+                          checked={publishUpdate}
+                          onChange={e => setPublishUpdate(e.target.checked)}
+                        />
+                      }
+                      label={<Typography variant="body2">公開日を更新</Typography>}
+                    />
+                  </Tooltip>
+                  <Button
+                    variant="outlined"
+                    color="success"
+                    startIcon={publishing ? <CircularProgress size={14} /> : <PublishIcon />}
+                    disabled={selected.size === 0 || publishing}
+                    onClick={handlePublish}
+                  >
+                    {publishing ? '公開中...' : '公開'}
+                  </Button>
+                </>
               )}
             </Box>
 
