@@ -27,6 +27,8 @@ go build ./...
 2. `manage/` で `npm run build`
 3. `app/handler/internal/_assets/manage/` を削除して `manage/dist/` を丸ごとコピー（旧ファイルが embed に残らないようにするため）
 
+`manage/dist/` と `_assets/manage/` はどちらも `.gitignore` 対象で、リポジトリには入っていない。クローン直後は `go generate` を実行しないと `go build` が通らない。
+
 `-skip-build` を付けるとビルドを行わず既存の `dist/` の同期だけを行う。`-src` / `-dst` でパスを変更できる（既定値は `go generate` の実行ディレクトリ = `app/handler/internal` 基準）。
 
 ## 構成
