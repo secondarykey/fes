@@ -2,6 +2,7 @@
 
 React (Vite + MUI) ベースの SPA 管理画面。`/manage/` で配信され、唯一の管理 UI として使用。旧テンプレートベースの管理画面 (V1) は削除済み。
 API を提供する Go 側は `app/`（[app/AGENTS.md](../app/AGENTS.md)）を参照。
+画面・API を追加するときは [manage-feature](../docs/skills/manage-feature/SKILL.md) の手順に従う。
 
 ## コマンド
 

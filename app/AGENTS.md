@@ -18,22 +18,11 @@ go build -o app ./_cmd
 gcloud app deploy app.yaml
 ```
 
+ローカル（GCE 外）では `DevelopMode=true` になり、Datastore エミュレータ（既定 `localhost:8081`）に接続する。セットアップは [fes-setup](../docs/skills/fes-setup/SKILL.md)、デプロイは [fes-deploy](../docs/skills/fes-deploy/SKILL.md) を参照。
+
 ### Static Site Archive
 
-アーカイブツール (`_cmd/archive/main.go`) は静的サイトを生成し、GCS にアップロードする。
-
-```powershell
-# ローカル確認（サーバーを起動して確認）
-go run ./_cmd/archive/main.go -local 2026-Spring
-
-# GCS にアップロード（y/N 確認あり）
-go run ./_cmd/archive/main.go -upload 2026-Spring
-```
-
-- 第1引数はアーカイブ名（必須）。既存ディレクトリがあっても上書きする。
-- `-local`: ローカルサーバーで表示確認。アップロードしない。
-- `-upload`: バケット名を表示して y/N 確認後、GCS にアップロード。
-- アップロード先バケットは Datastore の Site エンティティ `ArchiveBucket` フィールドから取得（未設定時は `config.ArchiveBucket` のデフォルト値 `"hummingbird-archives"` を使用）。
+アーカイブツール (`_cmd/archive/main.go`) は静的サイトを生成し、GCS にアップロードする。手順は [fes-archive](../docs/skills/fes-archive/SKILL.md) を参照。
 
 ## Architecture
 
@@ -73,19 +62,21 @@ Pages form a parent-child tree. `HTML` stores pre-rendered output to avoid re-re
 ### Embedded assets
 
 `handler/internal/_assets/` is embedded with `//go:embed`. It contains:
-- `environment.json` — OAuth2 credentials (CLIENT_ID, CLIENT_SECRET)、セッション署名鍵 (SESSION_KEY)、初期管理者メール (MANAGERS)
-- `archives/` — static archive zips（ZIP 形式の旧アーカイブ）
+- `environment.json` — OAuth2 credentials (CLIENT_ID, CLIENT_SECRET)、セッション署名鍵 (SESSION_KEY)、初期管理者メール (MANAGERS)。`skip-worktree` で手元の値を隠している
+- `archives/` — ZIP 形式の旧アーカイブ（embed は廃止済み）
 - `manage/` — 管理画面 SPA の Vite ビルド成果物（`go generate ./handler/internal` で更新。手順は [manage/AGENTS.md](../manage/AGENTS.md)）
+- `maps/` — 会場マップのビルド成果物（`.gitignore` 対象。空だとコンパイルエラー）
+- `static/` / `templates/` — 公開側の静的ファイルとテンプレート
 
 ### GCS アーカイブ配信
 
 `handler/internal/archive_gcs.go` が GCS バケットからアーカイブを配信する。
 
-- 配信対象アーカイブ名とバケット名は Datastore の Site エンティティから取得（未設定時は `config.ArchiveNames` / `config.ArchiveBucket` をフォールバック）。管理画面の Site Settings から編集可能。
+- 配信対象アーカイブ名・バケット名・1 日のアクセス上限は Datastore の Site エンティティ（`ArchiveNames` / `ArchiveBucket` / `ArchiveDailyLimit`）から取得する。フォールバック値は無い。管理画面の Site Settings から編集可能。
 - 各アーカイブは `/{name}/` パスで配信される（例: `/2026-Spring/`）。
 - キャッシュ: `storage.Reader.Attrs.LastModified` を `Last-Modified` ヘッダに設定し、`If-Modified-Since` が一致すれば 304 を返す。GCS API 呼び出しは 1 リクエストあたり 1 回。
 - `Cache-Control: public, max-age=86400` を付与。
-- アーカイブ名の追加は管理画面で設定後、再デプロイが必要（ハンドラ登録は起動時のみ）。
+- Site Settings の保存時に `GCSArchiveRouter.Update()` が呼ばれるため、アーカイブ名の追加に再デプロイは不要。
 
 ### テンプレートキャッシュの注意点
 

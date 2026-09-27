@@ -1,6 +1,7 @@
 # maps/ — 独立した React アプリ
 
 `maps/` は Go バックエンド（`app/`）とは独立した単体の React SPA。フェスティバルの会場マップをブラウザ上に表示し、来場者の現在地を GPS で重ねて表示する。
+本番では `dist/` を `app/handler/internal/_assets/maps/` にコピーして embed し、`/maps/` で配信する（[fes-deploy](../docs/skills/fes-deploy/SKILL.md)）。店舗やマップの更新手順は [maps-update](../docs/skills/maps-update/SKILL.md) を参照。
 
 ## コマンド
 
