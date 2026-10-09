@@ -28,7 +28,7 @@ npm run deploy   # lint → ビルド → app/handler/internal/_assets/manage/ �
 ```powershell
 cd app
 go generate ./handler/internal
-go build ./...
+go vet ./...
 ```
 
 `manage/dist/` と `_assets/manage/` はどちらも `.gitignore` 対象で、リポジトリには入っていない。クローン直後は `go generate` を実行しないと `go build` が通らない。片方だけ反映するときは `go run ./_cmd/frontbuild -root .. -only manage` のように指定する。

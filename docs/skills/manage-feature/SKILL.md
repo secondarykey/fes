@@ -58,7 +58,7 @@ cd manage
 npm run lint
 cd ..\app
 go generate ./handler/internal
-go build ./...
+go vet ./...
 go run ./_cmd/main.go
 ```
 

@@ -1,6 +1,6 @@
 ---
 name: fes-deploy
-description: FES を Google App Engine に本番デプロイする手順。管理画面（manage/）と会場マップ（maps/）のビルド成果物を app/ の embed に反映し、ビルド確認のうえ gcloud app deploy する。「デプロイ」「本番に反映」「リリース」「GAE に上げる」といった作業で使う。
+description: FES を Google App Engine に本番デプロイする手順。管理画面（manage/）と会場マップ（maps/）のビルド成果物を app/ の embed に反映し、コンパイルを確かめて gcloud app deploy する。「デプロイ」「本番に反映」「リリース」「GAE に上げる」といった作業で使う。
 ---
 
 # 本番デプロイ
@@ -25,12 +25,16 @@ go generate ./handler/internal
 - 店舗画像（`maps/public/images/{店舗番号}/`）も Git に入っていない。ビルドする環境に店舗画像があることを確かめる（無いと全店 `noimage.png` になる）。作り方は [maps-update](../maps-update/SKILL.md) の「店舗画像」。
 - `//go:embed all:_assets/maps/*` は**ファイルが 1 つも無いとコンパイルエラー**になる。削除だけして止めないこと。
 
-### 2. ビルドを確認する
+### 2. コンパイルが通るか確かめる（任意）
 
 ```powershell
 cd app
-go build ./...
+go vet ./...
 ```
+
+GAE は**アップロードしたソースをクラウド側でビルドする**ので、手元のビルドはデプロイに使われない。ここは事前の確認で、embed 対象が空でコンパイルエラーになる、などのミスに数秒で気づける（デプロイで失敗すると、アップロードとクラウドのビルドを待つことになる）。`go vet` は型チェックまで行い、ファイルを出力しない。
+
+一方、**1. の反映は必ず手元で行う**。クラウドのビルドは Go だけで npm は動かないので、`_assets/manage/` と `_assets/maps/` はアップロード時点で揃っている必要がある（Git には入っていないが `.gcloudignore` の対象ではないので送られる）。
 
 ### 3. デプロイする
 
