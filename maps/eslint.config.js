@@ -36,6 +36,15 @@ export default [
     },
   },
   {
+    // Node で動かす補助スクリプト（npm run deploy など）
+    files: ['tools/**/*.mjs'],
+    languageOptions: {
+      ecmaVersion: 'latest',
+      sourceType: 'module',
+      globals: globals.node,
+    },
+  },
+  {
     // データ定義クラス (Point / Rect / Shop) を export するだけでコンポーネントは持たない
     files: ['src/MapPoint.jsx'],
     rules: {
