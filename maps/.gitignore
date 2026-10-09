@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# 店舗画像の作業場所（申込の写真の原本など。tools/images が使う）
+work
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
