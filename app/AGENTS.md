@@ -65,7 +65,7 @@ Pages form a parent-child tree. `HTML` stores pre-rendered output to avoid re-re
 - `environment.json` — OAuth2 credentials (CLIENT_ID, CLIENT_SECRET)、セッション署名鍵 (SESSION_KEY)、初期管理者メール (MANAGERS)。`skip-worktree` で手元の値を隠している
 - `archives/` — ZIP 形式の旧アーカイブ（embed は廃止済み）
 - `manage/` — 管理画面 SPA の Vite ビルド成果物（`go generate ./handler/internal` で更新。手順は [manage/AGENTS.md](../manage/AGENTS.md)）
-- `maps/` — 会場マップのビルド成果物（`.gitignore` 対象。空だとコンパイルエラー）
+- `maps/` — 会場マップのビルド成果物（`.gitignore` 対象。空だとコンパイルエラー。`go generate ./handler/internal` で更新）
 - `static/` / `templates/` — 公開側の静的ファイルとテンプレート
 
 ### GCS アーカイブ配信

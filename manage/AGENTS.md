@@ -11,9 +11,19 @@ cd manage
 npm install
 npm run dev       # 開発サーバー (Vite proxy 不要、Go サーバー経由で動作確認)
 npm run build     # manage/dist/ に出力
+npm run deploy    # lint → ビルド → app の embed 用ディレクトリへコピー
 ```
 
-ビルドから embed 用ディレクトリへの反映までは `go generate` で行う（robocopy を使う `npm run deploy` は廃止した）。
+ビルドから embed 用ディレクトリへの反映までは `npm run deploy` で行う（`maps/` と同じ）。
+
+```powershell
+cd manage
+npm run deploy   # lint → ビルド → app/handler/internal/_assets/manage/ へコピー（中身を入れ替え）
+```
+
+コピーは `tools/deploy.mjs`（Node）で行う。以前の robocopy を使う `npm run deploy` と違い、Windows 以外でも動く。
+
+`app/` の `go generate` からも呼ばれる。`app/handler/internal/frontend.go` の `//go:generate` が `app/_cmd/frontbuild/main.go` を呼び、`manage/` と `maps/` のそれぞれで（`node_modules` が無ければ `npm install` してから）`npm run deploy` を実行する。
 
 ```powershell
 cd app
@@ -21,15 +31,7 @@ go generate ./handler/internal
 go build ./...
 ```
 
-`app/handler/internal/manage_spa.go` の `//go:generate` が `app/_cmd/managebuild/main.go` を呼び、次を実行する。
-
-1. `manage/node_modules` が無ければ `npm install`
-2. `manage/` で `npm run build`
-3. `app/handler/internal/_assets/manage/` を削除して `manage/dist/` を丸ごとコピー（旧ファイルが embed に残らないようにするため）
-
-`manage/dist/` と `_assets/manage/` はどちらも `.gitignore` 対象で、リポジトリには入っていない。クローン直後は `go generate` を実行しないと `go build` が通らない。
-
-`-skip-build` を付けるとビルドを行わず既存の `dist/` の同期だけを行う。`-src` / `-dst` でパスを変更できる（既定値は `go generate` の実行ディレクトリ = `app/handler/internal` 基準）。
+`manage/dist/` と `_assets/manage/` はどちらも `.gitignore` 対象で、リポジトリには入っていない。クローン直後は `go generate` を実行しないと `go build` が通らない。片方だけ反映するときは `go run ./_cmd/frontbuild -root .. -only manage` のように指定する。
 
 ## 構成
 
