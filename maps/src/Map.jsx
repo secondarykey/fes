@@ -7,6 +7,9 @@ import MapPoint, { Point } from './MapPoint';
 
 const iconSize = MapPoint.pointerSize;
 
+//この距離（px）以上動かしたらクリックではなくドラッグとみなす
+const dragThreshold = 5;
+
 const Map = (props) => {
 
   // eslint-disable-next-line no-unused-vars -- setDebug はデバッグ表示切り替え用に残す
@@ -21,6 +24,9 @@ const Map = (props) => {
 
   //現在地のマップ上の点（未取得・マップ外は null）
   const position = useRef(null);
+
+  //マウスでドラッグ中の状態（開始位置、開始時のスクロール位置、動かしたか）
+  const drag = useRef(null);
 
   const fitAll = () => {
     setFit(!fit);
@@ -151,6 +157,13 @@ const Map = (props) => {
    * @param {*} e 
    */
   const handleClick = (e) => {
+    //ドラッグで動かした後のクリックは店舗を開かない
+    var d = drag.current;
+    drag.current = null;
+    if (d !== null && d.moved) {
+      return;
+    }
+
     var dx = document.querySelector("#layer").scrollLeft;
     var x = (dx + e.pageX) / scale;
     var y = e.pageY / scale;
@@ -167,8 +180,48 @@ const Map = (props) => {
     //layer.scrollLeft = p.x + ( (layer.clientWidth) * scale / 2) + 100
   }
 
+  /**
+   * マウスのドラッグで横に動かす（スクロールバーを出していないため）
+   * タッチはブラウザのスクロールに任せる
+   */
+  const handlePointerDown = (e) => {
+    if (e.pointerType !== "mouse" || e.button !== 0) return;
+    drag.current = { x: e.clientX, left: e.currentTarget.scrollLeft, moved: false, active: true };
+    e.currentTarget.setPointerCapture(e.pointerId);
+  }
+
+  const handlePointerMove = (e) => {
+    var d = drag.current;
+    if (d === null || !d.active) return;
+    var dx = e.clientX - d.x;
+    if (Math.abs(dx) > dragThreshold) {
+      d.moved = true;
+      e.currentTarget.classList.add("dragging");
+    }
+    if (d.moved) {
+      e.currentTarget.scrollLeft = d.left - dx;
+    }
+  }
+
+  const handlePointerUp = (e) => {
+    var d = drag.current;
+    if (d === null) return;
+    d.active = false;
+    e.currentTarget.classList.remove("dragging");
+  }
+
+  //マウスホイールの縦の回転で横に動かす
+  const handleWheel = (e) => {
+    if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+      e.currentTarget.scrollLeft += e.deltaY;
+    }
+  }
+
   return (
-    <div id="layer" onClick={handleClick}>
+    <div id="layer" onClick={handleClick}
+      onPointerDown={handlePointerDown} onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp} onPointerCancel={handlePointerUp}
+      onWheel={handleWheel}>
       <canvas id="map" ref={view} style={mapStyle} />
     </div>
   )

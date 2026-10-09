@@ -46,6 +46,19 @@
 
   touch-action: pan-x;
   overflow-x: auto;
+
+  /* マップだけを見せるため、スクロールバーは出さない（ドラッグ・ホイール・指で動かす） */
+  scrollbar-width: none;
+  cursor: grab;
+  user-select: none;
+}
+
+#layer::-webkit-scrollbar {
+  display: none;
+}
+
+#layer.dragging {
+  cursor: grabbing;
 }
 
 #map {
