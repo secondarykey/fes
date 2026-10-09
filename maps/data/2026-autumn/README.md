@@ -22,7 +22,7 @@ ZIP 内のフォルダ名がフォームの質問文（115 文字）で、Window
 | `src/assets/map.jpg` | マップ画像（2000×522） | チラシの y=0〜522 を切り出した（店舗一覧の見出しの手前まで） |
 | `data/2026-autumn/shops.tsv` | 店舗の対応表（114 行。店舗 105、施設 8、隠れハッち） | 下記 |
 | `src/data/shops.json` | アプリが読む店舗データ | `tools/shops` で生成 |
-| `public/images/{key}/{n}.webp` | 店舗画像（78 店、273 枚、横幅 1000） | `tools/images` → 向きの補正 → webp 化 → `tools/images install` |
+| `public/images/{key}/{n}.webp` | 店舗画像（78 店、273 枚、長い辺 1000、合計約 24MB） | `tools/images` → 向きの補正 → webp 化 → `tools/images install` |
 | `src/MapPoint.jsx` の `tops` / `bottoms` | GPS 基準点 | 下記 |
 
 ### 対応表（shops.tsv）
@@ -41,7 +41,7 @@ ZIP 内のフォルダ名がフォームの質問文（115 文字）で、Window
 2. 向きを補正した。webp 化では EXIF の向きが反映されないため。
    - JPEG: `D:\Go\Tools\webp\rotate` で `{n}_rotate.jpg` を作った（179 枚）。
    - HEIC: `tools/heicrot` で `{n}_rotate.png` を作った（6 枚）。22 の 2 枚は EXIF の向きが実際と合わなかったので補正していない。
-3. `D:\Go\Tools\webp`（webp.go、横幅 1000）で webp 化した。元が webp の 5 枚は `.webp.png` の名前で縮小した。
+3. `D:\Go\Tools\webp`（webp.go）で webp 化した。横長・正方形は横幅 1000、縦長の 153 枚は `-h 1000` で高さ 1000 にした（最初は全部横幅 1000 で 32MB だったのを 24MB にした。大きい方は `work/rejected/tall`）。元が webp の 5 枚は `.webp.png` の名前で縮小した。
 4. `tools/images install` で `public/images` に置いた。
 5. 78 Re:彩cle と 79 まかろんは申込が 1 件で写真 2 枚を共有していたので、内容を見て古着の写真を 78、食品サンプルの写真を 79 に分けた（外した写真は `work/rejected`）。
 
