@@ -20,7 +20,10 @@ npm run preview   # 本番ビルドのプレビュー
 |---|---|
 | `src/App.jsx` | ルートコンポーネント。GPS 取得・店舗パネル表示・デバッグUI を管理 |
 | `src/Map.jsx` | HTML5 Canvas によるマップ描画・スケーリング・現在地ポインター |
-| `src/MapPoint.jsx` | 店舗データ定義・GPS 座標 ↔ 画像座標の変換ロジック |
+| `src/MapPoint.jsx` | 基準点の定義・GPS 座標 ↔ 画像座標の変換ロジック・店舗データの読み込み |
+| `src/data/shops.json` | 店舗・施設のデータ（`tools/shops` で生成する。直接編集しない） |
+| `data/<開催>/shops.tsv` | 店舗の対応表（番号・店名・説明・申込との対応・タップ範囲） |
+| `tools/shops/main.go` | 対応表と出店申込の CSV から `src/data/shops.json` を作る |
 | `src/SVGButton.jsx` | SVG アイコンの汎用ボタン |
 | `src/Window.jsx` | ウィンドウサイズの監視 hook |
 | `eslint.config.js` | ESLint flat config（React 19 / ESLint 10 構成） |
@@ -35,11 +38,11 @@ ESLint 10 の flat config (`eslint.config.js`) を使用する。`eslint-plugin-
 
 ## 座標変換の仕組み
 
-マップ画像（2395×637px）上に GPS 座標をマッピングするため、`MapPoint` クラスが画像の上辺・下辺に複数の基準点（`tops` / `bottoms`）を保持する。実際の GPS 座標から経度で基準点間を補間し、続いて緯度で上辺・下辺間を補間することで Canvas 上の (x, y) 座標を算出する。基準点の外は端の区間を延長し、画像の外になる場合は現在地を表示しない。
+マップ画像（2000×522px）上に GPS 座標をマッピングするため、`MapPoint` クラスが画像の上辺・下辺に複数の基準点（`tops` / `bottoms`）を保持する。実際の GPS 座標から経度で基準点間を補間し、続いて緯度で上辺・下辺間を補間することで Canvas 上の (x, y) 座標を算出する。基準点の外は端の区間を延長し、画像の外になる場合は現在地を表示しない。
 
 ## 店舗データの管理
 
-店舗情報は `MapPoint.initShops()` にハードコードされており、外部 API や CSV ファイルからは読み込まない。各店舗は `Shop` クラス（key, name, detail, 矩形領域 `Rect`）で表現される。画像は `/maps/images/{key}_0.webp` を参照する。
+店舗・施設は `src/data/shops.json` をビルド時に読み込み、`MapPoint.initShops()` でタップ範囲（`rects`）ごとに `Shop`（key, name, detail, 矩形領域 `Rect`）を作る。JSON は対応表（`data/<開催>/shops.tsv`）と出店申込の CSV から `tools/shops` で生成する（手順は [maps-update](../docs/skills/maps-update/SKILL.md)）。申込の CSV は電話番号や住所を含むため**リポジトリに置かない**。画像は `/maps/images/{key}_0.webp` を参照する。
 
 ## Vite 設定
 
