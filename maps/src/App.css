@@ -94,7 +94,7 @@
 #experimental .close {
   display: block;
   width: calc(100% - 40px);
-  margin: 12px 20px 20px;
+  margin: 12px 20px 10px;
   padding: 12px;
   border: none;
   border-radius: 10px;
@@ -107,6 +107,23 @@
 
 #experimental .close:hover {
   background-color: #16707f;
+}
+
+#experimental .site {
+  display: block;
+  margin: 0 20px 20px;
+  padding: 10px;
+  border: 1.5px solid #0f4c5c;
+  border-radius: 10px;
+  color: #0f4c5c;
+  font-size: 15px;
+  font-weight: bold;
+  text-align: center;
+  text-decoration: none;
+}
+
+#experimental .site:hover {
+  background-color: #e8f0ef;
 }
 
 #debugText {

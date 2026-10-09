@@ -133,6 +133,8 @@ function App() {
             </div>
           </div>
           <button className="close" onClick={handleHideMessage}>マップを見る</button>
+          {/* マップは /maps/ で配信しているので、/ がサイトのトップになる */}
+          <a className="site" href="/">サイトに戻る</a>
         </div>
       </div>
     )
