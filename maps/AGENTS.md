@@ -24,6 +24,7 @@ npm run preview   # 本番ビルドのプレビュー
 | `src/data/shops.json` | 店舗・施設のデータ（`tools/shops` で生成する。直接編集しない） |
 | `data/<開催>/shops.tsv` | 店舗の対応表（番号・店名・説明・申込との対応・タップ範囲） |
 | `tools/shops/main.go` | 対応表と出店申込の CSV から `src/data/shops.json` を作る |
+| `tools/images/main.go` | 申込の写真（Drive の ZIP）を店舗番号ごとに分け、webp 化したものを `public/images` に置く |
 | `src/SVGButton.jsx` | SVG アイコンの汎用ボタン |
 | `src/Window.jsx` | ウィンドウサイズの監視 hook |
 | `eslint.config.js` | ESLint flat config（React 19 / ESLint 10 構成） |
@@ -42,7 +43,7 @@ ESLint 10 の flat config (`eslint.config.js`) を使用する。`eslint-plugin-
 
 ## 店舗データの管理
 
-店舗・施設は `src/data/shops.json` をビルド時に読み込み、`MapPoint.initShops()` でタップ範囲（`rects`）ごとに `Shop`（key, name, detail, 矩形領域 `Rect`）を作る。JSON は対応表（`data/<開催>/shops.tsv`）と出店申込の CSV から `tools/shops` で生成する（手順は [maps-update](../docs/skills/maps-update/SKILL.md)）。申込の CSV は電話番号や住所を含むため**リポジトリに置かない**。画像は `/maps/images/{key}_0.webp` を参照する。
+店舗・施設は `src/data/shops.json` をビルド時に読み込み、`MapPoint.initShops()` でタップ範囲（`rects`）ごとに `Shop`（key, name, detail, 矩形領域 `Rect`）を作る。JSON は対応表（`data/<開催>/shops.tsv`）と出店申込の CSV から `tools/shops` で生成する（手順は [maps-update](../docs/skills/maps-update/SKILL.md)）。申込の CSV は電話番号や住所を含むため**リポジトリに置かない**。画像は `public/images/{key}/{n}.webp` に置き、`shops.json` の `images` で参照する（申込の写真からは `tools/images` で作る）。
 
 ## Vite 設定
 

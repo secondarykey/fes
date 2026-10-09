@@ -40,7 +40,27 @@ description: 会場マップ（maps/）の内容をフェスに合わせて更�
 
 ### 店舗画像
 
-`maps/public/images/{key}_0.webp` に置く（`/maps/images/{key}_0.webp` として参照される）。形式は webp。無い店は `noimage.png` を表示する。
+`maps/public/images/{key}/{n}.webp` に置く（n は 0 始まり）。`tools/shops` がディレクトリを見て `shops.json` の `images` に番号順で並べ、店舗パネルでは横スワイプで切り替えて表示する。画像が無い店は `noimage.png` を表示する。
+
+申込の写真から作る手順:
+
+1. Google Drive で申込の写真のフォルダを ZIP でダウンロードする（フォルダ名が長く Windows では解凍できないことがあるが、ツールが直接読むので解凍は不要）。
+2. 店舗番号ごとに分ける。全ファイルは `work/drive`、店舗の写真は `work/images/{key}/{n}.{拡張子}` に置かれる（`work/` は Git に入れない）。
+
+   ```powershell
+   cd maps
+   go run tools/images/main.go extract -zip "<ZIP>" -apply "<申込の CSV>" -list data/<開催>/shops.tsv
+   ```
+
+   ZIP には Drive の ID が無いので、アップロード時刻と回答時刻で対応づける（時差は自動で推定する）。`枚数が合わない` が出たら、その回答の写真を確認する。
+
+3. `work/images` を webp 化する（横幅 1000。`{n}_{幅}x{高さ}.webp` ができる）。
+4. 配置して JSON を生成し直す。webp が無い写真は元の画像をそのまま置く。
+
+   ```powershell
+   go run tools/images/main.go install
+   go run tools/shops/main.go -apply "<申込の CSV>" -list data/<開催>/shops.tsv -out src/data/shops.json
+   ```
 
 ### タップ範囲の確認
 
