@@ -186,6 +186,12 @@ function App() {
     e.target.src = "/maps/images/noimage.png"
   }
 
+  //縦長の写真は表示の仕方を変える
+  const handleImageLoad = (e) => {
+    var img = e.currentTarget;
+    img.parentElement.classList.toggle("tall", img.naturalHeight > img.naturalWidth);
+  }
+
   const handleBack = () => {
     createShopStyle(false)
   }
@@ -219,7 +225,10 @@ function App() {
         {/* 店舗を切り替えたら先頭の画像に戻すため key を付ける */}
         <div className="thumbs" key={info.key}>
           {(info.images === undefined || info.images.length === 0 ? ["/maps/images/noimage.png"] : info.images).map((src) => (
-            <img className="thumb" key={src} src={src} onError={handleImageError} />
+            <div className="thumb" key={src}>
+              <img className="backdrop" src={src} alt="" aria-hidden="true" onError={handleImageError} />
+              <img className="photo" src={src} onLoad={handleImageLoad} onError={handleImageError} />
+            </div>
           ))}
         </div>
         <div className="info">
