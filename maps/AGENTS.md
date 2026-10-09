@@ -12,6 +12,7 @@ npm run dev       # 開発サーバー (base path: /maps/)
 npm run build     # maps/dist/ に出力
 npm run lint      # ESLint (警告0件が必須)
 npm run preview   # 本番ビルドのプレビュー
+npm run deploy    # lint → ビルド → app の embed 用ディレクトリへコピー（GAE への反映は含まない）
 ```
 
 ## 構成

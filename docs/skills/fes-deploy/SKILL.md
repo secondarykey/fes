@@ -22,15 +22,14 @@ go generate ./handler/internal
 
 ### 2. 会場マップ（maps/）を反映する
 
-`maps/` に変更があるとき。専用ツールは無いので手でコピーする。
+`maps/` に変更があるとき。
 
 ```powershell
 cd maps
-npm run lint     # 警告 0 件が必須
-npm run build
-Remove-Item -Recurse -Force ..\app\handler\internal\_assets\maps\*
-Copy-Item -Recurse dist\* ..\app\handler\internal\_assets\maps\
+npm run deploy
 ```
+
+`npm run deploy` は lint（警告 0 件が必須）→ ビルド → `dist/` を `app/handler/internal/_assets/maps/` へコピー（中身を入れ替え）までを行う（`maps/tools/deploy.mjs`）。GAE への反映（下の 4.）は含まない。店舗画像が無いときは警告を出す。
 
 - `_assets/maps/` は `.gitignore` 対象で、リポジトリには入っていない。
 - 店舗画像（`maps/public/images/{店舗番号}/`）も Git に入っていない。ビルドする環境に店舗画像があることを確かめる（無いと全店 `noimage.png` になる）。作り方は [maps-update](../maps-update/SKILL.md) の「店舗画像」。
