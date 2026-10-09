@@ -100,20 +100,62 @@
   overflow-y: auto;
 }
 
-/* 複数の画像は横にスワイプして切り替える */
+/* 複数の画像は左右のボタンで切り替える */
 #shops > div.thumbs {
-  display: flex;
+  position: relative;
   height: 40vh;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
 }
 
 #shops > div.thumbs > div.thumb {
-  position: relative;
-  flex: 0 0 100%;
-  height: 100%;
+  position: absolute;
+  inset: 0;
   overflow: hidden;
-  scroll-snap-align: start;
+}
+
+#shops > div.thumbs > button.photoBtn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background-color: rgba(0, 0, 0, 0.45);
+  color: white;
+  font-size: 32px;
+  line-height: 36px;
+  cursor: pointer;
+}
+
+#shops > div.thumbs > button.photoBtn.prev {
+  left: 8px;
+}
+
+#shops > div.thumbs > button.photoBtn.next {
+  right: 8px;
+}
+
+#shops > div.thumbs > div.dots {
+  position: absolute;
+  bottom: 8px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+}
+
+#shops > div.thumbs > div.dots > span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.6);
+}
+
+#shops > div.thumbs > div.dots > span.on {
+  background-color: white;
 }
 
 #shops > div.thumbs > div.thumb > img {

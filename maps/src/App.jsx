@@ -18,6 +18,8 @@ function App() {
   const [release, setRelease] = useState(true);
   const [coords, setCoords] = useState(undefined);
   const [info, setInfo] = useState({});
+  //表示中の写真の番号
+  const [photo, setPhoto] = useState(0);
 
   const [debugDisplay,setDebugDisplay] = useState(false);
   const [debugText,setDebugText] = useState("");
@@ -171,6 +173,7 @@ function App() {
     if (s !== null) {
       s.html = convertLinksWithText(s.detail);
       setInfo(s);
+      setPhoto(0);
 
       createShopStyle(true)
       hide = false;
@@ -190,6 +193,14 @@ function App() {
   const handleImageLoad = (e) => {
     var img = e.currentTarget;
     img.parentElement.classList.toggle("tall", img.naturalHeight > img.naturalWidth);
+  }
+
+  const photos = (info.images === undefined || info.images.length === 0) ? ["/maps/images/noimage.png"] : info.images;
+  const photoSrc = photos[photo % photos.length];
+
+  //前後の写真へ（端では反対側に回る）
+  const movePhoto = (d) => {
+    setPhoto((p) => (p + d + photos.length) % photos.length);
   }
 
   const handleBack = () => {
@@ -222,14 +233,19 @@ function App() {
 
         <SVGButton className="icon" id="backBtn" name="back" size="48px" onClick={handleBack} />
 
-        {/* 店舗を切り替えたら先頭の画像に戻すため key を付ける */}
-        <div className="thumbs" key={info.key}>
-          {(info.images === undefined || info.images.length === 0 ? ["/maps/images/noimage.png"] : info.images).map((src) => (
-            <div className="thumb" key={src}>
-              <img className="backdrop" src={src} alt="" aria-hidden="true" onError={handleImageError} />
-              <img className="photo" src={src} onLoad={handleImageLoad} onError={handleImageError} />
+        <div className="thumbs">
+          {/* 写真ごとに作り直して、縦長かどうかを判定し直す */}
+          <div className="thumb" key={photoSrc}>
+            <img className="backdrop" src={photoSrc} alt="" aria-hidden="true" onError={handleImageError} />
+            <img className="photo" src={photoSrc} onLoad={handleImageLoad} onError={handleImageError} />
+          </div>
+          {photos.length > 1 && (<>
+            <button className="photoBtn prev" aria-label="前の写真" onClick={() => movePhoto(-1)}>‹</button>
+            <button className="photoBtn next" aria-label="次の写真" onClick={() => movePhoto(1)}>›</button>
+            <div className="dots">
+              {photos.map((src, i) => <span key={src} className={i === photo ? "on" : ""} />)}
             </div>
-          ))}
+          </>)}
         </div>
         <div className="info">
           <h1>{info.key}:{info.name}</h1>
