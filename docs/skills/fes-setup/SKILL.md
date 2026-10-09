@@ -40,8 +40,10 @@ description: FES の開発環境・本番環境の初期セットアップ手順
 
 `.gitignore` 対象のため、クローン直後は空のディレクトリがある。
 
-- `app/handler/internal/_assets/maps/` … **ファイルが 1 つも無いとコンパイルエラー**（`//go:embed all:_assets/maps/*`）。`maps/` をビルドしてコピーする（→ [fes-deploy](../fes-deploy/SKILL.md) の手順 2）。
-- `app/handler/internal/_assets/manage/` … **ディレクトリが無いとコンパイルエラー**（`//go:embed _assets/manage`）。`cd app; go generate ./handler/internal` で生成する。
+- `app/handler/internal/_assets/maps/` … **ファイルが 1 つも無いとコンパイルエラー**（`//go:embed all:_assets/maps/*`）。
+- `app/handler/internal/_assets/manage/` … **ディレクトリが無いとコンパイルエラー**（`//go:embed _assets/manage`）。
+
+どちらも `cd app; go generate ./...` で、`manage/` と `maps/` をビルドして生成する（→ [fes-deploy](../fes-deploy/SKILL.md) の手順 1）。店舗画像は Git に入っていないので、無いと全店 `noimage.png` になる（表示の確認だけなら問題ない）。
 
 ## 3. ローカルで起動する
 
