@@ -216,7 +216,12 @@ function App() {
 
         <SVGButton className="icon" id="backBtn" name="back" size="48px" onClick={handleBack} />
 
-        <img className="thumb" src={info.image} onError={handleImageError} />
+        {/* 店舗を切り替えたら先頭の画像に戻すため key を付ける */}
+        <div className="thumbs" key={info.key}>
+          {(info.images === undefined || info.images.length === 0 ? ["/maps/images/noimage.png"] : info.images).map((src) => (
+            <img className="thumb" key={src} src={src} onError={handleImageError} />
+          ))}
+        </div>
         <div className="info">
           <h1>{info.key}:{info.name}</h1>
           <p style={{ whiteSpace: "pre-wrap" }} dangerouslySetInnerHTML={{ __html: info.html }} />

@@ -17,6 +17,8 @@
 //	text   説明文。空なら申込の販売メニュー、"-" なら desc、それ以外はその文（\n で改行）
 //	links  リンク。空なら申込の URL 欄から作る、"-" なら無し、それ以外は空白区切りの URL
 //	rects  マップ画像上のタップ範囲 "x,y,幅,高さ"。複数あれば空白区切り
+//
+// 店舗画像は -images のディレクトリ（既定 public/images）の {key}/ にあるものを番号順に並べる。
 package main
 
 import (
@@ -27,7 +29,10 @@ import (
 	"io"
 	"net/url"
 	"os"
+	"path/filepath"
 	"regexp"
+	"sort"
+	"strconv"
 	"strings"
 )
 
@@ -46,6 +51,7 @@ type Shop struct {
 	Detail string   `json:"detail"`
 	Links  []string `json:"links"`
 	Rects  [][4]int `json:"rects"`
+	Images []string `json:"images"`
 }
 
 // 申込の内容（同じ店名で複数回答があれば、後の回答の空でない値で上書きする）
@@ -58,6 +64,7 @@ func main() {
 	apply := flag.String("apply", "", "出店申込の回答 CSV")
 	list := flag.String("list", "", "店舗の対応表 TSV")
 	out := flag.String("out", "", "出力する JSON")
+	images := flag.String("images", "public/images", "店舗画像のディレクトリ")
 	flag.Parse()
 
 	if *apply == "" || *list == "" || *out == "" {
@@ -65,13 +72,13 @@ func main() {
 		os.Exit(2)
 	}
 
-	if err := run(*apply, *list, *out); err != nil {
+	if err := run(*apply, *list, *out, *images); err != nil {
 		fmt.Fprintf(os.Stderr, "%+v\n", err)
 		os.Exit(1)
 	}
 }
 
-func run(apply, list, out string) error {
+func run(apply, list, out, images string) error {
 
 	apps, err := readApplications(apply)
 	if err != nil {
@@ -91,6 +98,10 @@ func run(apply, list, out string) error {
 			return fmt.Errorf("%s %s: %w", r["key"], r["name"], err)
 		}
 		used[r["app"]] = true
+		s.Images, err = listImages(images, s.Key)
+		if err != nil {
+			return err
+		}
 		shops = append(shops, s)
 	}
 
@@ -222,6 +233,37 @@ func readList(name string) ([]map[string]string, error) {
 		rows = append(rows, row)
 	}
 	return rows, nil
+}
+
+var imageName = regexp.MustCompile(`^(\d+)\.(webp|jpg|jpeg|png)$`)
+
+// {dir}/{key}/ の画像を番号順に "{key}/{ファイル名}" で返す
+func listImages(dir, key string) ([]string, error) {
+	entries, err := os.ReadDir(filepath.Join(dir, key))
+	if os.IsNotExist(err) {
+		return []string{}, nil
+	} else if err != nil {
+		return nil, err
+	}
+
+	type image struct {
+		n    int
+		name string
+	}
+	var list []image
+	for _, e := range entries {
+		if m := imageName.FindStringSubmatch(e.Name()); m != nil {
+			n, _ := strconv.Atoi(m[1])
+			list = append(list, image{n, e.Name()})
+		}
+	}
+	sort.Slice(list, func(i, j int) bool { return list[i].n < list[j].n })
+
+	rtn := make([]string, 0, len(list))
+	for _, img := range list {
+		rtn = append(rtn, key+"/"+img.name)
+	}
+	return rtn, nil
 }
 
 // "x,y,w,h x,y,w,h" を読む

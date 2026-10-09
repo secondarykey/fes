@@ -79,7 +79,7 @@ class MapPoint {
                 detail += (detail === "" ? "" : "\n\n") + s.links.join("\n");
             }
             s.rects.forEach(([x, y, w, h]) => {
-                this.shops.push(new Shop(s.key, s.name, detail, new Rect(x, y, w, h)));
+                this.shops.push(new Shop(s.key, s.name, detail, new Rect(x, y, w, h), s.images));
             });
         });
     }
@@ -238,7 +238,7 @@ class MapPoint {
       //アイコンは p を中心に描画している
       var size = MapPoint.pointerSize;
       return new Shop("BIRD", "ハッち", `Humming Bird 非公式キャラ のハッちです。`,
-            new Rect(p.x - size / 2, p.y - size / 2, size, size))
+            new Rect(p.x - size / 2, p.y - size / 2, size, size), ["BIRD/0.webp"])
     }
 
 }
@@ -290,18 +290,16 @@ export class Shop {
     name = "No Name"
     detail = "";
     rect = undefined;
-    constructor(key, name, detail, rect) {
+    images = [];
+    /**
+     * @param {*} images public/images からの相対パス（"{key}/0.webp" など）
+     */
+    constructor(key, name, detail, rect, images = []) {
         this.key = key;
         this.name = name;
         this.detail = detail;
         this.rect = rect;
-
-        this.image = this.url();
-    }
-
-    url() {
-        var url = `/maps/images/` + this.key + "_0.webp";
-        return url
+        this.images = images.map((p) => `/maps/images/` + p);
     }
 
     inside(x, y) {
