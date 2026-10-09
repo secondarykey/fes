@@ -10,8 +10,8 @@ class MapPoint {
 
     //元画像のサイズ
     static imageWidth = 2395;
-    static imageHeight = 647;
-    //座標算定しない部分
+    static imageHeight = 637;
+    //基準点を置く上辺・下辺の Y 座標
     static offsetTop = 170;
     static offsetBottom = 600;
 
@@ -21,8 +21,13 @@ class MapPoint {
     static shops = [];
     /**
      * マップデータの初期化
+     * 何度呼ばれても重複しないよう、毎回作り直す
      */
     static init() {
+        this.tops = [];
+        this.bottoms = [];
+        this.shops = [];
+
         this.tops.push(new Point(170, this.offsetTop, 34.9254303, 138.3806125));
         this.tops.push(new Point(320, this.offsetTop, 34.9253489, 138.380396));
         this.tops.push(new Point(570, this.offsetTop, 34.9252625, 138.3801465));
@@ -106,35 +111,24 @@ class MapPoint {
         })
     }
 
-    //横のリミット
-    //Longitude 
-    // 138.3783819 - 138.3806125
-    //  この経度上に居ない場合、nullを返す
-
-    // tops 内でどこにいるかを検索 （緯度が決定）
-    // bottoms 内でどこにいるかを検索 (緯度が決定)
-    // 双方の緯度の間にいない場合、nullを返す
+    // tops / bottoms 内で経度 v を挟む2点を返す [経度の小さい点, 大きい点]
+    // 配列は経度の大きい順（画像の左から右）に並んでいる
+    // 基準点の範囲外は端の区間を延長して使う
     static getBetweenPoint = (arr, v) => {
-        var rtn = [null, null];
-        for (let idx = arr.length - 1; idx > 0; idx--) {
-            let p1 = arr[idx];
-            let p2 = arr[idx - 1];
-
-            if (v >= p1.longitude && v <= p2.longitude) {
-                rtn[0] = p1;
-                rtn[1] = p2;
+        for (let idx = 1; idx < arr.length; idx++) {
+            if (v >= arr[idx].longitude) {
+                return [arr[idx], arr[idx - 1]];
             }
         }
-        return rtn;
+        var last = arr.length - 1;
+        return [arr[last], arr[last - 1]];
     }
 
+    // 上辺の点 p1 と下辺の点 p2 の間を緯度 v で補間する（範囲外は延長）
     static createBetweenLatitudePoint = (p1, p2, v) => {
 
         var v1 = p1.latitude;
         var v2 = p2.latitude;
-        if (v > v2 || v < v1) {
-            return null;
-        }
 
         var distance = v2 - v1;
         var remain = v - v1;
@@ -183,32 +177,23 @@ class MapPoint {
     // 緯度の割合を出す
     static getLongitudePoint = (v) => {
         var [p1, p2] = this.getBetweenPoint(this.tops, v);
-        if (p1 === null) {
-            return [null, null]
-        }
         var tp = this.createBetweenLongitudePoint(p1, p2, v)
 
         var [p3, p4] = this.getBetweenPoint(this.bottoms, v);
-        if (p3 === null) {
-            return [null, null]
-        }
         var bp = this.createBetweenLongitudePoint(p3, p4, v)
         return [tp, bp];
     }
 
     /**
      * マップ上の点を取得
-     * @param {*} lat 
-     * @param {*} lon 
-     * @returns 
+     * @param {*} lat
+     * @param {*} lon
+     * @returns 画像の外になる場合は null
      */
     static get = (lat, lon, ctx) => {
 
         //経度から定点を利用して、マップの上部、下部の点を算出
         var [p1, p2] = this.getLongitudePoint(lon)
-        if (p1 === null || p2 === null) {
-            return null;
-        }
 
         if (ctx !== undefined) {
             ctx.beginPath();
@@ -227,6 +212,9 @@ class MapPoint {
         var p = this.createBetweenLatitudePoint(p1, p2, lat)
         console.debug("point", p);
 
+        if (p.x < 0 || p.x >= this.imageWidth || p.y < 0 || p.y >= this.imageHeight) {
+            return null;
+        }
         return p;
     }
 
