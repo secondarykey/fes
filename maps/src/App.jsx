@@ -95,11 +95,11 @@ function App() {
 
     return (
       <div id="experimental">
-        <div id="title">Humming Bird 2025 春マップ（体験版）</div>
+        <div id="title">Humming Bird 2026 秋マップ（体験版）</div>
         <div id="message">
           まずはこのページを見つけてくれてありがとうございます
 
-          このマップはSmall-Axeプロジェクトが開催しているHummingBird 2025 春のマップ体験版で
+          このマップはSmall-Axeプロジェクトが開催しているHummingBird 2026 秋のマップ体験版で
           次回の開催から導入されるかもしれないマップアプリのテスト版です
 
           不具合や利用したことによる問題は当方では責任をおいかねますことをご了承ください。
