@@ -36,6 +36,7 @@ FES (Festival Edit System) is a Japanese CMS for managing festival/event website
 |---|---|
 | [maps-automation](docs/plans/maps-automation.md) | 会場マップのデータ作成の半自動化（現状と改善案） |
 | [event-master](docs/plans/event-master.md) | 出店者・アーティストのマスタ化と、店主による店舗情報の編集 |
+| [crm](docs/plans/crm.md) | 問い合わせ・やり取りを ID で管理し、チャットのようにやり取りする機能 |
 
 ## Key Conventions
 
