@@ -2334,5 +2334,23 @@
     "images": [
       "SEA/0.webp"
     ]
+  },
+  {
+    "key": "SECRET",
+    "group": "facility",
+    "name": "隠れハッち",
+    "detail": "24日限定ですが、これを見せるとドリンクを１杯サービスさせていただきます。",
+    "links": [],
+    "rects": [
+      [
+        1536,
+        366,
+        10,
+        10
+      ]
+    ],
+    "images": [
+      "SECRET/0.webp"
+    ]
   }
 ]
