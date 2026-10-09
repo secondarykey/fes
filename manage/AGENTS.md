@@ -23,15 +23,15 @@ npm run deploy   # lint → ビルド → app/handler/internal/_assets/manage/ �
 
 コピーは `tools/deploy.mjs`（Node）で行う。以前の robocopy を使う `npm run deploy` と違い、Windows 以外でも動く。
 
-`app/` の `go generate` からも呼ばれる。`app/handler/internal/frontend.go` の `//go:generate` が `app/_cmd/frontbuild/main.go` を呼び、`manage/` と `maps/` のそれぞれで（`node_modules` が無ければ `npm install` してから）`npm run deploy` を実行する。
+`app/` の `go generate` からも呼ばれる。`app/frontend.go` の `//go:generate` が `app/_cmd/frontbuild/main.go` を呼び、`manage/` と `maps/` のそれぞれで（`node_modules` が無ければ `npm install` してから）`npm run deploy` を実行する。
 
 ```powershell
 cd app
-go generate ./handler/internal
+go generate ./...
 go vet ./...
 ```
 
-`manage/dist/` と `_assets/manage/` はどちらも `.gitignore` 対象で、リポジトリには入っていない。クローン直後は `go generate` を実行しないと `go build` が通らない。片方だけ反映するときは `go run ./_cmd/frontbuild -root .. -only manage` のように指定する。
+`manage/dist/` と `_assets/manage/` はどちらも `.gitignore` 対象で、リポジトリには入っていない。クローン直後は `go generate` を実行しないと `go build` が通らない。片方だけ反映するときは `go run ./_cmd/frontbuild -only manage` のように指定する。
 
 ## 構成
 

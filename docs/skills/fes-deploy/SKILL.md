@@ -13,12 +13,12 @@ description: FES を Google App Engine に本番デプロイする手順。管�
 
 ```powershell
 cd app
-go generate ./handler/internal
+go generate ./...
 ```
 
-`app/handler/internal/frontend.go` の `go:generate` が `app/_cmd/frontbuild` を呼び、`manage/` と `maps/` のそれぞれで `npm run deploy` を実行する（`node_modules` が無ければ先に `npm install`）。
+`app/` で実行する（`go generate .` でも同じ）。`app/frontend.go` の `go:generate` が `app/_cmd/frontbuild` を呼び、`manage/` と `maps/` のそれぞれで `npm run deploy` を実行する（`node_modules` が無ければ先に `npm install`）。
 
-`npm run deploy` は lint（警告 0 件が必須）→ ビルド → `dist/` を `app/handler/internal/_assets/<manage|maps>/` へコピー（中身を入れ替え）までを行う（各ディレクトリの `tools/deploy.mjs`）。GAE への反映（下の 3.）は含まない。片方だけ反映するときは、そのディレクトリで `npm run deploy` を実行するか、`app/` で `go run ./_cmd/frontbuild -root .. -only maps` のように指定する。
+`npm run deploy` は lint（警告 0 件が必須）→ ビルド → `dist/` を `app/handler/internal/_assets/<manage|maps>/` へコピー（中身を入れ替え）までを行う（各ディレクトリの `tools/deploy.mjs`）。GAE への反映（下の 3.）は含まない。片方だけ反映するときは、そのディレクトリで `npm run deploy` を実行するか、`app/` で `go run ./_cmd/frontbuild -only maps` のように指定する。
 
 - `_assets/manage/` と `_assets/maps/` は `.gitignore` 対象で、リポジトリには入っていない。
 - `node_modules` が古いと lint やビルドが失敗する。`package.json` を更新したら、それぞれのディレクトリで `npm install` する。

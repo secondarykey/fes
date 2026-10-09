@@ -57,7 +57,7 @@ func register<Name>API(r *mux.Router) {
 cd manage
 npm run lint
 cd ..\app
-go generate ./handler/internal
+go generate ./...
 go vet ./...
 go run ./_cmd/main.go
 ```
