@@ -74,12 +74,8 @@ class MapPoint {
      */
     static initShops() {
         shopData.forEach((s) => {
-            var detail = s.detail;
-            if (s.links.length > 0) {
-                detail += (detail === "" ? "" : "\n\n") + s.links.join("\n");
-            }
             s.rects.forEach(([x, y, w, h]) => {
-                this.shops.push(new Shop(s.key, s.name, detail, new Rect(x, y, w, h), s.images));
+                this.shops.push(new Shop(s.key, s.name, s.detail, new Rect(x, y, w, h), s.images, s.group, s.links));
             });
         });
     }
@@ -291,15 +287,21 @@ export class Shop {
     detail = "";
     rect = undefined;
     images = [];
+    group = "";
+    links = [];
     /**
      * @param {*} images public/images からの相対パス（"{key}/0.webp" など）
+     * @param {*} group food / kitchencar / goods / facility（ハッちなどは空）
+     * @param {*} links 店舗のリンク（Instagram など）
      */
-    constructor(key, name, detail, rect, images = []) {
+    constructor(key, name, detail, rect, images = [], group = "", links = []) {
         this.key = key;
         this.name = name;
         this.detail = detail;
         this.rect = rect;
         this.images = images.map((p) => `/maps/images/` + p);
+        this.group = group;
+        this.links = links;
     }
 
     inside(x, y) {

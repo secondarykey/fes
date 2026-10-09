@@ -7,6 +7,17 @@ import './App.css'
 import SVGButton from './SVGButton';
 import MapPoint from './MapPoint';
 
+//店舗パネルに出す区分の名前（マップ画像の店舗一覧の見出しに合わせる）
+const groupLabels = {
+  food: "フード・ドリンク・スイーツ",
+  kitchencar: "キッチンカー",
+  goods: "雑貨・ワークショップ・リラクゼーション",
+  facility: "会場",
+};
+
+//番号のバッジは出店者とステージ（A〜D）だけに出す
+const showShopNo = (s) => s.key !== undefined && (s.group !== "facility" || /^[A-D]$/.test(s.key)) && s.key !== "BIRD";
+
 //会場が狭いので GPS を優先させる（ネットワーク測位だと誤差が会場の幅を超える）
 const geoOptions = { enableHighAccuracy: true };
 
@@ -149,12 +160,17 @@ function App() {
   };
 
   /**
-   * リンク変換
-   * @param {*} text 
-   * @returns 
+   * リンクの表示名（Instagram はサービス名、それ以外はドメイン）
+   * @param {*} url
+   * @returns
    */
-  const convertLinksWithText = (text) => {
-    return text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">Link</a>');
+  const linkLabel = (url) => {
+    try {
+      var host = new URL(url).hostname.replace(/^www\./, "");
+      return host.endsWith("instagram.com") ? "Instagram" : host;
+    } catch {
+      return url;
+    }
   }
 
   /**
@@ -184,7 +200,6 @@ function App() {
     }
 
     if (s !== null) {
-      s.html = convertLinksWithText(s.detail);
       setInfo(s);
       setPhoto(0);
 
@@ -244,8 +259,6 @@ function App() {
 
       <div id="shops" ref={shop} style={shopStyle}>
 
-        <SVGButton className="icon" id="backBtn" name="back" size="48px" onClick={handleBack} />
-
         <div className="thumbs">
           {/* 写真ごとに作り直して、縦長かどうかを判定し直す */}
           <div className="thumb" key={photoSrc}>
@@ -259,13 +272,30 @@ function App() {
               {photos.map((src, i) => <span key={src} className={i === photo ? "on" : ""} />)}
             </div>
           </>)}
+          <button className="panelClose" aria-label="閉じる" onClick={handleBack}>✕</button>
         </div>
-        <div className="info">
-          <h1>{info.key}:{info.name}</h1>
-          <p style={{ whiteSpace: "pre-wrap" }} dangerouslySetInnerHTML={{ __html: info.html }} />
+        <div className={"info " + (info.group || "")}>
+          {groupLabels[info.group] && <div className="group">{groupLabels[info.group]}</div>}
+          <div className="title">
+            {showShopNo(info) && <span className="no">{info.key}</span>}
+            <h1>{info.name}</h1>
+          </div>
+          {info.detail && <p className="detail">{info.detail}</p>}
+          {info.links && info.links.length > 0 && (
+            <div className="links">
+              {info.links.map((url) => (
+                <a key={url} href={url} target="_blank" rel="noopener noreferrer">
+                  {linkLabel(url)}
+                  <svg viewBox="0 0 24 24" width="12" height="12" aria-hidden="true">
+                    <path fill="currentColor" d="M14 3h7v7h-2V6.41l-9.29 9.3-1.42-1.42L17.59 5H14V3zM5 5h6v2H7v10h10v-4h2v6H5V5z" />
+                  </svg>
+                </a>
+              ))}
+            </div>
+          )}
         </div>
 
-        <SVGButton className="icon" id="backBBtn" name="back" size="48px" onClick={handleBack} />
+        <button className="back" onClick={handleBack}>マップに戻る</button>
       </div>
     </>
   )

@@ -187,22 +187,43 @@
   opacity: 0.8;
 }
 
+/* 店舗パネル（右から出るカード） */
 #shops {
   margin:0;
   top:0;
   position: fixed;
-  background-color: #f9fff1;
   height: 100vh;
-}
-
-#shops {
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  background-color: #fffdf7;
+  color: #23343a;
+  box-shadow: -8px 0 30px rgba(0, 0, 0, 0.25);
+  font-family: system-ui, "Hiragino Sans", "Noto Sans JP", "Yu Gothic UI", sans-serif;
+  line-height: 1.7;
 }
 
 /* 複数の画像は左右のボタンで切り替える */
 #shops > div.thumbs {
   position: relative;
-  height: 40vh;
+  flex: 0 0 40vh;
+  background-color: #0f4c5c;
+}
+
+#shops > div.thumbs > button.panelClose {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background-color: rgba(0, 0, 0, 0.45);
+  color: white;
+  font-size: 18px;
+  line-height: 36px;
+  cursor: pointer;
 }
 
 #shops > div.thumbs > div.thumb {
@@ -281,21 +302,95 @@
   object-fit: contain;
 }
 
-#shops > h1 {
-  display: inline-block;
-}
-
+/* 区分ごとの色（マップの凡例に合わせる） */
 #shops > div.info {
+  --group-color: #0f4c5c;
+  flex: 1 0 auto;
+  padding: 16px 20px 8px;
+}
+
+#shops > div.info.food { --group-color: #e98d34; }
+#shops > div.info.kitchencar { --group-color: #832d80; }
+#shops > div.info.goods { --group-color: #0993c6; }
+
+#shops > div.info > div.group {
+  margin-bottom: 6px;
+  color: var(--group-color);
+  font-size: 12px;
+  font-weight: bold;
+  letter-spacing: 0.03em;
+}
+
+#shops > div.info > div.title {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+#shops > div.info > div.title > span.no {
+  flex: 0 0 auto;
+  min-width: 36px;
+  margin-top: 1px;
+  padding: 2px 10px;
+  border-radius: 8px;
+  background-color: var(--group-color);
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: bold;
+  text-align: center;
+}
+
+#shops > div.info > div.title > h1 {
+  margin: 0;
   font-size: 24px;
-  padding:10px;
+  line-height: 1.35;
 }
 
-#backBtn {
-  fill: white;
-  position: absolute;
+#shops > div.info > p.detail {
+  margin: 0 0 16px;
+  font-size: 15px;
+  white-space: pre-wrap;
 }
 
-#backBBtn {
-  position: absolute;
-  bottom: 0px;
+#shops > div.info > div.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+#shops > div.info > div.links > a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border: 1.5px solid #0f4c5c;
+  border-radius: 999px;
+  color: #0f4c5c;
+  font-size: 14px;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+#shops > div.info > div.links > a:hover {
+  background-color: #0f4c5c;
+  color: #ffffff;
+}
+
+#shops > button.back {
+  flex: 0 0 auto;
+  margin: 8px 20px 20px;
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  background-color: #0f4c5c;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+#shops > button.back:hover {
+  background-color: #16707f;
 }
