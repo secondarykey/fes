@@ -10,12 +10,13 @@
 // 対応表の列
 //
 //	key    店舗番号（マップ上の番号。画像ファイル名にも使う）
-//	group  food / kitchencar / goods
+//	group  food / kitchencar / goods / facility
 //	name   表示する店名
 //	desc   マップ画像の店舗一覧の説明
 //	app    申込の店名（完全一致）。申込が無ければ空
 //	text   説明文。空なら申込の販売メニュー、"-" なら desc、それ以外はその文（\n で改行）
 //	links  リンク。空なら申込の URL 欄から作る、"-" なら無し、それ以外は空白区切りの URL
+//	rects  マップ画像上のタップ範囲 "x,y,幅,高さ"。複数あれば空白区切り
 package main
 
 import (
@@ -44,6 +45,7 @@ type Shop struct {
 	Name   string   `json:"name"`
 	Detail string   `json:"detail"`
 	Links  []string `json:"links"`
+	Rects  [][4]int `json:"rects"`
 }
 
 // 申込の内容（同じ店名で複数回答があれば、後の回答の空でない値で上書きする）
@@ -113,6 +115,12 @@ func run(apply, list, out string) error {
 func build(r map[string]string, apps map[string]application) (Shop, error) {
 
 	s := Shop{Key: r["key"], Group: r["group"], Name: r["name"], Links: []string{}}
+
+	rects, err := parseRects(r["rects"])
+	if err != nil {
+		return s, err
+	}
+	s.Rects = rects
 
 	var app application
 	if r["app"] != "" {
@@ -214,6 +222,23 @@ func readList(name string) ([]map[string]string, error) {
 		rows = append(rows, row)
 	}
 	return rows, nil
+}
+
+// "x,y,w,h x,y,w,h" を読む
+func parseRects(s string) ([][4]int, error) {
+	fields := strings.Fields(s)
+	if len(fields) == 0 {
+		return nil, fmt.Errorf("rects が無い")
+	}
+	rects := make([][4]int, 0, len(fields))
+	for _, f := range fields {
+		var r [4]int
+		if _, err := fmt.Sscanf(f, "%d,%d,%d,%d", &r[0], &r[1], &r[2], &r[3]); err != nil {
+			return nil, fmt.Errorf("rects の形式が違う: %s", f)
+		}
+		rects = append(rects, r)
+	}
+	return rects, nil
 }
 
 var blankLines = regexp.MustCompile(`\n{3,}`)

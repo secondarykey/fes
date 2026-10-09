@@ -1,106 +1,114 @@
-key	group	name	desc	app	text	links
-1	food	official BAR	ビール、アルコール類			
-2	food	キャプテンジャーク	ジャークチキン	キャプテンジャーク		
-3	food	GREEDY TACOS	タコス、チキンオーバーライス	GREEDY TACOS		
-4	food	RUMORCURRY	カレーライス、麻婆丼、粗びきポークフランク	RUMORCURRY		
-5	food	3 mile Cafe	ロングポテト、チュロス等			
-6	food	24h 無人ホルモン直売所	ホルモン焼きそば、モツ煮	24h無人ホルモン直売所		
-7	food	うまいもん でぶ屋	肉巻きおにぎり、タイ風唐揚げ、かき氷等	でぶ屋		
-8	food	晴レノ日ノ	バインミー、フォー	晴レノ日ノ		
-9	food	淡路島バーガー静岡田町店	ハンバーガー、フライドポテト	淡路島バーガー静岡田町店		
-10	food	極燻	串焼き、燻製			
-11	food	篠原商店	鶏からあげ、さといものからあげ、とり皮のからあげ	篠原商店		
-12	food	29CHORI veg+	厚切りビーフステーキ、ステーキライス	29CHORI veg+		
-13	food	HUMO	メキシカンタコス	HUMO		
-14	food	麺処汐のや	ラーメン、オリジナルフランク	麺処汐のや		
-15	food	Mr.Potato Farm	サツマイモチップス、フレンチフライ	Mr.Potato Farm		
-16	food	CAPU	海老パッタイ、スパイスカレー、スカッシュ	CAPU		
-17	food	Work Shop Aina	バインミー、ペット用ジャーキー	Work Shop Aina		
-18	food	taco doggs	タコス	tacodoggs		
-19	food	caffe kofka	カフェラテ、コーヒー、フルーツドリンク等	caffe kofka (カフェコフカ）		
-20	food	とらさんキッチン	富士山焼きそば、燻製セット等	とらさんキッチン		
-21	food	ふわいろ	わたあめ	ふわいろ		
-22	food	レカント	シュラスコ、シュラスコサンド、黒豚ソーセージ	レカント		
-23	food	sakura bento nasi padang	ミーゴレン、シンガポールカレー	sakura bento nasi padang		
-24	food	Di mar	エンパナーダ、チチャモラーダ	Di mar		
-25	food	牛屋 絆	ホルモン焼きそば	牛屋　絆		
-26	food	二代目 神代	たこ焼き	二代目　神代		
-27	food	らぁ麺 壱喰	ラーメン、抹茶ドリンク	らぁ麺壱喰		
-28	food	SENKACAFE	パニーニ、タンドリーチキン串等	SENKACAFE		
-29	food	KITCHEN RACKLU	小海老ガーリック焼きそば、ジビエ鹿串	KITCHEN RACKLU	-	
-30	food	ハウオリ	唐揚げ	ハウオリ		
-31	food	極東アンティール	ダブルス、ジーラポーク、ジャーク飯	極東アンティール		
-32	food	SHANTY	各種ジャマイカ料理、ジャークチキン、お菓子	SHANTY		
-33	food	GRILL MAN	シュラスコ			
-34	food	Sumiyaki OTO	タコス、トルティーヤ、チリコンカン	Sumiyaki OTO		
-35	food	幸せスイーツ シエンヌ	いちご飴、マスカット飴	幸せスイーツシエンヌ		
-36	food	Cafe Sofia	キッシュ、タルト、バスクチーズケーキ	Cafe Sofia		
-37	food	Rep	炒飯、上海焼きそば、麻婆豆腐、エビマヨ	Rep		
-38	food	苺のありすふぁーむ	苺ドリンク、ベビーカステラ	苺のありすふぁーむ		
-39	food	Bake A Holic 静岡店	シナモンロール	Bake A Holic 静岡店		
-40	food	Ailie の 野生コーヒー	自家焙煎コーヒー			
-41	food	＊花籠＊	ごちそうおむすび、惣菜	＊花籠＊		
-42	food	Restrant Sperare	スパイスを効かせたガレット	Restaurant Sperare		
-43	food	米粉パン CUBREAD	グルテンフリー米粉パン、スイーツ	米粉パンCUBREAD		
-44	kitchencar	Pomaikai	クレープ	Pomaikai		
-45	kitchencar	THE CANDY	パニーニ、フレンチトースト、カレー	THE　CANDY	-	
-46	kitchencar	TACOSMAN	タコス、骨付きフランク、ソフトドリンク	TACOSMAN		
-47	kitchencar	アイカレー	ビリヤニ、チキンロール、ジビエ鹿肉串	アイカレー	ビリヤニ、チキンロール、ジビエ鹿肉串、パニプリ、炙りチーズコーン、果汁100%トロピカルドリンク、マンゴーラッシー	
-48	kitchencar	Lyric Kitchen	ビリアタコス、ポークステーキ、ポテト	Lyric kitchen		
-49	kitchencar	kitchen M	ギャルの作った唐揚げ、ギャル本気焼き特大牛串	kitchen M	メインはギャルの作った唐揚げとギャル本気焼き特大牛串です。\nサブはポテト各種、フランク各種、ミニチュロスBOX、かき氷、フルーツソーダ、かき氷ドリンク各種、やきそば、たこやき、ミニチキンボール、などなどです。	
-50	kitchencar	FOOD TRUCK OFFSHORE	牛たんタコス	FOODTRUCK OFFSHORE		
-51	kitchencar	Rico Rico roast and grill	ペルーローストチキン等	Rico Rico roast and grill		
-52	goods	流木ジョニー／古着ジェリー	レゲエイベント向けの雑貨	流木ジョニー／古着ジェリー		
-53	goods	ATELIER / m-no	ユニセックスリメイクアパレル	ATELIER / m-no		
-54	goods	Toko Ramai	衣類、CHUMS商品、雑貨、ガラポン	Toko Ramai	-	
-55	goods	旅する絵描きや〜chiinii〜	ジャグアタトゥー、インド雑貨	旅する絵描きやchiinii		
-56	goods	Jebhiz	インド製雑貨品	Jebhiz		
-57	goods	Tequila Cream Trade Mark	アパレルブランド	Tequila Cream		https://www.instagram.com/tequilacream/ https://www.tequila-cream.com
-58	goods	アルティスタ	民族楽器体験コーナー	アルティスタ（静岡カルチャー放送局）		
-59	goods	HAE.vintage + Lab.PaperDripper	海外古着＆コーヒー	HAE. vintage × Lab. Paper Dripper		
-60	goods	AYANO knitting	あみぐるみ、ニット小物	AYANO knitting		
-61	goods	YOPOOHRU	オリジナルプリントウェア＆グッズ	YOPOOHRU		
-62	goods	dreamer	ハンドメイドピアス、イヤリング、イヤーカフ	dreamer		
-63	goods	QUARTER MOON	シルバージュエリー、真鍮アクセサリー	QUARTER MOON		
-64	goods	イコレレ	ウクレレや小物楽器の販売、ワークショップ	ウクレレ移動販売＆出張ワークショップ【イコレレ】		
-65	goods	misa♡prana	雑貨、ヘナ＆ジャグアタトゥー	miisa♡prana		
-66	goods	obispo	カーフレッシュナー	obispo		
-67	goods	Mood Book	スマホショルダー、スマホストラップ	Mood Book		
-68	goods	togetoge	ハンドメイドアクセサリー	togetoge		
-69	goods	占いの館 and g Rouge	占い、セラピー、アクセサリー			
-70	goods	SOURIRE	革製品、財布、バッグ、アクセサリー	SOURIRE		
-71	goods	AoLino	ハワイアン芳香剤作りとハワイアンステッカー	AoLino		
-72	goods	japa9ja	洋服、バッグ等の小物	Japa9ja		
-73	goods	エアブラシ Kaira	エアブラシタトゥー	エアブラシKaira		
-74	goods	Chitton & MJ	海ブラ、レジン、皮製品アクセサリー	Chitton &MJ		
-75	goods	RANKUU	エスニック衣料	RANKUU		
-76	goods	古着屋 彩	ブランド古着	古着屋 彩		
-77	goods	achi's works＊21	アフリカンファブリックとハンドメイド品	achi's works＊21		
-78	goods	Re:彩cle	ノースフェイス専門店 古着&新品	体験工房『まかろん』　　　古着の『Re: 彩 cle』	ノースフェイス専門店　古着と新品	https://www.instagram.com/re.cycle2025/
-79	goods	まかろん	食品サンプル風のワークショップ	体験工房『まかろん』　　　古着の『Re: 彩 cle』	食品サンプル風ワークショップ	https://www.instagram.com/makaronroon/
-80	goods	Company 82's	雑貨、アガベ、多肉植物、オリジナルTシャツ	Company 82's	-	
-81	goods	陶工房修	陶器、ワークショップ	陶工房修		
-82	goods	結楽工房	オリジナルイラストによるTシャツ、雑貨作り	結楽工房		
-83	goods	uttasan	オリジナル陶磁器の食器、インテリア	uttasan	-	
-84	goods	Merry	光るステッチ作り、キーホルダー作り	Merry		
-85	goods	91style	お客様の写真やデータでオリジナルTシャツ製作	91style		
-86	goods	SUNDAY CRAFTSMAN CLUB	オリジナルタフティング、雑貨	SUNDAY CRAFTSMANS CLUB		
-87	goods	ONE Wave	オリジナルボトル作り	One Wave		
-88	goods	lulanekh	アフリカ布の帽子、衣類、小物	lulanekh		
-89	goods	HOME BEAT	ミニサウンドシステム販売			
-90	goods	CORNERSHOP	レコード、CD販売			
-91	goods	sowaca	マッサージ、占い	sowaca		
-92	goods	meChill 整体サロン	整体＆足指マッサージ	meChill整体salon		
-93	goods	Nid Belle	耳ツボジュエリー、施術	Nid Belle		
-94	goods	ナチュラルスタイル	手技療法 x スポーツ整体	ナチュラルスタイル（手技療法×スポーツ整体）		
-95	goods	Emilia	リラクゼーション、耳つぼジュエリー	Emilia		
-96	goods	FUMIHEALING：GROUP	深リンパケア	FUMIHEALING：GROUP		
-97	goods	明治安田	健康チェックブース			
-98	goods	chicchi	缶バッジワークショップ	chicchi (チッチ)		
-99	goods	縁日処	射的、スーパーボールすくい	縁日処		
-100	goods	用宗を楽しくする会	用宗＆広野PRブース，食品販売			
-101	goods	おさがりクローゼット	リサイクル子供服交換			
-102	goods	ソフトバンク	ポケモンゲーム、グッズ，キッズコーナー	ソフトバンク静岡下川原	-	
-103	goods	JT 日本たばこ産業	喫煙所設置、商品販売			
-104	goods	Harbor Art Village			・黄桜じーじのけん玉屋さん（けん玉販売とレクチャー）\n・よいこ共和国（無農薬栽培コーヒー、豆乳チャイ）\n・ヤマチキ（ビリヤニ販売）\n・【酒 -sai-】（日本酒、ふんどし、ワークショップ）\n・ktulma（Leather x African fabric）\n・HAPPY MONSTER（100%ペットボトルに絵を書こう）\n・モウマナモク（キャンドル販売、ワークショップ）\n・~nagi（マクラメアクセサリー）	
-105	food	DUTCH	自家製フォカッチャサンド、コーヒー			
+key	group	name	desc	app	text	links	rects
+1	food	official BAR	ビール、アルコール類				638,360,98,26 797,396,51,21
+2	food	キャプテンジャーク	ジャークチキン	キャプテンジャーク			498,164,22,21
+3	food	GREEDY TACOS	タコス、チキンオーバーライス	GREEDY TACOS			524,167,22,22
+4	food	RUMORCURRY	カレーライス、麻婆丼、粗びきポークフランク	RUMORCURRY			552,170,22,22
+5	food	3 mile Cafe	ロングポテト、チュロス等				576,172,22,22
+6	food	24h 無人ホルモン直売所	ホルモン焼きそば、モツ煮	24h無人ホルモン直売所			604,176,22,21
+7	food	うまいもん でぶ屋	肉巻きおにぎり、タイ風唐揚げ、かき氷等	でぶ屋			629,179,22,22
+8	food	晴レノ日ノ	バインミー、フォー	晴レノ日ノ			654,182,22,22
+9	food	淡路島バーガー静岡田町店	ハンバーガー、フライドポテト	淡路島バーガー静岡田町店			679,184,22,22
+10	food	極燻	串焼き、燻製				706,186,22,22
+11	food	篠原商店	鶏からあげ、さといものからあげ、とり皮のからあげ	篠原商店			733,188,21,20
+12	food	29CHORI veg+	厚切りビーフステーキ、ステーキライス	29CHORI veg+			758,189,21,20
+13	food	HUMO	メキシカンタコス	HUMO			782,189,21,21
+14	food	麺処汐のや	ラーメン、オリジナルフランク	麺処汐のや			808,190,21,21
+15	food	Mr.Potato Farm	サツマイモチップス、フレンチフライ	Mr.Potato Farm			833,190,21,21
+16	food	CAPU	海老パッタイ、スパイスカレー、スカッシュ	CAPU			861,190,20,20
+17	food	Work Shop Aina	バインミー、ペット用ジャーキー	Work Shop Aina			886,189,21,20
+18	food	taco doggs	タコス	tacodoggs			912,189,21,20
+19	food	caffe kofka	カフェラテ、コーヒー、フルーツドリンク等	caffe kofka (カフェコフカ）			939,188,21,20
+20	food	とらさんキッチン	富士山焼きそば、燻製セット等	とらさんキッチン			966,186,20,22
+21	food	ふわいろ	わたあめ	ふわいろ			990,184,22,21
+22	food	レカント	シュラスコ、シュラスコサンド、黒豚ソーセージ	レカント			393,316,21,21
+23	food	sakura bento nasi padang	ミーゴレン、シンガポールカレー	sakura bento nasi padang			420,315,20,21
+24	food	Di mar	エンパナーダ、チチャモラーダ	Di mar			446,315,21,21
+25	food	牛屋 絆	ホルモン焼きそば	牛屋　絆			473,315,21,21
+26	food	二代目 神代	たこ焼き	二代目　神代			392,344,21,20
+27	food	らぁ麺 壱喰	ラーメン、抹茶ドリンク	らぁ麺壱喰			420,343,20,21
+28	food	SENKACAFE	パニーニ、タンドリーチキン串等	SENKACAFE			447,342,20,20
+29	food	KITCHEN RACKLU	小海老ガーリック焼きそば、ジビエ鹿串	KITCHEN RACKLU	-		474,342,20,20
+30	food	ハウオリ	唐揚げ	ハウオリ			527,391,21,21
+31	food	極東アンティール	ダブルス、ジーラポーク、ジャーク飯	極東アンティール			554,390,20,21
+32	food	SHANTY	各種ジャマイカ料理、ジャークチキン、お菓子	SHANTY			581,390,20,20
+33	food	GRILL MAN	シュラスコ				608,373,21,21
+34	food	Sumiyaki OTO	タコス、トルティーヤ、チリコンカン	Sumiyaki OTO			1028,342,20,20
+35	food	幸せスイーツ シエンヌ	いちご飴、マスカット飴	幸せスイーツシエンヌ			1053,342,21,20
+36	food	Cafe Sofia	キッシュ、タルト、バスクチーズケーキ	Cafe Sofia			1078,342,21,20
+37	food	Rep	炒飯、上海焼きそば、麻婆豆腐、エビマヨ	Rep			1028,367,20,21
+38	food	苺のありすふぁーむ	苺ドリンク、ベビーカステラ	苺のありすふぁーむ			1054,366,20,21
+39	food	Bake A Holic 静岡店	シナモンロール	Bake A Holic 静岡店			1080,366,20,21
+40	food	Ailie の 野生コーヒー	自家焙煎コーヒー				1056,434,21,21
+41	food	＊花籠＊	ごちそうおむすび、惣菜	＊花籠＊			1108,435,20,21
+42	food	Restrant Sperare	スパイスを効かせたガレット	Restaurant Sperare			1134,433,21,21
+43	food	米粉パン CUBREAD	グルテンフリー米粉パン、スイーツ	米粉パンCUBREAD			1159,432,21,20
+44	kitchencar	Pomaikai	クレープ	Pomaikai			268,304,27,25
+45	kitchencar	THE CANDY	パニーニ、フレンチトースト、カレー	THE　CANDY	-		284,333,27,28
+46	kitchencar	TACOSMAN	タコス、骨付きフランク、ソフトドリンク	TACOSMAN			301,364,27,27
+47	kitchencar	アイカレー	ビリヤニ、チキンロール、ジビエ鹿肉串	アイカレー	ビリヤニ、チキンロール、ジビエ鹿肉串、パニプリ、炙りチーズコーン、果汁100%トロピカルドリンク、マンゴーラッシー		321,395,27,27
+48	kitchencar	Lyric Kitchen	ビリアタコス、ポークステーキ、ポテト	Lyric kitchen			368,422,20,21
+49	kitchencar	kitchen M	ギャルの作った唐揚げ、ギャル本気焼き特大牛串	kitchen M	メインはギャルの作った唐揚げとギャル本気焼き特大牛串です。\nサブはポテト各種、フランク各種、ミニチュロスBOX、かき氷、フルーツソーダ、かき氷ドリンク各種、やきそば、たこやき、ミニチキンボール、などなどです。		408,421,21,20
+50	kitchencar	FOOD TRUCK OFFSHORE	牛たんタコス	FOODTRUCK OFFSHORE			443,419,21,21
+51	kitchencar	Rico Rico roast and grill	ペルーローストチキン等	Rico Rico roast and grill			479,419,21,21
+52	goods	流木ジョニー／古着ジェリー	レゲエイベント向けの雑貨	流木ジョニー／古着ジェリー			528,284,19,20
+53	goods	ATELIER / m-no	ユニセックスリメイクアパレル	ATELIER / m-no			554,284,20,20
+54	goods	Toko Ramai	衣類、CHUMS商品、雑貨、ガラポン	Toko Ramai	-		528,310,20,20
+55	goods	旅する絵描きや〜chiinii〜	ジャグアタトゥー、インド雑貨	旅する絵描きやchiinii			554,310,20,21
+56	goods	Jebhiz	インド製雑貨品	Jebhiz			602,280,21,20
+57	goods	Tequila Cream Trade Mark	アパレルブランド	Tequila Cream		https://www.instagram.com/tequilacream/ https://www.tequila-cream.com	629,280,21,20
+58	goods	アルティスタ	民族楽器体験コーナー	アルティスタ（静岡カルチャー放送局）			604,307,21,20
+59	goods	HAE.vintage + Lab.PaperDripper	海外古着＆コーヒー	HAE. vintage × Lab. Paper Dripper			629,307,21,20
+60	goods	AYANO knitting	あみぐるみ、ニット小物	AYANO knitting			864,254,20,20
+61	goods	YOPOOHRU	オリジナルプリントウェア＆グッズ	YOPOOHRU			892,254,19,20
+62	goods	dreamer	ハンドメイドピアス、イヤリング、イヤーカフ	dreamer			916,254,20,20
+63	goods	QUARTER MOON	シルバージュエリー、真鍮アクセサリー	QUARTER MOON			865,281,21,20
+64	goods	イコレレ	ウクレレや小物楽器の販売、ワークショップ	ウクレレ移動販売＆出張ワークショップ【イコレレ】			891,280,21,21
+65	goods	misa♡prana	雑貨、ヘナ＆ジャグアタトゥー	miisa♡prana			915,279,20,21
+66	goods	obispo	カーフレッシュナー	obispo			965,255,20,20
+67	goods	Mood Book	スマホショルダー、スマホストラップ	Mood Book			992,255,20,19
+68	goods	togetoge	ハンドメイドアクセサリー	togetoge			1020,255,20,20
+69	goods	占いの館 and g Rouge	占い、セラピー、アクセサリー				964,279,21,21
+70	goods	SOURIRE	革製品、財布、バッグ、アクセサリー	SOURIRE			990,278,21,20
+71	goods	AoLino	ハワイアン芳香剤作りとハワイアンステッカー	AoLino			1018,279,21,21
+72	goods	japa9ja	洋服、バッグ等の小物	Japa9ja			1076,254,18,20
+73	goods	エアブラシ Kaira	エアブラシタトゥー	エアブラシKaira			1098,253,21,21
+74	goods	Chitton & MJ	海ブラ、レジン、皮製品アクセサリー	Chitton &MJ			1124,255,21,20
+75	goods	RANKUU	エスニック衣料	RANKUU			1074,280,20,21
+76	goods	古着屋 彩	ブランド古着	古着屋 彩			1098,281,21,20
+77	goods	achi's works＊21	アフリカンファブリックとハンドメイド品	achi's works＊21			1126,281,20,20
+78	goods	Re:彩cle	ノースフェイス専門店 古着&新品	体験工房『まかろん』　　　古着の『Re: 彩 cle』	ノースフェイス専門店　古着と新品	https://www.instagram.com/re.cycle2025/	1134,342,20,20
+79	goods	まかろん	食品サンプル風のワークショップ	体験工房『まかろん』　　　古着の『Re: 彩 cle』	食品サンプル風ワークショップ	https://www.instagram.com/makaronroon/	1161,341,21,21
+80	goods	Company 82's	雑貨、アガベ、多肉植物、オリジナルTシャツ	Company 82's	-		1187,341,20,21
+81	goods	陶工房修	陶器、ワークショップ	陶工房修			1135,367,21,21
+82	goods	結楽工房	オリジナルイラストによるTシャツ、雑貨作り	結楽工房			1161,366,21,21
+83	goods	uttasan	オリジナル陶磁器の食器、インテリア	uttasan	-		1186,366,20,21
+84	goods	Merry	光るステッチ作り、キーホルダー作り	Merry			1239,316,21,21
+85	goods	91style	お客様の写真やデータでオリジナルTシャツ製作	91style			1266,315,19,21
+86	goods	SUNDAY CRAFTSMAN CLUB	オリジナルタフティング、雑貨	SUNDAY CRAFTSMANS CLUB			1239,342,21,21
+87	goods	ONE Wave	オリジナルボトル作り	One Wave			1264,343,21,21
+88	goods	lulanekh	アフリカ布の帽子、衣類、小物	lulanekh			909,426,21,20
+89	goods	HOME BEAT	ミニサウンドシステム販売				942,429,20,21
+90	goods	CORNERSHOP	レコード、CD販売				1022,430,20,20
+91	goods	sowaca	マッサージ、占い	sowaca			1083,434,21,22
+92	goods	meChill 整体サロン	整体＆足指マッサージ	meChill整体salon			1184,430,22,22
+93	goods	Nid Belle	耳ツボジュエリー、施術	Nid Belle			1210,430,22,22
+94	goods	ナチュラルスタイル	手技療法 x スポーツ整体	ナチュラルスタイル（手技療法×スポーツ整体）			1238,428,21,22
+95	goods	Emilia	リラクゼーション、耳つぼジュエリー	Emilia			1264,426,22,22
+96	goods	FUMIHEALING：GROUP	深リンパケア	FUMIHEALING：GROUP			1291,424,21,22
+97	goods	明治安田	健康チェックブース				1337,390,26,27
+98	goods	chicchi	缶バッジワークショップ	chicchi (チッチ)			1350,364,27,28
+99	goods	縁日処	射的、スーパーボールすくい	縁日処			1367,342,28,27
+100	goods	用宗を楽しくする会	用宗＆広野PRブース，食品販売				1385,320,28,28
+101	goods	おさがりクローゼット	リサイクル子供服交換				1404,301,28,28
+102	goods	ソフトバンク	ポケモンゲーム、グッズ，キッズコーナー	ソフトバンク静岡下川原	-		1322,250,18,20 1345,250,19,20 1322,275,18,21
+103	goods	JT 日本たばこ産業	喫煙所設置、商品販売				202,216,21,21 192,152,93,45
+104	goods	Harbor Art Village			・黄桜じーじのけん玉屋さん（けん玉販売とレクチャー）\n・よいこ共和国（無農薬栽培コーヒー、豆乳チャイ）\n・ヤマチキ（ビリヤニ販売）\n・【酒 -sai-】（日本酒、ふんどし、ワークショップ）\n・ktulma（Leather x African fabric）\n・HAPPY MONSTER（100%ペットボトルに絵を書こう）\n・モウマナモク（キャンドル販売、ワークショップ）\n・~nagi（マクラメアクセサリー）		878,334,120,48
+105	food	DUTCH	自家製フォカッチャサンド、コーヒー				860,409,20,20
+A	facility	SEASIDE STAGE	ダンス及びパフォーマンス用ステージ		-	-	1110,139,229,107
+B	facility	BAND STAGE	バンド等によるライブ用メインステージ		-	-	747,359,43,29 668,392,120,70
+C	facility	SOUND STAGE	レゲエを中心に世界の音楽を楽しめる DJ エリア		-	-	303,225,43,28 320,180,100,40
+D	facility	RECORD STAGE	ミニサイズのサウンドシステム使用のレコード DJ エリア		-	-	970,426,45,30 930,470,115,45
+HQ	facility	本部			-	-	794,432,53,21
+WC	facility	トイレ	紙がない時は本部までお知らせください		-	-	195,365,95,95
+GATE	facility	入退場ゲート案内所			-	-	1458,227,134,61
+SEA	facility	海岸	ネイティブはここから見える伊豆をハワイだと思っているという噂も		-	-	700,125,400,35
