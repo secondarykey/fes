@@ -23,3 +23,8 @@
 *.test
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
+
+# 静的アーカイブの出力（app/<アーカイブ名>/）とバックアップの zip。GCS で配信するのでデプロイしない
+/[0-9][0-9][0-9][0-9]-*/
+/_cmd/archive/*/
+*.zip

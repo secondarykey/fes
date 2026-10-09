@@ -16,3 +16,8 @@ manage/dist/
 .*
 *.exe
 !.gitignore
+# 静的アーカイブの出力（app/ で app/_cmd/archive を実行すると app/<アーカイブ名>/ にできる）とバックアップの zip
+app/[0-9][0-9][0-9][0-9]-*/
+app/_cmd/archive/*/
+app/*.zip
+app/_cmd/archive/*.zip
