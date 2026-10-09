@@ -1,6 +1,6 @@
 # 会場マップのデータ作成の半自動化
 
-2026-10-10 時点の整理。2026 秋の作業記録は [maps/data/2026-autumn/README.md](../../maps/data/2026-autumn/README.md)、手順は [maps-update](../skills/maps-update/SKILL.md) を参照。
+2026-10-10 時点の整理。2026 秋の作業記録は [maps/data/2026-Fall/README.md](../../maps/data/2026-Fall/README.md)、手順は [maps-update](../skills/maps-update/SKILL.md) を参照。
 
 ## 方針
 

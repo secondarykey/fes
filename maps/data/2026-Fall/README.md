@@ -20,7 +20,7 @@ ZIP 内のフォルダ名がフォームの質問文（115 文字）で、Window
 | ファイル | 内容 | 作り方 |
 |---|---|---|
 | `src/assets/map.jpg` | マップ画像（2000×522） | チラシの y=0〜522 を切り出した（店舗一覧の見出しの手前まで） |
-| `data/2026-autumn/shops.tsv` | 店舗の対応表（114 行。店舗 105、施設 8、隠れハッち） | 下記 |
+| `data/2026-Fall/shops.tsv` | 店舗の対応表（114 行。店舗 105、施設 8、隠れハッち） | 下記 |
 | `src/data/shops.json` | アプリが読む店舗データ | `tools/shops` で生成 |
 | `public/images/{key}/{n}.webp` | 店舗画像（78 店、273 枚、長い辺 1000、合計約 24MB）。**Git 管理外**。控えは `maps/work/public-images` | `tools/images` → 向きの補正 → webp 化 → `tools/images install` |
 | `src/MapPoint.jsx` の `tops` / `bottoms` | GPS 基準点 | 下記 |

@@ -5,7 +5,7 @@
 // 申込の CSV はリポジトリに置かず、出力にも店名・説明・URL 以外は含めない。
 //
 //	cd maps
-//	go run tools/shops/main.go -apply "<申込の CSV>" -list data/2026-autumn/shops.tsv -out src/data/shops.json
+//	go run tools/shops/main.go -apply "<申込の CSV>" -list data/2026-Fall/shops.tsv -out src/data/shops.json
 //
 // 対応表の列
 //

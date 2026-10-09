@@ -4,7 +4,7 @@
 // webp 化したものをアプリの画像ディレクトリに置く。
 //
 //	cd maps
-//	go run tools/images/main.go extract -zip "<ZIP>" -apply "<申込の CSV>" -list data/2026-autumn/shops.tsv
+//	go run tools/images/main.go extract -zip "<ZIP>" -apply "<申込の CSV>" -list data/2026-Fall/shops.tsv
 //	（work/images の向きを直して webp 化する。例: rotate -r work/images → webp -r work/images）
 //	go run tools/images/main.go install
 //
