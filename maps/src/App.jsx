@@ -95,21 +95,34 @@ function App() {
       return <></>;
     }
 
+    //外側（暗い部分）を押しても閉じる
     return (
-      <div id="experimental">
-        <div id="title">Humming Bird 2026 秋マップ（体験版）</div>
-        <div id="message">
-          まずはこのページを見つけてくれてありがとうございます
-
-          このマップはSmall-Axeプロジェクトが開催しているHummingBird 2026 秋のマップ体験版で
-          次回の開催から導入されるかもしれないマップアプリのテスト版です
-
-          不具合や利用したことによる問題は当方では責任をおいかねますことをご了承ください。
-          特に店舗情報は正しくないかもしれません。
-          何か機能のご要望があれば、お問い合わせなどでお願いします。
-
+      <div id="experimental" onClick={handleHideMessage}>
+        <div className="card" role="dialog" aria-modal="true" aria-labelledby="experimentalTitle"
+          onClick={(e) => e.stopPropagation()}>
+          <div className="head">
+            <img src="/maps/images/BIRD/0.webp" alt="" />
+            <div>
+              <div className="event">Humming Bird 2026 秋</div>
+              <div className="title" id="experimentalTitle">会場マップ<span className="badge">体験版</span></div>
+            </div>
+          </div>
+          <div className="body">
+            <p>まずはこのページを見つけてくれてありがとうございます。</p>
+            <p>
+              このマップは Small-Axe プロジェクトが開催している HummingBird 2026 秋のマップ体験版で、
+              次回の開催から導入されるかもしれないマップアプリのテスト版です。
+            </p>
+            <div className="note">
+              <p>
+                不具合や利用したことによる問題は、当方では責任を負いかねますことをご了承ください。
+                特に店舗情報は正しくないかもしれません。
+              </p>
+              <p>何か機能のご要望があれば、お問い合わせなどでお願いします。</p>
+            </div>
+          </div>
+          <button className="close" onClick={handleHideMessage}>マップを見る</button>
         </div>
-        <button onClick={handleHideMessage} >閉じる</button>
       </div>
     )
   }

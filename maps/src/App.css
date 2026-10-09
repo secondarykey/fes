@@ -1,26 +1,112 @@
+/* 体験版のお知らせ（マップの上に重ねるカード） */
 #experimental {
-
-  position:absolute;
-  left:0;
-  top:0;
-  margin: 10px;
-  padding: 10px;
-
-  width:600px;
-  height:600px;
-  z-index:1000;
-  background-color: #111111;
-  color:#fafafa;
-  border-radius: 10px;
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background-color: rgba(8, 40, 48, 0.55);
+  animation: experimental-fade 0.3s ease-out;
 }
 
-#title {
-  font-size: 32px;
+@keyframes experimental-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
-#message {
+#experimental > .card {
+  width: min(100%, 480px);
+  max-height: 100%;
+  overflow-y: auto;
+  border-radius: 16px;
+  background-color: #fffdf7;
+  color: #23343a;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+  font-family: system-ui, "Hiragino Sans", "Noto Sans JP", "Yu Gothic UI", sans-serif;
+  line-height: 1.7;
+}
+
+#experimental .head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, #0f4c5c, #16707f);
+  color: #ffffff;
+}
+
+#experimental .head > img {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+  border-radius: 50%;
+  background-color: #ffffff;
+}
+
+#experimental .event {
+  font-size: 13px;
+  letter-spacing: 0.05em;
+  opacity: 0.85;
+}
+
+#experimental .title {
+  font-size: 22px;
+  font-weight: bold;
+  line-height: 1.3;
+}
+
+#experimental .badge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background-color: #e8622c;
+  font-size: 12px;
+  font-weight: bold;
+  vertical-align: middle;
+}
+
+#experimental .body {
+  padding: 16px 20px 4px;
+  font-size: 15px;
+}
+
+#experimental .body p {
+  margin: 0 0 12px;
+}
+
+#experimental .note {
+  margin-top: 4px;
+  padding: 10px 12px;
+  border-left: 4px solid #e8622c;
+  border-radius: 6px;
+  background-color: #f3f0e6;
+  font-size: 13px;
+  color: #4a5a5f;
+}
+
+#experimental .note p:last-child {
+  margin-bottom: 0;
+}
+
+#experimental .close {
   display: block;
-  white-space: pre-wrap;
+  width: calc(100% - 40px);
+  margin: 12px 20px 20px;
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  background-color: #0f4c5c;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+#experimental .close:hover {
+  background-color: #16707f;
 }
 
 #debugText {
