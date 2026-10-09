@@ -25,6 +25,8 @@ npm run preview   # 本番ビルドのプレビュー
 | `data/<開催>/shops.tsv` | 店舗の対応表（番号・店名・説明・申込との対応・タップ範囲） |
 | `tools/shops/main.go` | 対応表と出店申込の CSV から `src/data/shops.json` を作る |
 | `tools/images/main.go` | 申込の写真（Drive の ZIP）を店舗番号ごとに分け、webp 化したものを `public/images` に置く |
+| `tools/heicrot/` | HEIC の写真の向きを EXIF に従って直す（cgo を使うため別モジュール） |
+| `data/<開催>/README.md` | その開催で使ったデータと作業の記録 |
 | `src/SVGButton.jsx` | SVG アイコンの汎用ボタン |
 | `src/Window.jsx` | ウィンドウサイズの監視 hook |
 | `eslint.config.js` | ESLint flat config（React 19 / ESLint 10 構成） |
