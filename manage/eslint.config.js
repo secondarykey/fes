@@ -36,4 +36,13 @@ export default [
       'react-hooks/immutability': 'off',
     },
   },
+  {
+    // Node で動かす補助スクリプト（npm run deploy など）
+    files: ['tools/**/*.mjs'],
+    languageOptions: {
+      ecmaVersion: 'latest',
+      sourceType: 'module',
+      globals: globals.node,
+    },
+  },
 ]
