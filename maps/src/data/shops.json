@@ -540,7 +540,6 @@
     "name": "らぁ麺 壱喰",
     "detail": "ラーメン、ソフトドリンク",
     "links": [
-      "https://www.instagram.com/ra_men.ikkuu/",
       "https://www.instagram.com/ra_men_ikkuu/"
     ],
     "rects": [
@@ -801,7 +800,9 @@
     "group": "food",
     "name": "Bake A Holic 静岡店",
     "detail": "シナモンロール",
-    "links": [],
+    "links": [
+      "https://www.instagram.com/bakeaholic.shizuoka/"
+    ],
     "rects": [
       [
         1080,
@@ -1430,7 +1431,9 @@
     "group": "goods",
     "name": "togetoge",
     "detail": "ハンドメイドアクセサリー",
-    "links": [],
+    "links": [
+      "https://www.instagram.com/togetoge.aya/"
+    ],
     "rects": [
       [
         1020,
@@ -1767,7 +1770,9 @@
     "group": "goods",
     "name": "Merry",
     "detail": "ワークショップひかるステック作りキーホルダー作り",
-    "links": [],
+    "links": [
+      "https://www.instagram.com/merry.miyuki1007shop/"
+    ],
     "rects": [
       [
         1239,
