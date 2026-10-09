@@ -7,6 +7,8 @@ import './App.css'
 import SVGButton from './SVGButton';
 import MapPoint from './MapPoint';
 
+//会場が狭いので GPS を優先させる（ネットワーク測位だと誤差が会場の幅を超える）
+const geoOptions = { enableHighAccuracy: true };
 
 function App() {
 
@@ -24,7 +26,7 @@ function App() {
   const [shopStyle, setShopStyle] = useState({left:"100vw",width:"80%",transition:"0.5s"});
 
   const addDebugText = (line) => {
-    setDebugText( debugText+ "\n" + line);
+    setDebugText((text) => text + "\n" + line);
   }
 
   const createShopStyle = (show) => {
@@ -64,11 +66,12 @@ function App() {
   }
 
   useEffect(() => {
-    //navigator.geolocation.getCurrentPosition(handleSuccess, handleError);
-    //navigator.geolocation.getCurrentPosition(handleSuccess, handleError);
     addDebugText("watch:");
-    navigator.geolocation.watchPosition(handleSuccess,handleError);
+    const id = navigator.geolocation.watchPosition(handleSuccess, handleError, geoOptions);
     setLock(true);
+    return () => {
+      navigator.geolocation.clearWatch(id);
+    }
   }, [])
 
   useEffect(() => {
@@ -125,7 +128,7 @@ function App() {
   const handlePosition = () => {
     if ( !lock ) {
       addDebugText("currentPosition:");
-      navigator.geolocation.getCurrentPosition(handleSuccess, handleError);
+      navigator.geolocation.getCurrentPosition(handleSuccess, handleError, geoOptions);
       setLock(true);
     }
   };
