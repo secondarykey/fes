@@ -14,24 +14,13 @@ npm run build     # manage/dist/ に出力
 npm run deploy    # lint → ビルド → app の embed 用ディレクトリへコピー
 ```
 
-ビルドから embed 用ディレクトリへの反映までは `npm run deploy` で行う（`maps/` と同じ）。
+## 反映（npm run deploy）
 
-```powershell
-cd manage
-npm run deploy   # lint → ビルド → app/handler/internal/_assets/manage/ へコピー（中身を入れ替え）
-```
+`npm run deploy` は lint（警告 0 件が必須）→ ビルド → `dist/` を `app/handler/internal/_assets/manage/` へコピー（中身を入れ替え）までを行う。コピーは `tools/deploy.mjs`（Node）で行う。以前の robocopy を使う `npm run deploy` と違い、Windows 以外でも動く。GAE への反映は含まない（→ [fes-deploy](../docs/skills/fes-deploy/SKILL.md)）。
 
-コピーは `tools/deploy.mjs`（Node）で行う。以前の robocopy を使う `npm run deploy` と違い、Windows 以外でも動く。
+`app/` の `go generate ./...` からも、`maps/` とあわせて呼ばれる（→ [app/AGENTS.md](../app/AGENTS.md) の「フロントエンドの反映」）。
 
-`app/` の `go generate` からも呼ばれる。`app/frontend.go` の `//go:generate` が `app/_cmd/frontbuild/main.go` を呼び、`manage/` と `maps/` のそれぞれで（`node_modules` が無ければ `npm install` してから）`npm run deploy` を実行する。
-
-```powershell
-cd app
-go generate ./...
-go vet ./...
-```
-
-`manage/dist/` と `_assets/manage/` はどちらも `.gitignore` 対象で、リポジトリには入っていない。クローン直後は `go generate` を実行しないと `go build` が通らない。片方だけ反映するときは `go run ./_cmd/frontbuild -only manage` のように指定する。
+`manage/dist/` と `_assets/manage/` はどちらも `.gitignore` 対象で、リポジトリには入っていない。
 
 ## 構成
 

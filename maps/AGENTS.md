@@ -1,7 +1,7 @@
 # maps/ — 独立した React アプリ
 
 `maps/` は Go バックエンド（`app/`）とは独立した単体の React SPA。フェスティバルの会場マップをブラウザ上に表示し、来場者の現在地を GPS で重ねて表示する。
-本番では `dist/` を `app/handler/internal/_assets/maps/` にコピーして embed し、`/maps/` で配信する（[fes-deploy](../docs/skills/fes-deploy/SKILL.md)）。店舗やマップの更新手順は [maps-update](../docs/skills/maps-update/SKILL.md) を参照。
+本番では `npm run deploy` で `dist/` を `app/handler/internal/_assets/maps/` にコピーして embed し、`/maps/` で配信する（下の「反映」）。店舗やマップの更新手順は [maps-update](../docs/skills/maps-update/SKILL.md) を参照。
 
 ## コマンド
 
@@ -12,8 +12,16 @@ npm run dev       # 開発サーバー (base path: /maps/)
 npm run build     # maps/dist/ に出力
 npm run lint      # ESLint (警告0件が必須)
 npm run preview   # 本番ビルドのプレビュー
-npm run deploy    # lint → ビルド → app の embed 用ディレクトリへコピー（GAE への反映は含まない。app の go generate からも呼ばれる）
+npm run deploy    # lint → ビルド → app の embed 用ディレクトリへコピー
 ```
+
+## 反映（npm run deploy）
+
+`npm run deploy` は lint（警告 0 件が必須）→ ビルド → `dist/` を `app/handler/internal/_assets/maps/` へコピー（中身を入れ替え）までを行う。コピーは `tools/deploy.mjs`（Node）で行い、店舗画像（`public/images/{店舗番号}/`。Git に入っていない）が無いときは警告を出す。GAE への反映は含まない（→ [fes-deploy](../docs/skills/fes-deploy/SKILL.md)）。
+
+`app/` の `go generate ./...` からも、`manage/` とあわせて呼ばれる（→ [app/AGENTS.md](../app/AGENTS.md) の「フロントエンドの反映」）。
+
+`_assets/maps/` は `.gitignore` 対象で、`//go:embed all:_assets/maps/*` は**ファイルが 1 つも無いとコンパイルエラー**になる。
 
 ## 構成
 
