@@ -1,8 +1,9 @@
 // ビルド成果物（dist）を app の embed 用ディレクトリにコピーする
 //
-// npm run deploy から lint・ビルドの後に呼ばれる。GAE への反映（gcloud app deploy）は行わない。
+// npm run deploy から lint・ビルドの後に呼ばれる（app の go generate からも呼ばれる）。
+// GAE への反映（gcloud app deploy）は行わない。
 // app/handler/internal/_assets/maps は go:embed の対象で、空だとコンパイルエラーになるため、
-// コピーできることを確かめてから中身を入れ替える。
+// ビルド成果物があることを確かめてから中身を入れ替える。
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -14,9 +15,8 @@ const dest = path.resolve(root, '..', 'app', 'handler', 'internal', '_assets', '
 if (!fs.existsSync(path.join(dist, 'index.html'))) {
   throw new Error(`ビルド成果物がありません: ${dist}`)
 }
-if (!fs.existsSync(dest)) {
-  throw new Error(`コピー先がありません: ${dest}`)
-}
+// クローン直後はコピー先が無い（.gitignore 対象のため）
+fs.mkdirSync(dest, { recursive: true })
 
 // 店舗画像は Git に入れていないので、無いまま出していないか知らせる
 const images = path.join(dist, 'images')
