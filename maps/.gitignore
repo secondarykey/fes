@@ -25,3 +25,7 @@ work
 *.njsproj
 *.sln
 *.sw?
+
+# 開催ごとの店舗画像（public/images/{店舗番号}/）。マップはアーカイブせず開催ごとに作り直すため Git に入れない。
+# 申込の写真から tools/images で作る。BIRD / SEA / SECRET と noimage.png は管理する
+/public/images/[0-9]*/
