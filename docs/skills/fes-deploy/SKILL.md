@@ -33,6 +33,7 @@ Copy-Item -Recurse dist\* ..\app\handler\internal\_assets\maps\
 ```
 
 - `_assets/maps/` は `.gitignore` 対象で、リポジトリには入っていない。
+- 店舗画像（`maps/public/images/{店舗番号}/`）も Git に入っていない。ビルドする環境に店舗画像があることを確かめる（無いと全店 `noimage.png` になる）。作り方は [maps-update](../maps-update/SKILL.md) の「店舗画像」。
 - `//go:embed all:_assets/maps/*` は**ファイルが 1 つも無いとコンパイルエラー**になる。削除だけして止めないこと。
 
 ### 3. ビルドを確認する
