@@ -4,11 +4,12 @@
 // 各ディレクトリで npm run deploy（lint → ビルド → embed 用ディレクトリへのコピー）を実行する。
 // node_modules が無ければ先に npm install する。
 //
-// app/handler/internal/frontend.go の go:generate から呼ばれる想定で、
-// デフォルトのパスは同ディレクトリ（app/handler/internal）を基準にしている。
+// app/frontend.go の go:generate から呼ばれる。リポジトリのルートはこのソースの場所から求めるので、
+// どこから実行しても同じに動く。
 //
-//	go generate ./handler/internal
-//	go run ./_cmd/frontbuild -root .. -only maps    （app/ から maps だけを反映する例）
+//	cd app
+//	go generate ./...                        （go generate . でも同じ）
+//	go run ./_cmd/frontbuild -only maps      （maps だけを反映する例）
 package main
 
 import (
@@ -18,14 +19,24 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 )
 
 // 反映する SPA（リポジトリ直下のディレクトリ名）
 var targets = []string{"manage", "maps"}
 
+// このソース（app/_cmd/frontbuild/main.go）から 3 つ上がリポジトリのルート
+func defaultRoot() string {
+	_, file, _, ok := runtime.Caller(0)
+	if !ok {
+		return filepath.Join("..")
+	}
+	return filepath.Join(filepath.Dir(file), "..", "..", "..")
+}
+
 func main() {
-	root := flag.String("root", filepath.Join("..", "..", ".."), "リポジトリのルート")
+	root := flag.String("root", defaultRoot(), "リポジトリのルート")
 	only := flag.String("only", "", "反映する SPA をカンマ区切りで指定する（manage,maps）。空なら全部")
 	flag.Parse()
 
