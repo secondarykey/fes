@@ -5,13 +5,14 @@
 //
 //	cd maps
 //	go run tools/images/main.go extract -zip "<ZIP>" -apply "<申込の CSV>" -list data/2026-autumn/shops.tsv
-//	（work/images を webp 化する。例: webp -r work/images）
+//	（work/images の向きを直して webp 化する。例: rotate -r work/images → webp -r work/images）
 //	go run tools/images/main.go install
 //
 // extract
 //
 //	ZIP の全ファイルを work/drive に取り出し（ZIP 内の長いフォルダ名は外す）、
 //	店舗の写真を work/images/{key}/{n}.{拡張子} に置く。n は申込の写真の順番（0 始まり）。
+//	webp ツールが対象にするよう、HEIC は .heif、元が webp のものは .webp.png にする。
 //	ZIP には Drive の ID が無いため、ファイルの更新時刻（アップロード時刻）と申込の回答時刻で対応づける。
 //	ZIP の時刻と回答時刻の時差は、写真の枚数が一致する回答が最も多くなるものを選ぶ。
 //	既にあるファイルは上書きしない。
@@ -19,7 +20,8 @@
 // install
 //
 //	work/images/{key}/{n}_{幅}x{高さ}.webp を public/images/{key}/{n}.webp に置く。
-//	webp が無い写真（50KiB 未満で変換されなかったもの、元が webp のもの）は元の画像をそのまま置く。
+//	EXIF の向きを直した {n}_rotate_{幅}x{高さ}.webp があればそちらを使う。
+//	webp が無い写真（50KiB 未満で変換されなかったものなど）は元の画像をそのまま置く。
 package main
 
 import (
@@ -150,9 +152,13 @@ func extract(args []string) error {
 		}
 		for n, f := range r.files {
 			ext := strings.ToLower(path.Ext(f.Name))
-			// webp ツールは拡張子で対象を選ぶ（HEIC は heif として扱われる）
-			if ext == ".heic" {
+			// webp ツールは拡張子で対象を選び、中身で判定してデコードする。
+			// HEIC は heif、元が webp のものは .png を付けて縮小の対象にする
+			switch ext {
+			case ".heic":
 				ext = ".heif"
+			case ".webp":
+				ext = ".webp.png"
 			}
 			dst := filepath.Join(*work, "images", k.key, fmt.Sprintf("%d%s", n, ext))
 			if err := writeFile(f, dst); err != nil {
@@ -315,8 +321,8 @@ func writeFile(f *zip.File, dst string) error {
 	return os.Rename(tmp, dst)
 }
 
-var webpName = regexp.MustCompile(`^(\d+)_\d+x\d+\.webp$`)
-var sourceName = regexp.MustCompile(`^(\d+)\.(jpg|jpeg|png|webp)$`)
+var webpName = regexp.MustCompile(`^(\d+)(?:_rotate)?_\d+x\d+\.webp$`)
+var sourceName = regexp.MustCompile(`^(\d+)\.(jpg|jpeg|png|webp\.png)$`)
 
 func install(args []string) error {
 
@@ -341,11 +347,13 @@ func install(args []string) error {
 			return err
 		}
 
-		// 番号ごとに webp を優先し、無ければ元の画像を使う
+		// 番号ごとに webp を優先し（向きを直した _rotate があればそちら）、無ければ元の画像を使う
 		chosen := make(map[string]string)
 		for _, e := range entries {
 			if m := webpName.FindStringSubmatch(e.Name()); m != nil {
-				chosen[m[1]] = e.Name()
+				if cur, ok := chosen[m[1]]; !ok || !strings.Contains(cur, "_rotate_") {
+					chosen[m[1]] = e.Name()
+				}
 			}
 		}
 		for _, e := range entries {
@@ -359,7 +367,7 @@ func install(args []string) error {
 			}
 		}
 		for _, e := range entries {
-			n := strings.TrimSuffix(e.Name(), path.Ext(e.Name()))
+			n := strings.SplitN(e.Name(), ".", 2)[0]
 			if _, ok := chosen[n]; !ok && !strings.Contains(n, "_") && !strings.HasSuffix(e.Name(), ".tmp") {
 				fmt.Fprintf(os.Stderr, "%s/%s: 使える画像が無い\n", key, e.Name())
 			}
@@ -367,7 +375,7 @@ func install(args []string) error {
 
 		for n, name := range chosen {
 			ext := path.Ext(name)
-			if webpName.MatchString(name) {
+			if webpName.MatchString(name) || strings.HasSuffix(name, ".webp.png") {
 				ext = ".webp"
 			}
 			if err := copyFile(filepath.Join(src, key, name), filepath.Join(*dest, key, n+ext)); err != nil {
