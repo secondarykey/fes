@@ -31,24 +31,39 @@ class MapPoint {
         this.shops = [];
 
         //上辺・下辺の基準点 (画像上の x, y, 緯度, 経度)
-        //x の小さい順（経度の大きい順）に並べる
-        this.tops.push(new Point(166, 152, 34.9254303, 138.3806125));
-        this.tops.push(new Point(287, 152, 34.9253489, 138.380396));
-        this.tops.push(new Point(490, 152, 34.9252625, 138.3801465));
-        this.tops.push(new Point(685, 152, 34.9250932, 138.379661));
-        this.tops.push(new Point(1049, 151, 34.9249304, 138.3792077));
-        this.tops.push(new Point(1098, 151, 34.9248893, 138.3791032));
-        this.tops.push(new Point(1463, 151, 34.9247155, 138.3785479));
-        this.tops.push(new Point(1600, 151, 34.9246473, 138.3783819));
+        //会場の外周を歩いて記録した GPS（2025-04-05）を、マップ上の外周（店の裏・ステージの後ろ）に
+        //歩いた距離の比率で並べたもの。x の小さい順（経度の大きい順）に並べる
+        this.tops.push(new Point(320, 170, 34.9255120, 138.3803060));
+        this.tops.push(new Point(343, 163, 34.9254790, 138.3802950));
+        this.tops.push(new Point(401, 150, 34.9254150, 138.3802310));
+        this.tops.push(new Point(488, 156, 34.9253660, 138.3800950));
+        this.tops.push(new Point(573, 158, 34.9253270, 138.3799590));
+        this.tops.push(new Point(654, 160, 34.9252970, 138.3798260));
+        this.tops.push(new Point(743, 162, 34.9252500, 138.3796860));
+        this.tops.push(new Point(814, 163, 34.9252220, 138.3795700));
+        this.tops.push(new Point(891, 165, 34.9251800, 138.3794500));
+        this.tops.push(new Point(975, 167, 34.9251190, 138.3793270));
+        this.tops.push(new Point(1057, 167, 34.9250690, 138.3792030));
+        this.tops.push(new Point(1145, 150, 34.9250530, 138.3790490));
+        this.tops.push(new Point(1238, 140, 34.9250470, 138.3788880));
+        this.tops.push(new Point(1324, 161, 34.9249720, 138.3787660));
+        this.tops.push(new Point(1389, 177, 34.9248960, 138.3786980));
+        this.tops.push(new Point(1458, 195, 34.9248670, 138.3785820));
 
-        this.bottoms.push(new Point(49, 496, 34.9260959, 138.3806125));
-        this.bottoms.push(new Point(236, 495, 34.9259624, 138.380227));
-        this.bottoms.push(new Point(592, 495, 34.92577, 138.3796955));
-        this.bottoms.push(new Point(835, 495, 34.9256645, 138.3793818));
-        this.bottoms.push(new Point(1127, 494, 34.9255352, 138.3790495));
-        this.bottoms.push(new Point(1346, 494, 34.9254138, 138.3786924));
-        this.bottoms.push(new Point(1492, 494, 34.9253461, 138.3785264));
-        this.bottoms.push(new Point(1573, 494, 34.92528, 138.3783819));
+        this.bottoms.push(new Point(330, 465, 34.9256930, 138.3800470));
+        this.bottoms.push(new Point(432, 465, 34.9256710, 138.3798940));
+        this.bottoms.push(new Point(527, 465, 34.9256180, 138.3797660));
+        this.bottoms.push(new Point(611, 469, 34.9255440, 138.3796750));
+        this.bottoms.push(new Point(690, 470, 34.9254740, 138.3795900));
+        this.bottoms.push(new Point(774, 470, 34.9254450, 138.3794680));
+        this.bottoms.push(new Point(877, 469, 34.9254760, 138.3793170));
+        this.bottoms.push(new Point(967, 466, 34.9254540, 138.3791830));
+        this.bottoms.push(new Point(1050, 461, 34.9254120, 138.3790670));
+        this.bottoms.push(new Point(1140, 457, 34.9253700, 138.3789400));
+        this.bottoms.push(new Point(1220, 456, 34.9253310, 138.3788290));
+        this.bottoms.push(new Point(1300, 455, 34.9252850, 138.3787210));
+        this.bottoms.push(new Point(1396, 449, 34.9252020, 138.3786150));
+        this.bottoms.push(new Point(1478, 425, 34.9251110, 138.3785430));
 
         this.initShops();
     }
@@ -149,8 +164,8 @@ class MapPoint {
         var d = p1.x - p2.x;
         //逆側からの値でXは算出
         var x = Math.trunc(p2.x + ((1 - odds) * d));
-        //Yは必ず同じ
-        var y = p1.y
+        //基準点は外周に沿って置くので Y も補間する
+        var y = Math.trunc(p2.y + ((1 - odds) * (p1.y - p2.y)));
 
         //同じ倍率の値を取得
         var latD = p2.latitude - p1.latitude;
