@@ -15,6 +15,9 @@ class MapPoint {
     static offsetTop = 170;
     static offsetBottom = 600;
 
+    //現在地アイコンの大きさ
+    static pointerSize = 48;
+
     static tops = [];
     static bottoms = [];
 
@@ -234,8 +237,10 @@ class MapPoint {
       if ( p === null ) {
         return null;
       }
+      //アイコンは p を中心に描画している
+      var size = MapPoint.pointerSize;
       return new Shop("BIRD", "ハッち", `Humming Bird 非公式キャラ のハッちです。`,
-            new Rect(p.x, p.y, 100, 100))
+            new Rect(p.x - size / 2, p.y - size / 2, size, size))
     }
 
     /**
