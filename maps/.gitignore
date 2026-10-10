@@ -1,0 +1,31 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# 店舗画像の作業場所（申込の写真の原本など。tools/images が使う）
+work
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# 開催ごとの店舗画像（public/images/{店舗番号}/）。マップはアーカイブせず開催ごとに作り直すため Git に入れない。
+# 申込の写真から tools/images で作る。BIRD / SEA / SECRET と noimage.png は管理する
+/public/images/[0-9]*/

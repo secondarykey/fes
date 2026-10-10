@@ -6,8 +6,8 @@ import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   Switch, Button, Tooltip, Snackbar, Alert,
   Dialog, DialogTitle, DialogContent, DialogContentText,
-  DialogActions, TextField, Checkbox, Divider,
-  IconButton, Menu, MenuItem,
+  DialogActions, TextField, Checkbox, Divider, FormControlLabel,
+  IconButton, Menu, MenuItem, InputAdornment,
 } from '@mui/material'
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
@@ -19,6 +19,9 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import SaveIcon from '@mui/icons-material/Save'
 import ListIcon from '@mui/icons-material/List'
 import AddIcon from '@mui/icons-material/Add'
+import SearchIcon from '@mui/icons-material/Search'
+import ClearIcon from '@mui/icons-material/Clear'
+import PublishIcon from '@mui/icons-material/Publish'
 import {
   DndContext,
   closestCenter,
@@ -33,20 +36,24 @@ import {
   arrayMove,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { getPage, getChildren, newPage, sequencePages, movePage, deletePages, getPageListHtml } from '../api/page'
+import { getPage, getChildren, newPage, sequencePages, movePages, deletePages, getPageListHtml } from '../api/page'
 import { addDraftPages, getCurrentDraft } from '../api/draft'
+import { publishPages } from '../api/template'
 
 SortableRow.propTypes = {
   item: PropTypes.object.isRequired,
-  idx: PropTypes.number.isRequired,
   selected: PropTypes.bool,
+  dragDisabled: PropTypes.bool,
   onToggleSelect: PropTypes.func,
   onToggleEnabled: PropTypes.func,
   onMoveToTop: PropTypes.func,
   onMoveToBottom: PropTypes.func,
 }
-function SortableRow({ item, idx, selected, onToggleSelect, onToggleEnabled, onMoveToTop, onMoveToBottom }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.id })
+function SortableRow({ item, selected, dragDisabled, onToggleSelect, onToggleEnabled, onMoveToTop, onMoveToBottom }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: item.id,
+    disabled: dragDisabled,
+  })
   const [menuAnchor, setMenuAnchor] = useState(null)
 
   const style = {
@@ -67,8 +74,15 @@ function SortableRow({ item, idx, selected, onToggleSelect, onToggleEnabled, onM
       <TableCell padding="checkbox">
         <Checkbox size="small" checked={selected} onChange={() => onToggleSelect(item.id)} />
       </TableCell>
-      <TableCell sx={{ width: 40, cursor: 'grab', color: 'text.disabled', px: 1 }}
-        {...attributes} {...listeners}>
+      <TableCell
+        sx={{
+          width: 40,
+          cursor: dragDisabled ? 'default' : 'grab',
+          color: 'text.disabled',
+          px: 1,
+          opacity: dragDisabled ? 0.3 : 1,
+        }}
+        {...(dragDisabled ? {} : attributes)} {...(dragDisabled ? {} : listeners)}>
         <DragIndicatorIcon fontSize="small" />
       </TableCell>
       <TableCell>
@@ -80,7 +94,7 @@ function SortableRow({ item, idx, selected, onToggleSelect, onToggleEnabled, onM
         <Switch
           size="small"
           checked={item.enabled}
-          onChange={() => onToggleEnabled(idx)}
+          onChange={() => onToggleEnabled(item.id)}
           color="success"
         />
       </TableCell>
@@ -94,11 +108,11 @@ function SortableRow({ item, idx, selected, onToggleSelect, onToggleEnabled, onM
           <MoreVertIcon fontSize="small" />
         </IconButton>
         <Menu anchorEl={menuAnchor} open={Boolean(menuAnchor)} onClose={handleMenuClose}>
-          <MenuItem onClick={() => { handleMenuClose(); onMoveToTop(item.id) }}>
+          <MenuItem disabled={dragDisabled} onClick={() => { handleMenuClose(); onMoveToTop(item.id) }}>
             <VerticalAlignTopIcon fontSize="small" sx={{ mr: 1 }} />
             先頭へ移動
           </MenuItem>
-          <MenuItem onClick={() => { handleMenuClose(); onMoveToBottom(item.id) }}>
+          <MenuItem disabled={dragDisabled} onClick={() => { handleMenuClose(); onMoveToBottom(item.id) }}>
             <VerticalAlignBottomIcon fontSize="small" sx={{ mr: 1 }} />
             末尾へ移動
           </MenuItem>
@@ -114,6 +128,7 @@ export default function PageChildren() {
   const [page, setPage] = useState(null)
   const [breadcrumbs, setBreadcrumbs] = useState([])
   const [items, setItems] = useState([])
+  const [filter, setFilter] = useState('')
   const [selected, setSelected] = useState(new Set())
   const [dirty, setDirty] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -125,6 +140,9 @@ export default function PageChildren() {
   const [listLoading, setListLoading] = useState(false)
   const [snack, setSnack] = useState({ open: false, message: '', severity: 'success' })
   const [draftRegistering, setDraftRegistering] = useState(false)
+  const [publishing, setPublishing] = useState(false)
+  //公開日の打ち直しは既定でオフ
+  const [publishUpdate, setPublishUpdate] = useState(false)
 
   const sensors = useSensors(useSensor(PointerSensor))
 
@@ -161,12 +179,10 @@ export default function PageChildren() {
     setDirty(true)
   }
 
-  const toggleEnabled = (idx) => {
-    setItems(prev => {
-      const next = [...prev]
-      next[idx] = { ...next[idx], enabled: !next[idx].enabled }
-      return next
-    })
+  const toggleEnabled = (id) => {
+    setItems(prev => prev.map(item => (
+      item.id === id ? { ...item, enabled: !item.enabled } : item
+    )))
     setDirty(true)
   }
 
@@ -178,15 +194,26 @@ export default function PageChildren() {
     })
   }
 
-  const allSelected = items.length > 0 && selected.size === items.length
-  const someSelected = selected.size > 0 && selected.size < items.length
+  const filterWord = filter.trim().toLowerCase()
+  const filtering = filterWord !== ''
+  const visibleItems = filtering
+    ? items.filter(i => (i.name || '').toLowerCase().includes(filterWord))
+    : items
+
+  const visibleSelectedCount = visibleItems.filter(i => selected.has(i.id)).length
+  const allSelected = visibleItems.length > 0 && visibleSelectedCount === visibleItems.length
+  const someSelected = visibleSelectedCount > 0 && visibleSelectedCount < visibleItems.length
 
   const toggleSelectAll = () => {
-    if (allSelected) {
-      setSelected(new Set())
-    } else {
-      setSelected(new Set(items.map(i => i.id)))
-    }
+    setSelected(prev => {
+      const next = new Set(prev)
+      if (allSelected) {
+        visibleItems.forEach(i => next.delete(i.id))
+      } else {
+        visibleItems.forEach(i => next.add(i.id))
+      }
+      return next
+    })
   }
 
   const handleSave = async () => {
@@ -236,9 +263,10 @@ export default function PageChildren() {
 
   const handleMove = async () => {
     setMoveDialog(false)
+    const ids = [...selected]
     try {
-      await Promise.all([...selected].map(id => movePage(id, moveTargetId)))
-      showSnack(`${selected.size} 件移動しました`)
+      await movePages(ids, moveTargetId.trim())
+      showSnack(`${ids.length} 件移動しました`)
       setMoveTargetId('Trash')
       await load()
     } catch (e) {
@@ -265,7 +293,10 @@ export default function PageChildren() {
   }
 
   const setAllEnabled = (enabled) => {
-    setItems(prev => prev.map(item => ({ ...item, enabled })))
+    const targets = new Set(visibleItems.map(i => i.id))
+    setItems(prev => prev.map(item => (
+      targets.has(item.id) ? { ...item, enabled } : item
+    )))
     setDirty(true)
   }
 
@@ -284,6 +315,19 @@ export default function PageChildren() {
       showSnack(e.message, 'error')
     } finally {
       setDraftRegistering(false)
+    }
+  }
+
+  const handlePublish = async () => {
+    setPublishing(true)
+    const ids = [...selected]
+    try {
+      await publishPages(ids, publishUpdate)
+      showSnack(`${ids.length} 件を公開しました`)
+    } catch (e) {
+      showSnack(e.message, 'error')
+    } finally {
+      setPublishing(false)
     }
   }
 
@@ -327,9 +371,32 @@ export default function PageChildren() {
 
       <Paper sx={{ p: 3 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2, flexWrap: 'wrap' }}>
-          <Typography variant="h6" sx={{ flexGrow: 1 }}>
+          <Typography variant="h6">
             子ページ管理 — {page.name}
           </Typography>
+          <TextField
+            value={filter}
+            onChange={e => setFilter(e.target.value)}
+            size="small"
+            placeholder="ページ名で検索"
+            sx={{ width: 220, ml: 'auto' }}
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon fontSize="small" color="disabled" />
+                  </InputAdornment>
+                ),
+                endAdornment: filtering ? (
+                  <InputAdornment position="end">
+                    <IconButton size="small" onClick={() => setFilter('')} aria-label="検索条件をクリア">
+                      <ClearIcon fontSize="small" />
+                    </IconButton>
+                  </InputAdornment>
+                ) : null,
+              },
+            }}
+          />
           {key === 'Trash' && (
             <>
               <Button size="small" variant="outlined" color="success" onClick={() => setAllEnabled(true)}>
@@ -363,13 +430,19 @@ export default function PageChildren() {
           </Button>
         </Box>
 
-        {items.length === 0 ? (
+        {filtering && (
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+            「{filter.trim()}」で絞り込み中: {visibleItems.length} / {items.length} 件（並べ替えは検索解除後に行えます）
+          </Typography>
+        )}
+
+        {visibleItems.length === 0 ? (
           <Typography color="text.secondary" sx={{ py: 4, textAlign: 'center' }}>
-            子ページがありません
+            {filtering ? '一致する子ページがありません' : '子ページがありません'}
           </Typography>
         ) : (
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-            <SortableContext items={items.map(i => i.id)} strategy={verticalListSortingStrategy}>
+            <SortableContext items={visibleItems.map(i => i.id)} strategy={verticalListSortingStrategy}>
               <TableContainer>
                 <Table size="small">
                   <TableHead>
@@ -390,12 +463,12 @@ export default function PageChildren() {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {items.map((item, idx) => (
+                    {visibleItems.map((item) => (
                       <SortableRow
                         key={item.id}
                         item={item}
-                        idx={idx}
                         selected={selected.has(item.id)}
+                        dragDisabled={filtering}
                         onToggleSelect={toggleSelect}
                         onToggleEnabled={toggleEnabled}
                         onMoveToTop={handleMoveToTop}
@@ -416,7 +489,47 @@ export default function PageChildren() {
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
               <Typography variant="body2" color="text.secondary" sx={{ flexShrink: 0 }}>
                 選択中: {selected.size} 件
+                {filtering && selected.size !== visibleSelectedCount && `（表示中 ${visibleSelectedCount} 件）`}
               </Typography>
+              {key !== 'Trash' && (
+                <Button
+                  variant="outlined"
+                  color="info"
+                  disabled={selected.size === 0 || draftRegistering}
+                  onClick={handleAddToDraft}
+                >
+                  ドラフトに登録
+                </Button>
+              )}
+              {key !== 'Trash' && (
+                <>
+                  <Tooltip title="オンにすると公開日を現在時刻で打ち直します。オフの場合は最終公開日のみ更新されます">
+                    <FormControlLabel
+                      sx={{ mr: 0 }}
+                      control={
+                        <Checkbox
+                          size="small"
+                          checked={publishUpdate}
+                          onChange={e => setPublishUpdate(e.target.checked)}
+                        />
+                      }
+                      label={<Typography variant="body2">公開日を更新</Typography>}
+                    />
+                  </Tooltip>
+                  <Button
+                    variant="outlined"
+                    color="success"
+                    startIcon={publishing ? <CircularProgress size={14} /> : <PublishIcon />}
+                    disabled={selected.size === 0 || publishing}
+                    onClick={handlePublish}
+                  >
+                    {publishing ? '公開中...' : '公開'}
+                  </Button>
+                </>
+              )}
+            </Box>
+
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 1.5, flexWrap: 'wrap' }}>
               {key !== 'Trash' && (
                 <>
                   <TextField
@@ -447,16 +560,6 @@ export default function PageChildren() {
               >
                 削除
               </Button>
-              {key !== 'Trash' && (
-                <Button
-                  variant="outlined"
-                  color="info"
-                  disabled={selected.size === 0 || draftRegistering}
-                  onClick={handleAddToDraft}
-                >
-                  ドラフトに登録
-                </Button>
-              )}
             </Box>
           </>
         )}

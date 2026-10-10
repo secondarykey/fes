@@ -1,0 +1,2361 @@
+[
+  {
+    "key": "1",
+    "group": "food",
+    "name": "official BAR",
+    "detail": "ビール、アルコール類",
+    "links": [],
+    "rects": [
+      [
+        638,
+        360,
+        98,
+        26
+      ],
+      [
+        797,
+        396,
+        51,
+        21
+      ]
+    ],
+    "images": []
+  },
+  {
+    "key": "2",
+    "group": "food",
+    "name": "キャプテンジャーク",
+    "detail": "ジャークチキン、オーバーライス",
+    "links": [],
+    "rects": [
+      [
+        498,
+        164,
+        22,
+        21
+      ]
+    ],
+    "images": []
+  },
+  {
+    "key": "3",
+    "group": "food",
+    "name": "GREEDY TACOS",
+    "detail": "TACOS、チキンオーバーライス、",
+    "links": [],
+    "rects": [
+      [
+        524,
+        167,
+        22,
+        22
+      ]
+    ],
+    "images": [
+      "3/0.webp"
+    ]
+  },
+  {
+    "key": "4",
+    "group": "food",
+    "name": "RUMORCURRY",
+    "detail": "カレーライス、麻婆茄子丼、粗挽きポークフランク",
+    "links": [],
+    "rects": [
+      [
+        552,
+        170,
+        22,
+        22
+      ]
+    ],
+    "images": [
+      "4/0.webp"
+    ]
+  },
+  {
+    "key": "5",
+    "group": "food",
+    "name": "3 mile Cafe",
+    "detail": "ロングポテト、チュロス等",
+    "links": [],
+    "rects": [
+      [
+        576,
+        172,
+        22,
+        22
+      ]
+    ],
+    "images": []
+  },
+  {
+    "key": "6",
+    "group": "food",
+    "name": "24h 無人ホルモン直売所",
+    "detail": "ホルモン焼きそば　ホルモン焼き　もつ煮　焼き鳥　地鶏炭火焼",
+    "links": [
+      "https://www.instagram.com/24h.mujin.horumon.shizuoka/"
+    ],
+    "rects": [
+      [
+        604,
+        176,
+        22,
+        21
+      ]
+    ],
+    "images": [
+      "6/0.webp",
+      "6/1.webp",
+      "6/2.webp",
+      "6/3.webp"
+    ]
+  },
+  {
+    "key": "7",
+    "group": "food",
+    "name": "うまいもん でぶ屋",
+    "detail": "魔法の粉をかけたフライドポテト、唐揚げ、焼きそば、フランクフルト、ロングチュロス、かき氷、飲料",
+    "links": [],
+    "rects": [
+      [
+        629,
+        179,
+        22,
+        22
+      ]
+    ],
+    "images": [
+      "7/0.webp"
+    ]
+  },
+  {
+    "key": "8",
+    "group": "food",
+    "name": "晴レノ日ノ",
+    "detail": "バイン・ミー　フォー",
+    "links": [
+      "https://www.instagram.com/harenohi.no"
+    ],
+    "rects": [
+      [
+        654,
+        182,
+        22,
+        22
+      ]
+    ],
+    "images": [
+      "8/0.webp",
+      "8/1.webp",
+      "8/2.webp",
+      "8/3.webp",
+      "8/4.webp"
+    ]
+  },
+  {
+    "key": "9",
+    "group": "food",
+    "name": "淡路島バーガー静岡田町店",
+    "detail": "ハンバーガー、フライドポテト、チュロス、串焼き、燻製",
+    "links": [
+      "https://www.instagram.com/awajishima_burger_tamachi"
+    ],
+    "rects": [
+      [
+        679,
+        184,
+        22,
+        22
+      ]
+    ],
+    "images": [
+      "9/0.webp",
+      "9/1.webp"
+    ]
+  },
+  {
+    "key": "10",
+    "group": "food",
+    "name": "極燻",
+    "detail": "串焼き、燻製",
+    "links": [],
+    "rects": [
+      [
+        706,
+        186,
+        22,
+        22
+      ]
+    ],
+    "images": []
+  },
+  {
+    "key": "11",
+    "group": "food",
+    "name": "篠原商店",
+    "detail": "鶏のからあげ、さといものからあげ、とり皮のからあげ、根菜のからあげ",
+    "links": [
+      "https://www.instagram.com/wasouzaishinoharasyouten/"
+    ],
+    "rects": [
+      [
+        733,
+        188,
+        21,
+        20
+      ]
+    ],
+    "images": [
+      "11/0.webp",
+      "11/1.webp",
+      "11/2.webp",
+      "11/3.webp"
+    ]
+  },
+  {
+    "key": "12",
+    "group": "food",
+    "name": "29CHORI veg+",
+    "detail": "厚切りビーフステーキ\nジャンボハーブフランク\nスペシャルステーキライス\nチージーフライドポテト",
+    "links": [
+      "https://www.instagram.com/gido_29chori"
+    ],
+    "rects": [
+      [
+        758,
+        189,
+        21,
+        20
+      ]
+    ],
+    "images": [
+      "12/0.webp",
+      "12/1.webp",
+      "12/2.webp",
+      "12/3.webp",
+      "12/4.webp"
+    ]
+  },
+  {
+    "key": "13",
+    "group": "food",
+    "name": "HUMO",
+    "detail": "メキシカンタコス",
+    "links": [],
+    "rects": [
+      [
+        782,
+        189,
+        21,
+        21
+      ]
+    ],
+    "images": [
+      "13/0.webp",
+      "13/1.webp",
+      "13/2.webp"
+    ]
+  },
+  {
+    "key": "14",
+    "group": "food",
+    "name": "麺処汐のや",
+    "detail": "ラーメン　オリジナルフランク　オリジナルドリンク",
+    "links": [
+      "https://www.instagram.com/shionoya1209"
+    ],
+    "rects": [
+      [
+        808,
+        190,
+        21,
+        21
+      ]
+    ],
+    "images": [
+      "14/0.webp",
+      "14/1.webp",
+      "14/2.webp",
+      "14/3.webp",
+      "14/4.webp"
+    ]
+  },
+  {
+    "key": "15",
+    "group": "food",
+    "name": "Mr.Potato Farm",
+    "detail": "ディップソース付フレンチフライ・サツマイモチップス・焼き芋のフライドポテト他",
+    "links": [
+      "https://www.instagram.com/mr.potatofarm/"
+    ],
+    "rects": [
+      [
+        833,
+        190,
+        21,
+        21
+      ]
+    ],
+    "images": [
+      "15/0.webp",
+      "15/1.webp",
+      "15/2.webp",
+      "15/3.webp"
+    ]
+  },
+  {
+    "key": "16",
+    "group": "food",
+    "name": "CAPU",
+    "detail": "海老パッタイ、スパイスカレー、スカッシュ、有機ジンジャーエール、豆乳チャイ",
+    "links": [
+      "https://www.cafecapu.com"
+    ],
+    "rects": [
+      [
+        861,
+        190,
+        20,
+        20
+      ]
+    ],
+    "images": [
+      "16/0.webp",
+      "16/1.webp",
+      "16/2.webp"
+    ]
+  },
+  {
+    "key": "17",
+    "group": "food",
+    "name": "Work Shop Aina",
+    "detail": "バインミー、ペット用ジャーキー",
+    "links": [
+      "https://www.instagram.com/aina_20250401"
+    ],
+    "rects": [
+      [
+        886,
+        189,
+        21,
+        20
+      ]
+    ],
+    "images": [
+      "17/0.webp",
+      "17/1.webp",
+      "17/2.webp",
+      "17/3.webp"
+    ]
+  },
+  {
+    "key": "18",
+    "group": "food",
+    "name": "taco doggs",
+    "detail": "タコス",
+    "links": [],
+    "rects": [
+      [
+        912,
+        189,
+        21,
+        20
+      ]
+    ],
+    "images": []
+  },
+  {
+    "key": "19",
+    "group": "food",
+    "name": "caffe kofka",
+    "detail": "コーヒー、カフェオレ、ソフトドリンク等",
+    "links": [
+      "https://kofka.fm/"
+    ],
+    "rects": [
+      [
+        939,
+        188,
+        21,
+        20
+      ]
+    ],
+    "images": [
+      "19/0.webp",
+      "19/1.webp",
+      "19/2.webp",
+      "19/3.webp",
+      "19/4.webp"
+    ]
+  },
+  {
+    "key": "20",
+    "group": "food",
+    "name": "とらさんキッチン",
+    "detail": "富士山焼きそば、たこ焼き、フリフリポテナゲ、おいなりさん、厚揚げハムチーズ、燻製セット、(暑かったらかき氷)",
+    "links": [],
+    "rects": [
+      [
+        966,
+        186,
+        20,
+        22
+      ]
+    ],
+    "images": [
+      "20/0.webp",
+      "20/1.webp",
+      "20/2.webp"
+    ]
+  },
+  {
+    "key": "21",
+    "group": "food",
+    "name": "ふわいろ",
+    "detail": "わたあめ",
+    "links": [],
+    "rects": [
+      [
+        990,
+        184,
+        22,
+        21
+      ]
+    ],
+    "images": [
+      "21/0.webp",
+      "21/1.webp",
+      "21/2.webp",
+      "21/3.webp",
+      "21/4.webp"
+    ]
+  },
+  {
+    "key": "22",
+    "group": "food",
+    "name": "レカント",
+    "detail": "シュラスコ\n肉巻きおにぎり\nシュラスコサンド",
+    "links": [],
+    "rects": [
+      [
+        393,
+        316,
+        21,
+        21
+      ]
+    ],
+    "images": [
+      "22/0.webp",
+      "22/1.webp"
+    ]
+  },
+  {
+    "key": "23",
+    "group": "food",
+    "name": "sakura bento nasi padang",
+    "detail": "東南アジア料理(ミーゴレン、チキンライス、シンガポールカレー等)",
+    "links": [
+      "https://www.instagram.com/k.popo.27"
+    ],
+    "rects": [
+      [
+        420,
+        315,
+        20,
+        21
+      ]
+    ],
+    "images": [
+      "23/0.webp",
+      "23/1.webp",
+      "23/2.webp",
+      "23/3.webp",
+      "23/4.webp"
+    ]
+  },
+  {
+    "key": "24",
+    "group": "food",
+    "name": "Di mar",
+    "detail": "エンパナーダ、タチャモラダー",
+    "links": [
+      "https://www.instagram.com/di_marciem"
+    ],
+    "rects": [
+      [
+        446,
+        315,
+        21,
+        21
+      ]
+    ],
+    "images": [
+      "24/0.webp"
+    ]
+  },
+  {
+    "key": "25",
+    "group": "food",
+    "name": "牛屋 絆",
+    "detail": "ホルモン焼そば",
+    "links": [
+      "https://www.instagram.com/gyuuya._.han"
+    ],
+    "rects": [
+      [
+        473,
+        315,
+        21,
+        21
+      ]
+    ],
+    "images": [
+      "25/0.webp",
+      "25/1.webp"
+    ]
+  },
+  {
+    "key": "26",
+    "group": "food",
+    "name": "二代目 神代",
+    "detail": "たこ焼き",
+    "links": [],
+    "rects": [
+      [
+        392,
+        344,
+        21,
+        20
+      ]
+    ],
+    "images": [
+      "26/0.webp"
+    ]
+  },
+  {
+    "key": "27",
+    "group": "food",
+    "name": "らぁ麺 壱喰",
+    "detail": "ラーメン、ソフトドリンク",
+    "links": [
+      "https://www.instagram.com/ra_men_ikkuu/"
+    ],
+    "rects": [
+      [
+        420,
+        343,
+        20,
+        21
+      ]
+    ],
+    "images": [
+      "27/0.webp",
+      "27/1.webp",
+      "27/2.webp",
+      "27/3.webp",
+      "27/4.webp"
+    ]
+  },
+  {
+    "key": "28",
+    "group": "food",
+    "name": "SENKACAFE",
+    "detail": "パニーニ　タンドリーチキン串　やみつきパリパリ　ナゲット　ポテト　ソフトドリンク等",
+    "links": [],
+    "rects": [
+      [
+        447,
+        342,
+        20,
+        20
+      ]
+    ],
+    "images": [
+      "28/0.webp",
+      "28/1.webp",
+      "28/2.webp",
+      "28/3.webp",
+      "28/4.webp"
+    ]
+  },
+  {
+    "key": "29",
+    "group": "food",
+    "name": "KITCHEN RACKLU",
+    "detail": "小海老ガーリック焼きそば、ジビエ鹿串",
+    "links": [
+      "https://www.instagram.com/kitchenracklu"
+    ],
+    "rects": [
+      [
+        474,
+        342,
+        20,
+        20
+      ]
+    ],
+    "images": [
+      "29/0.webp",
+      "29/1.webp",
+      "29/2.webp",
+      "29/3.webp",
+      "29/4.webp"
+    ]
+  },
+  {
+    "key": "30",
+    "group": "food",
+    "name": "ハウオリ",
+    "detail": "唐揚げ",
+    "links": [
+      "https://www.instagram.com/goose.258769"
+    ],
+    "rects": [
+      [
+        527,
+        391,
+        21,
+        21
+      ]
+    ],
+    "images": [
+      "30/0.webp",
+      "30/1.webp",
+      "30/2.webp"
+    ]
+  },
+  {
+    "key": "31",
+    "group": "food",
+    "name": "極東アンティール",
+    "detail": "ジャーク飯、ジーラポーク、レモンサワー、チャイ　等",
+    "links": [
+      "https://far-east-antilles.com"
+    ],
+    "rects": [
+      [
+        554,
+        390,
+        20,
+        21
+      ]
+    ],
+    "images": [
+      "31/0.webp",
+      "31/1.webp",
+      "31/2.webp"
+    ]
+  },
+  {
+    "key": "32",
+    "group": "food",
+    "name": "SHANTY",
+    "detail": "無添加ジャークチキン",
+    "links": [],
+    "rects": [
+      [
+        581,
+        390,
+        20,
+        20
+      ]
+    ],
+    "images": [
+      "32/0.webp",
+      "32/1.webp",
+      "32/2.webp",
+      "32/3.webp",
+      "32/4.webp"
+    ]
+  },
+  {
+    "key": "33",
+    "group": "food",
+    "name": "GRILL MAN",
+    "detail": "シュラスコ",
+    "links": [],
+    "rects": [
+      [
+        608,
+        373,
+        21,
+        21
+      ]
+    ],
+    "images": []
+  },
+  {
+    "key": "34",
+    "group": "food",
+    "name": "Sumiyaki OTO",
+    "detail": "黒豚ソーセージ\nジャンボ鶏もも串\nジャンボつくね串\nイカの丸焼き\n焼きとうもろこし\nタコス\nトルティーヤ\nチリコンカン\nなど",
+    "links": [],
+    "rects": [
+      [
+        1028,
+        342,
+        20,
+        20
+      ]
+    ],
+    "images": [
+      "34/0.webp",
+      "34/1.webp"
+    ]
+  },
+  {
+    "key": "35",
+    "group": "food",
+    "name": "幸せスイーツ シエンヌ",
+    "detail": "メインメニュー\n日本一売れているいちご飴・マスカット飴・ミックス飴\n\nサブメニュー\n①デコレーションチョコバナナ\n②ラムネ•お茶•京都伏見の名水",
+    "links": [
+      "https://www.instagram.com/chiennes_k_sweets_2023/profilecard/"
+    ],
+    "rects": [
+      [
+        1053,
+        342,
+        21,
+        20
+      ]
+    ],
+    "images": [
+      "35/0.webp",
+      "35/1.webp",
+      "35/2.webp",
+      "35/3.webp",
+      "35/4.webp"
+    ]
+  },
+  {
+    "key": "36",
+    "group": "food",
+    "name": "Cafe Sofia",
+    "detail": "ソーセージ、ドリンク、キッシュ、タルト、シューケット、バスクチーズケーキ",
+    "links": [
+      "https://www.instagram.com/cafesofia.jp/"
+    ],
+    "rects": [
+      [
+        1078,
+        342,
+        21,
+        20
+      ]
+    ],
+    "images": [
+      "36/0.webp",
+      "36/1.webp",
+      "36/2.webp",
+      "36/3.webp",
+      "36/4.webp"
+    ]
+  },
+  {
+    "key": "37",
+    "group": "food",
+    "name": "Rep",
+    "detail": "炒飯　上海焼きそば　麻婆豆腐　エビマヨ　自家製ドリンク",
+    "links": [],
+    "rects": [
+      [
+        1028,
+        367,
+        20,
+        21
+      ]
+    ],
+    "images": [
+      "37/0.webp",
+      "37/1.webp",
+      "37/2.webp",
+      "37/3.webp",
+      "37/4.webp"
+    ]
+  },
+  {
+    "key": "38",
+    "group": "food",
+    "name": "苺のありすふぁーむ",
+    "detail": "苺ドリンク、ベビーカステラ",
+    "links": [
+      "https://alicefarm15.com"
+    ],
+    "rects": [
+      [
+        1054,
+        366,
+        20,
+        21
+      ]
+    ],
+    "images": [
+      "38/0.webp"
+    ]
+  },
+  {
+    "key": "39",
+    "group": "food",
+    "name": "Bake A Holic 静岡店",
+    "detail": "シナモンロール",
+    "links": [
+      "https://www.instagram.com/bakeaholic.shizuoka/"
+    ],
+    "rects": [
+      [
+        1080,
+        366,
+        20,
+        21
+      ]
+    ],
+    "images": [
+      "39/0.webp",
+      "39/1.webp"
+    ]
+  },
+  {
+    "key": "40",
+    "group": "food",
+    "name": "Ailie の 野生コーヒー",
+    "detail": "自家焙煎コーヒー",
+    "links": [],
+    "rects": [
+      [
+        1056,
+        434,
+        21,
+        21
+      ]
+    ],
+    "images": []
+  },
+  {
+    "key": "41",
+    "group": "food",
+    "name": "＊花籠＊",
+    "detail": "ごちそうおむすび・お惣菜",
+    "links": [
+      "https://www.instagram.com/omusubi.hanakago"
+    ],
+    "rects": [
+      [
+        1108,
+        435,
+        20,
+        21
+      ]
+    ],
+    "images": [
+      "41/0.webp",
+      "41/1.webp",
+      "41/2.webp",
+      "41/3.webp",
+      "41/4.webp"
+    ]
+  },
+  {
+    "key": "42",
+    "group": "food",
+    "name": "Restrant Sperare",
+    "detail": "スパイスを効かせたガレット",
+    "links": [
+      "https://shizuoka.mypl.net/shop/00000378881/"
+    ],
+    "rects": [
+      [
+        1134,
+        433,
+        21,
+        21
+      ]
+    ],
+    "images": [
+      "42/0.webp",
+      "42/1.webp"
+    ]
+  },
+  {
+    "key": "43",
+    "group": "food",
+    "name": "米粉パン CUBREAD",
+    "detail": "グルテンフリー米粉パン　米粉スイーツ",
+    "links": [
+      "https://www.instagram.com/cubread.m2"
+    ],
+    "rects": [
+      [
+        1159,
+        432,
+        21,
+        20
+      ]
+    ],
+    "images": [
+      "43/0.webp",
+      "43/1.webp",
+      "43/2.webp"
+    ]
+  },
+  {
+    "key": "44",
+    "group": "kitchencar",
+    "name": "Pomaikai",
+    "detail": "クレープ",
+    "links": [],
+    "rects": [
+      [
+        268,
+        304,
+        27,
+        25
+      ]
+    ],
+    "images": [
+      "44/0.webp",
+      "44/1.webp"
+    ]
+  },
+  {
+    "key": "45",
+    "group": "kitchencar",
+    "name": "THE CANDY",
+    "detail": "パニーニ、フレンチトースト、カレー",
+    "links": [
+      "https://www.instagram.com/thecandy_foodtruck"
+    ],
+    "rects": [
+      [
+        284,
+        333,
+        27,
+        28
+      ]
+    ],
+    "images": [
+      "45/0.webp",
+      "45/1.webp",
+      "45/2.webp",
+      "45/3.webp",
+      "45/4.webp"
+    ]
+  },
+  {
+    "key": "46",
+    "group": "kitchencar",
+    "name": "TACOSMAN",
+    "detail": "タコス、骨付きフランク、ソフトドリンク",
+    "links": [
+      "https://www.instagram.com/tacosman_fujinomiya"
+    ],
+    "rects": [
+      [
+        301,
+        364,
+        27,
+        27
+      ]
+    ],
+    "images": [
+      "46/0.webp",
+      "46/1.webp",
+      "46/2.webp"
+    ]
+  },
+  {
+    "key": "47",
+    "group": "kitchencar",
+    "name": "アイカレー",
+    "detail": "ビリヤニ、チキンロール、ジビエ鹿肉串、パニプリ、炙りチーズコーン、果汁100%トロピカルドリンク、マンゴーラッシー",
+    "links": [
+      "https://www.instagram.com/icurry_south_indian_cuisine"
+    ],
+    "rects": [
+      [
+        321,
+        395,
+        27,
+        27
+      ]
+    ],
+    "images": [
+      "47/0.webp",
+      "47/1.webp",
+      "47/2.webp",
+      "47/3.webp",
+      "47/4.webp"
+    ]
+  },
+  {
+    "key": "48",
+    "group": "kitchencar",
+    "name": "Lyric Kitchen",
+    "detail": "ビリアタコス、ポークステーキ、ポテト、ドリンク",
+    "links": [
+      "https://www.instagram.com/lyric_kitchen"
+    ],
+    "rects": [
+      [
+        368,
+        422,
+        20,
+        21
+      ]
+    ],
+    "images": [
+      "48/0.webp",
+      "48/1.webp"
+    ]
+  },
+  {
+    "key": "49",
+    "group": "kitchencar",
+    "name": "kitchen M",
+    "detail": "メインはギャルの作った唐揚げとギャル本気焼き特大牛串です。\nサブはポテト各種、フランク各種、ミニチュロスBOX、かき氷、フルーツソーダ、かき氷ドリンク各種、やきそば、たこやき、ミニチキンボール、などなどです。",
+    "links": [
+      "https://www.instagram.com/kitchen_m844/"
+    ],
+    "rects": [
+      [
+        408,
+        421,
+        21,
+        20
+      ]
+    ],
+    "images": [
+      "49/0.webp",
+      "49/1.webp",
+      "49/2.webp",
+      "49/3.webp"
+    ]
+  },
+  {
+    "key": "50",
+    "group": "kitchencar",
+    "name": "FOOD TRUCK OFFSHORE",
+    "detail": "牛タンタコス",
+    "links": [
+      "https://offshore202008.com/"
+    ],
+    "rects": [
+      [
+        443,
+        419,
+        21,
+        21
+      ]
+    ],
+    "images": [
+      "50/0.webp",
+      "50/1.webp"
+    ]
+  },
+  {
+    "key": "51",
+    "group": "kitchencar",
+    "name": "Rico Rico roast and grill",
+    "detail": "• ペルーローストチキン（メイン）\n• アメリカンバーガー\n• アルゼンチンエンパ",
+    "links": [
+      "https://www.instagram.com/ricorico.roast.grill/"
+    ],
+    "rects": [
+      [
+        479,
+        419,
+        21,
+        21
+      ]
+    ],
+    "images": [
+      "51/0.webp",
+      "51/1.webp",
+      "51/2.webp"
+    ]
+  },
+  {
+    "key": "52",
+    "group": "goods",
+    "name": "流木ジョニー／古着ジェリー",
+    "detail": "レゲエイベント向けの雑貨、衣料の販売。",
+    "links": [
+      "https://hassle-toyama.com/"
+    ],
+    "rects": [
+      [
+        528,
+        284,
+        19,
+        20
+      ]
+    ],
+    "images": [
+      "52/0.webp",
+      "52/1.webp",
+      "52/2.webp",
+      "52/3.webp",
+      "52/4.webp"
+    ]
+  },
+  {
+    "key": "53",
+    "group": "goods",
+    "name": "ATELIER / m-no",
+    "detail": "unisex リメイクアパレル",
+    "links": [
+      "https://www.instagram.com/atelier_mno/"
+    ],
+    "rects": [
+      [
+        554,
+        284,
+        20,
+        20
+      ]
+    ],
+    "images": []
+  },
+  {
+    "key": "54",
+    "group": "goods",
+    "name": "Toko Ramai",
+    "detail": "衣類、CHUMS商品、雑貨、ガラポン",
+    "links": [
+      "https://www.instagram.com/tokoramai2",
+      "https://www.tokoramai2.com"
+    ],
+    "rects": [
+      [
+        528,
+        310,
+        20,
+        20
+      ]
+    ],
+    "images": []
+  },
+  {
+    "key": "55",
+    "group": "goods",
+    "name": "旅する絵描きや〜chiinii〜",
+    "detail": "ジャグアタトゥー（ボディアート）\n手描き作品、インド雑貨の販売",
+    "links": [
+      "https://www.instagram.com/chisatotaki/"
+    ],
+    "rects": [
+      [
+        554,
+        310,
+        20,
+        21
+      ]
+    ],
+    "images": [
+      "55/0.webp",
+      "55/1.webp",
+      "55/2.webp",
+      "55/3.webp"
+    ]
+  },
+  {
+    "key": "56",
+    "group": "goods",
+    "name": "Jebhiz",
+    "detail": "インド製　雑貨品",
+    "links": [
+      "https://www.instagram.com/nomess.llc/"
+    ],
+    "rects": [
+      [
+        602,
+        280,
+        21,
+        20
+      ]
+    ],
+    "images": [
+      "56/0.webp"
+    ]
+  },
+  {
+    "key": "57",
+    "group": "goods",
+    "name": "Tequila Cream Trade Mark",
+    "detail": "オリジナルアパレルブランド",
+    "links": [
+      "https://www.instagram.com/tequilacream/",
+      "https://www.tequila-cream.com"
+    ],
+    "rects": [
+      [
+        629,
+        280,
+        21,
+        20
+      ]
+    ],
+    "images": []
+  },
+  {
+    "key": "58",
+    "group": "goods",
+    "name": "アルティスタ",
+    "detail": "民族楽器体験コーナー。",
+    "links": [
+      "https://www.youtube.com/@%E3%82%A2%E3%83%AB%E3%83%86%E3%82%A3%E3%82%B9%E3%82%BF%E9%9D%99%E5%B2%A1"
+    ],
+    "rects": [
+      [
+        604,
+        307,
+        21,
+        20
+      ]
+    ],
+    "images": [
+      "58/0.webp"
+    ]
+  },
+  {
+    "key": "59",
+    "group": "goods",
+    "name": "HAE.vintage + Lab.PaperDripper",
+    "detail": "海外古着と自家焙煎珈琲と焼菓子",
+    "links": [
+      "https://www.instagram.com/hae.vintage"
+    ],
+    "rects": [
+      [
+        629,
+        307,
+        21,
+        20
+      ]
+    ],
+    "images": [
+      "59/0.webp",
+      "59/1.webp",
+      "59/2.webp",
+      "59/3.webp"
+    ]
+  },
+  {
+    "key": "60",
+    "group": "goods",
+    "name": "AYANO knitting",
+    "detail": "あみぐるみ・ニット小物・雑貨",
+    "links": [
+      "https://www.instagram.com/ayano_knitting/"
+    ],
+    "rects": [
+      [
+        864,
+        254,
+        20,
+        20
+      ]
+    ],
+    "images": [
+      "60/0.webp",
+      "60/1.webp"
+    ]
+  },
+  {
+    "key": "61",
+    "group": "goods",
+    "name": "YOPOOHRU",
+    "detail": "オリジナルプリントウェア＆グッズ・カッティングステッカー",
+    "links": [
+      "https://www.instagram.com/yopoohru/"
+    ],
+    "rects": [
+      [
+        892,
+        254,
+        19,
+        20
+      ]
+    ],
+    "images": [
+      "61/0.webp",
+      "61/1.webp",
+      "61/2.webp",
+      "61/3.webp",
+      "61/4.webp"
+    ]
+  },
+  {
+    "key": "62",
+    "group": "goods",
+    "name": "dreamer",
+    "detail": "ハンドメイドピアス、イヤリング、イヤーカフ",
+    "links": [
+      "https://www.instagram.com/_dreamer2023_"
+    ],
+    "rects": [
+      [
+        916,
+        254,
+        20,
+        20
+      ]
+    ],
+    "images": [
+      "62/0.webp",
+      "62/1.webp",
+      "62/2.webp",
+      "62/3.webp",
+      "62/4.webp"
+    ]
+  },
+  {
+    "key": "63",
+    "group": "goods",
+    "name": "QUARTER MOON",
+    "detail": "シルバージュエリー 真鍮アクセサリー ビーズワークアクセサリー 革小物",
+    "links": [
+      "https://www.instagram.com/QUARTER.MOON4/"
+    ],
+    "rects": [
+      [
+        865,
+        281,
+        21,
+        20
+      ]
+    ],
+    "images": [
+      "63/0.webp",
+      "63/1.webp",
+      "63/2.webp",
+      "63/3.webp",
+      "63/4.webp"
+    ]
+  },
+  {
+    "key": "64",
+    "group": "goods",
+    "name": "イコレレ",
+    "detail": "ウクレレ及び小物楽器の販売　ウクレレ演奏ワークショップ",
+    "links": [
+      "https://note.com/iko15ico"
+    ],
+    "rects": [
+      [
+        891,
+        280,
+        21,
+        21
+      ]
+    ],
+    "images": [
+      "64/0.webp",
+      "64/1.webp",
+      "64/2.webp",
+      "64/3.webp"
+    ]
+  },
+  {
+    "key": "65",
+    "group": "goods",
+    "name": "misa♡prana",
+    "detail": "◆ヘナタトゥー＆ジャグアタトゥーをお肌に描きます◆ヘナアートの技法を用いて描いた作品雑貨類の販売◆天然素材100%手作り練り香の販売",
+    "links": [],
+    "rects": [
+      [
+        915,
+        279,
+        20,
+        21
+      ]
+    ],
+    "images": [
+      "65/0.webp",
+      "65/1.webp",
+      "65/2.webp",
+      "65/3.webp",
+      "65/4.webp"
+    ]
+  },
+  {
+    "key": "66",
+    "group": "goods",
+    "name": "obispo",
+    "detail": "カーフレッシュナー",
+    "links": [
+      "https://obispo.stores.jp"
+    ],
+    "rects": [
+      [
+        965,
+        255,
+        20,
+        20
+      ]
+    ],
+    "images": [
+      "66/0.webp",
+      "66/1.webp",
+      "66/2.webp",
+      "66/3.webp"
+    ]
+  },
+  {
+    "key": "67",
+    "group": "goods",
+    "name": "Mood Book",
+    "detail": "スマホショルダー、スマホストラップ、リップケース、メッセージカード",
+    "links": [
+      "https://www.instagram.com/moodbook_hanare"
+    ],
+    "rects": [
+      [
+        992,
+        255,
+        20,
+        19
+      ]
+    ],
+    "images": [
+      "67/0.webp",
+      "67/1.webp",
+      "67/2.webp",
+      "67/3.webp",
+      "67/4.webp"
+    ]
+  },
+  {
+    "key": "68",
+    "group": "goods",
+    "name": "togetoge",
+    "detail": "ハンドメイドアクセサリー",
+    "links": [
+      "https://www.instagram.com/togetoge.aya/"
+    ],
+    "rects": [
+      [
+        1020,
+        255,
+        20,
+        20
+      ]
+    ],
+    "images": []
+  },
+  {
+    "key": "69",
+    "group": "goods",
+    "name": "占いの館 and g Rouge",
+    "detail": "占い、セラピー、アクセサリー",
+    "links": [],
+    "rects": [
+      [
+        964,
+        279,
+        21,
+        21
+      ]
+    ],
+    "images": []
+  },
+  {
+    "key": "70",
+    "group": "goods",
+    "name": "SOURIRE",
+    "detail": "革製品（財布・バック・アクセサリー他）",
+    "links": [
+      "https://an-isubari.jp"
+    ],
+    "rects": [
+      [
+        990,
+        278,
+        21,
+        20
+      ]
+    ],
+    "images": []
+  },
+  {
+    "key": "71",
+    "group": "goods",
+    "name": "AoLino",
+    "detail": "WSの内容はハワイアン芳香剤作りとハワイアンステッカー",
+    "links": [
+      "https://www.instagram.com/yuuko_3955"
+    ],
+    "rects": [
+      [
+        1018,
+        279,
+        21,
+        21
+      ]
+    ],
+    "images": [
+      "71/0.webp",
+      "71/1.webp",
+      "71/2.webp",
+      "71/3.webp"
+    ]
+  },
+  {
+    "key": "72",
+    "group": "goods",
+    "name": "japa9ja",
+    "detail": "洋服・バッグ等の小物",
+    "links": [
+      "https://www.instagram.com/japa9ja.co"
+    ],
+    "rects": [
+      [
+        1076,
+        254,
+        18,
+        20
+      ]
+    ],
+    "images": [
+      "72/0.webp",
+      "72/1.webp",
+      "72/2.webp",
+      "72/3.webp",
+      "72/4.webp"
+    ]
+  },
+  {
+    "key": "73",
+    "group": "goods",
+    "name": "エアブラシ Kaira",
+    "detail": "エアブラシタトゥー",
+    "links": [
+      "https://www.instagram.com/kaira_airbrush"
+    ],
+    "rects": [
+      [
+        1098,
+        253,
+        21,
+        21
+      ]
+    ],
+    "images": [
+      "73/0.webp",
+      "73/1.webp",
+      "73/2.webp",
+      "73/3.webp",
+      "73/4.webp"
+    ]
+  },
+  {
+    "key": "74",
+    "group": "goods",
+    "name": "Chitton & MJ",
+    "detail": "海プラ・レジン・皮製品アクセサリー&グッズ、流木アートグッズ、耳ツボアクセサリー、レジンキーホルダー制作のワークショップ",
+    "links": [
+      "https://www.instagram.com/chitton_2ne"
+    ],
+    "rects": [
+      [
+        1124,
+        255,
+        21,
+        20
+      ]
+    ],
+    "images": [
+      "74/0.webp",
+      "74/1.webp",
+      "74/2.webp",
+      "74/3.webp",
+      "74/4.webp"
+    ]
+  },
+  {
+    "key": "75",
+    "group": "goods",
+    "name": "RANKUU",
+    "detail": "エスニック衣料品",
+    "links": [
+      "https://www.rakuten.co.jp/rankuu/"
+    ],
+    "rects": [
+      [
+        1074,
+        280,
+        20,
+        21
+      ]
+    ],
+    "images": [
+      "75/0.webp"
+    ]
+  },
+  {
+    "key": "76",
+    "group": "goods",
+    "name": "古着屋 彩",
+    "detail": "ブランド古着、ブランド古雑貨",
+    "links": [
+      "https://www.instagram.com/vint.age_say/"
+    ],
+    "rects": [
+      [
+        1098,
+        281,
+        21,
+        20
+      ]
+    ],
+    "images": [
+      "76/0.webp",
+      "76/1.webp",
+      "76/2.webp",
+      "76/3.webp",
+      "76/4.webp"
+    ]
+  },
+  {
+    "key": "77",
+    "group": "goods",
+    "name": "achi's works＊21",
+    "detail": "アフリカンファブリックと天然素材を使用したハンドメイドの洋服・装飾雑貨等",
+    "links": [
+      "https://www.instagram.com/petit_achi821"
+    ],
+    "rects": [
+      [
+        1126,
+        281,
+        20,
+        20
+      ]
+    ],
+    "images": [
+      "77/0.webp",
+      "77/1.webp",
+      "77/2.webp",
+      "77/3.webp",
+      "77/4.webp"
+    ]
+  },
+  {
+    "key": "78",
+    "group": "goods",
+    "name": "Re:彩cle",
+    "detail": "ノースフェイス専門店　古着と新品",
+    "links": [
+      "https://www.instagram.com/re.cycle2025/"
+    ],
+    "rects": [
+      [
+        1134,
+        342,
+        20,
+        20
+      ]
+    ],
+    "images": [
+      "78/1.webp"
+    ]
+  },
+  {
+    "key": "79",
+    "group": "goods",
+    "name": "まかろん",
+    "detail": "食品サンプル風ワークショップ",
+    "links": [
+      "https://www.instagram.com/makaronroon/"
+    ],
+    "rects": [
+      [
+        1161,
+        341,
+        21,
+        21
+      ]
+    ],
+    "images": [
+      "79/0.webp"
+    ]
+  },
+  {
+    "key": "80",
+    "group": "goods",
+    "name": "Company 82's",
+    "detail": "雑貨、アガベ、多肉植物、オリジナルTシャツ",
+    "links": [],
+    "rects": [
+      [
+        1187,
+        341,
+        20,
+        21
+      ]
+    ],
+    "images": [
+      "80/0.webp",
+      "80/1.webp",
+      "80/2.webp",
+      "80/3.webp",
+      "80/4.webp"
+    ]
+  },
+  {
+    "key": "81",
+    "group": "goods",
+    "name": "陶工房修",
+    "detail": "陶器",
+    "links": [],
+    "rects": [
+      [
+        1135,
+        367,
+        21,
+        21
+      ]
+    ],
+    "images": []
+  },
+  {
+    "key": "82",
+    "group": "goods",
+    "name": "結楽工房",
+    "detail": "オリジナルイラストによる雑貨作り（Tシャツ、バッグ、キーホルダーなど）",
+    "links": [
+      "https://www.instagram.com/yurari.laser"
+    ],
+    "rects": [
+      [
+        1161,
+        366,
+        21,
+        21
+      ]
+    ],
+    "images": [
+      "82/0.webp",
+      "82/1.webp",
+      "82/2.webp",
+      "82/3.webp",
+      "82/4.webp"
+    ]
+  },
+  {
+    "key": "83",
+    "group": "goods",
+    "name": "uttasan",
+    "detail": "オリジナル陶磁器の食器、インテリア",
+    "links": [],
+    "rects": [
+      [
+        1186,
+        366,
+        20,
+        21
+      ]
+    ],
+    "images": [
+      "83/0.webp",
+      "83/1.webp",
+      "83/2.webp",
+      "83/3.webp",
+      "83/4.webp"
+    ]
+  },
+  {
+    "key": "84",
+    "group": "goods",
+    "name": "Merry",
+    "detail": "ワークショップひかるステック作りキーホルダー作り",
+    "links": [
+      "https://www.instagram.com/merry.miyuki1007shop/"
+    ],
+    "rects": [
+      [
+        1239,
+        316,
+        21,
+        21
+      ]
+    ],
+    "images": [
+      "84/0.webp",
+      "84/1.webp",
+      "84/2.webp"
+    ]
+  },
+  {
+    "key": "85",
+    "group": "goods",
+    "name": "91style",
+    "detail": "お客様から写真やデータを送っていただければTシャツなどにプリントできます。\n思い出をカタチにしていただくサービスです。",
+    "links": [
+      "https://www.instagram.com/91style_event_shutten_"
+    ],
+    "rects": [
+      [
+        1266,
+        315,
+        19,
+        21
+      ]
+    ],
+    "images": [
+      "85/0.webp"
+    ]
+  },
+  {
+    "key": "86",
+    "group": "goods",
+    "name": "SUNDAY CRAFTSMAN CLUB",
+    "detail": "オリジナルタフティングラグ及びオリジナル雑貨販売",
+    "links": [
+      "https://www.instagram.com/sunday_craftsmans_club/"
+    ],
+    "rects": [
+      [
+        1239,
+        342,
+        21,
+        21
+      ]
+    ],
+    "images": [
+      "86/0.webp",
+      "86/1.webp",
+      "86/2.webp",
+      "86/3.webp"
+    ]
+  },
+  {
+    "key": "87",
+    "group": "goods",
+    "name": "ONE Wave",
+    "detail": "ワークショップ（オリジナルボトル作り）ボトルを選んでいただき中身（ビーチサンド・ジェリー・リキッドなど）を選んでご自身でオリジナルのボトルを作成していただく内容となっています。雑貨はクラゲのランタン、スクイーズ、3Dプリンタードラゴンandモンスターフィギュア、アクセサリー等",
+    "links": [
+      "https://www.instagram.com/one.wave307/"
+    ],
+    "rects": [
+      [
+        1264,
+        343,
+        21,
+        21
+      ]
+    ],
+    "images": [
+      "87/0.webp",
+      "87/1.webp",
+      "87/2.webp",
+      "87/3.webp",
+      "87/4.webp"
+    ]
+  },
+  {
+    "key": "88",
+    "group": "goods",
+    "name": "lulanekh",
+    "detail": "アフリカ布の帽子や洋服、小物",
+    "links": [
+      "https://www.instagram.com/000lulanekh000"
+    ],
+    "rects": [
+      [
+        909,
+        426,
+        21,
+        20
+      ]
+    ],
+    "images": []
+  },
+  {
+    "key": "89",
+    "group": "goods",
+    "name": "HOME BEAT",
+    "detail": "ミニサウンドシステム販売",
+    "links": [],
+    "rects": [
+      [
+        942,
+        429,
+        20,
+        21
+      ]
+    ],
+    "images": []
+  },
+  {
+    "key": "90",
+    "group": "goods",
+    "name": "CORNERSHOP",
+    "detail": "レコード、CD販売",
+    "links": [],
+    "rects": [
+      [
+        1022,
+        430,
+        20,
+        20
+      ]
+    ],
+    "images": []
+  },
+  {
+    "key": "91",
+    "group": "goods",
+    "name": "sowaca",
+    "detail": "マッサージ、占い",
+    "links": [],
+    "rects": [
+      [
+        1083,
+        434,
+        21,
+        22
+      ]
+    ],
+    "images": []
+  },
+  {
+    "key": "92",
+    "group": "goods",
+    "name": "meChill 整体サロン",
+    "detail": "整体＆足指マッサージ",
+    "links": [
+      "https://www.instagram.com/mechill_sangobiyou.seitai"
+    ],
+    "rects": [
+      [
+        1184,
+        430,
+        22,
+        22
+      ]
+    ],
+    "images": [
+      "92/0.webp",
+      "92/1.webp"
+    ]
+  },
+  {
+    "key": "93",
+    "group": "goods",
+    "name": "Nid Belle",
+    "detail": "耳つぼジュエリー",
+    "links": [
+      "https://www.instagram.com/nidbelle_52"
+    ],
+    "rects": [
+      [
+        1210,
+        430,
+        22,
+        22
+      ]
+    ],
+    "images": [
+      "93/0.webp",
+      "93/1.webp",
+      "93/2.webp"
+    ]
+  },
+  {
+    "key": "94",
+    "group": "goods",
+    "name": "ナチュラルスタイル",
+    "detail": "✨施術ブース出店✨\n\n音楽を聴きながら、自然の中でリラックス×メンテナンスしませんか？\n\n最短10分〜¥1000\n→10分単位〜施術可能\n\n最大60〜90分などご希望にあわせて\n身体の部位の可動域を確認〜体調を伺い施術します\n\n🌟施術メニュー⭐️\n\n・サクっとほぐし10分〜\n・整体ストレッチ20分〜\n・全身バランス調整 60分〜\n\n他、\n・ベッド＋アイケア20分〜\n・フットorハンドケア（クリーム）20分〜　など…\n\n各メニュー組み合わせOK\n\nお支払い方法：キャッシュ\n\n※施術前に当日の体調確認やケガの有無など、ヒアリングを行います\n\n安心・安全のため、ご協力をお願いいたします🤲\n\n注意事項：酩酊〜泥酔者は身体への影響上、施術をお断りしております",
+    "links": [
+      "https://naturallife.tokyo/"
+    ],
+    "rects": [
+      [
+        1238,
+        428,
+        21,
+        22
+      ]
+    ],
+    "images": []
+  },
+  {
+    "key": "95",
+    "group": "goods",
+    "name": "Emilia",
+    "detail": "耳ツボジュエリー",
+    "links": [],
+    "rects": [
+      [
+        1264,
+        426,
+        22,
+        22
+      ]
+    ],
+    "images": [
+      "95/0.webp",
+      "95/1.webp",
+      "95/2.webp",
+      "95/3.webp",
+      "95/4.webp"
+    ]
+  },
+  {
+    "key": "96",
+    "group": "goods",
+    "name": "FUMIHEALING：GROUP",
+    "detail": "ベッドケア/ふくらはぎケア/ハンドケア",
+    "links": [],
+    "rects": [
+      [
+        1291,
+        424,
+        21,
+        22
+      ]
+    ],
+    "images": []
+  },
+  {
+    "key": "97",
+    "group": "goods",
+    "name": "明治安田",
+    "detail": "健康チェックブース",
+    "links": [],
+    "rects": [
+      [
+        1337,
+        390,
+        26,
+        27
+      ]
+    ],
+    "images": []
+  },
+  {
+    "key": "98",
+    "group": "goods",
+    "name": "chicchi",
+    "detail": "缶バッジワークショップ",
+    "links": [],
+    "rects": [
+      [
+        1350,
+        364,
+        27,
+        28
+      ]
+    ],
+    "images": []
+  },
+  {
+    "key": "99",
+    "group": "goods",
+    "name": "縁日処",
+    "detail": "射的、スーパーボールすくい",
+    "links": [
+      "https://www.instagram.com/ennichi_docoro"
+    ],
+    "rects": [
+      [
+        1367,
+        342,
+        28,
+        27
+      ]
+    ],
+    "images": [
+      "99/0.webp",
+      "99/1.webp"
+    ]
+  },
+  {
+    "key": "100",
+    "group": "goods",
+    "name": "用宗を楽しくする会",
+    "detail": "用宗＆広野PRブース，食品販売",
+    "links": [],
+    "rects": [
+      [
+        1385,
+        320,
+        28,
+        28
+      ]
+    ],
+    "images": []
+  },
+  {
+    "key": "101",
+    "group": "goods",
+    "name": "おさがりクローゼット",
+    "detail": "リサイクル子供服交換",
+    "links": [],
+    "rects": [
+      [
+        1404,
+        301,
+        28,
+        28
+      ]
+    ],
+    "images": []
+  },
+  {
+    "key": "102",
+    "group": "goods",
+    "name": "ソフトバンク",
+    "detail": "ポケモンゲーム、グッズ，キッズコーナー",
+    "links": [
+      "https://www.softbank.jp/shop/search/detail/C616/"
+    ],
+    "rects": [
+      [
+        1322,
+        250,
+        18,
+        20
+      ],
+      [
+        1345,
+        250,
+        19,
+        20
+      ],
+      [
+        1322,
+        275,
+        18,
+        21
+      ]
+    ],
+    "images": [
+      "102/0.webp",
+      "102/1.webp",
+      "102/2.webp"
+    ]
+  },
+  {
+    "key": "103",
+    "group": "goods",
+    "name": "JT 日本たばこ産業",
+    "detail": "喫煙所設置、商品販売",
+    "links": [],
+    "rects": [
+      [
+        202,
+        216,
+        21,
+        21
+      ],
+      [
+        192,
+        152,
+        93,
+        45
+      ]
+    ],
+    "images": []
+  },
+  {
+    "key": "104",
+    "group": "goods",
+    "name": "Harbor Art Village",
+    "detail": "・黄桜じーじのけん玉屋さん（けん玉販売とレクチャー）\n・よいこ共和国（無農薬栽培コーヒー、豆乳チャイ）\n・ヤマチキ（ビリヤニ販売）\n・【酒 -sai-】（日本酒、ふんどし、ワークショップ）\n・ktulma（Leather x African fabric）\n・HAPPY MONSTER（100%ペットボトルに絵を書こう）\n・モウマナモク（キャンドル販売、ワークショップ）\n・~nagi（マクラメアクセサリー）",
+    "links": [],
+    "rects": [
+      [
+        878,
+        334,
+        120,
+        48
+      ]
+    ],
+    "images": []
+  },
+  {
+    "key": "105",
+    "group": "food",
+    "name": "DUTCH",
+    "detail": "自家製フォカッチャサンド、コーヒー",
+    "links": [],
+    "rects": [
+      [
+        860,
+        409,
+        20,
+        20
+      ]
+    ],
+    "images": []
+  },
+  {
+    "key": "A",
+    "group": "facility",
+    "name": "SEASIDE STAGE",
+    "detail": "ダンス及びパフォーマンス用ステージ",
+    "links": [],
+    "rects": [
+      [
+        1110,
+        139,
+        229,
+        107
+      ]
+    ],
+    "images": []
+  },
+  {
+    "key": "B",
+    "group": "facility",
+    "name": "BAND STAGE",
+    "detail": "バンド等によるライブ用メインステージ",
+    "links": [],
+    "rects": [
+      [
+        747,
+        359,
+        43,
+        29
+      ],
+      [
+        668,
+        392,
+        120,
+        70
+      ]
+    ],
+    "images": []
+  },
+  {
+    "key": "C",
+    "group": "facility",
+    "name": "SOUND STAGE",
+    "detail": "レゲエを中心に世界の音楽を楽しめる DJ エリア",
+    "links": [],
+    "rects": [
+      [
+        303,
+        225,
+        43,
+        28
+      ],
+      [
+        320,
+        180,
+        100,
+        40
+      ]
+    ],
+    "images": []
+  },
+  {
+    "key": "D",
+    "group": "facility",
+    "name": "RECORD STAGE",
+    "detail": "ミニサイズのサウンドシステム使用のレコード DJ エリア",
+    "links": [],
+    "rects": [
+      [
+        970,
+        426,
+        45,
+        30
+      ],
+      [
+        930,
+        470,
+        115,
+        45
+      ]
+    ],
+    "images": []
+  },
+  {
+    "key": "HQ",
+    "group": "facility",
+    "name": "本部",
+    "detail": "",
+    "links": [],
+    "rects": [
+      [
+        794,
+        432,
+        53,
+        21
+      ]
+    ],
+    "images": []
+  },
+  {
+    "key": "WC",
+    "group": "facility",
+    "name": "トイレ",
+    "detail": "紙がない時は本部までお知らせください",
+    "links": [],
+    "rects": [
+      [
+        195,
+        365,
+        95,
+        95
+      ]
+    ],
+    "images": []
+  },
+  {
+    "key": "GATE",
+    "group": "facility",
+    "name": "入退場ゲート案内所",
+    "detail": "",
+    "links": [],
+    "rects": [
+      [
+        1458,
+        227,
+        134,
+        61
+      ]
+    ],
+    "images": []
+  },
+  {
+    "key": "SEA",
+    "group": "facility",
+    "name": "海岸",
+    "detail": "ネイティブはここから見える伊豆をハワイだと思っているという噂も",
+    "links": [],
+    "rects": [
+      [
+        700,
+        125,
+        400,
+        35
+      ]
+    ],
+    "images": [
+      "SEA/0.webp"
+    ]
+  },
+  {
+    "key": "SECRET",
+    "group": "facility",
+    "name": "隠れハッち",
+    "detail": "24日限定ですが、これを見せるとドリンクを１杯サービスさせていただきます。",
+    "links": [],
+    "rects": [
+      [
+        1536,
+        366,
+        10,
+        10
+      ]
+    ],
+    "images": [
+      "SECRET/0.webp"
+    ]
+  }
+]

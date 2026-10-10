@@ -8,6 +8,8 @@ import (
 	"strings"
 )
 
+// 管理画面 SPA (manage/) のビルド成果物。app/ で go generate ./... を実行して反映する（app/frontend.go）
+//
 //go:embed _assets/manage
 var embManageSPA embed.FS
 var manageSPAFs fs.FS

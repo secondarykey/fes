@@ -1,12 +1,13 @@
 {
   "name": "maps",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint . --report-unused-disable-directives --max-warnings 0",
+    "deploy": "npm run lint && npm run build && node tools/deploy.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

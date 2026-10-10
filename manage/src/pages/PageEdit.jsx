@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useSearchParams, useNavigate, Link as RouterLink } from 'react-router'
 import {
   Box, Paper, Typography, TextField, Select, MenuItem,
-  FormControl, InputLabel, FormControlLabel, Switch,
+  FormControl, InputLabel, FormControlLabel, Switch, Checkbox,
   Button, Breadcrumbs, Link, Divider, CircularProgress,
   Snackbar, Alert, Chip,
   Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions,
@@ -14,6 +14,7 @@ import UnpublishedIcon from '@mui/icons-material/Unpublished'
 import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import PreviewIcon from '@mui/icons-material/Preview'
 import AccountTreeIcon from '@mui/icons-material/AccountTree'
+import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import BookmarkAddIcon from '@mui/icons-material/BookmarkAdd'
 import AddIcon from '@mui/icons-material/Add'
 import ImageIcon from '@mui/icons-material/Image'
@@ -21,6 +22,7 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore'
 import UnfoldLessIcon from '@mui/icons-material/UnfoldLess'
 import WrapTextIcon from '@mui/icons-material/WrapText'
+import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import TextIncreaseIcon from '@mui/icons-material/TextIncrease'
 import TextDecreaseIcon from '@mui/icons-material/TextDecrease'
 import { useRef } from 'react'
@@ -57,6 +59,8 @@ export default function PageEdit() {
   const [data, setData] = useState(null)
   const [form, setForm] = useState({})
   const [saving, setSaving] = useState(false)
+  //公開日の打ち直しは既定でオフ
+  const [publishUpdate, setPublishUpdate] = useState(false)
   const [deleteDialog, setDeleteDialog] = useState(false)
   const [disableDialog, setDisableDialog] = useState(false)
   const [image, setImage] = useState(null)
@@ -154,10 +158,31 @@ export default function PageEdit() {
 
   const handlePublish = async () => {
     try {
-      await publishPage(key)
+      await publishPage(key, publishUpdate)
       showSnack('HTMLを公開しました')
       await Promise.all([refreshPage(), refreshImage(key)])
     } catch (e) { showSnack(e.message, 'error') }
+  }
+
+  const handleCopyContent = async () => {
+    const text = form.content ?? ''
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text)
+      } else {
+        //http 経由など secure context でない場合のフォールバック
+        const textarea = contentRef.current?.querySelector('textarea')
+        if (!textarea) throw new Error('textarea not found')
+        const { selectionStart, selectionEnd } = textarea
+        textarea.select()
+        const ok = document.execCommand('copy')
+        textarea.setSelectionRange(selectionStart, selectionEnd)
+        if (!ok) throw new Error('execCommand copy failed')
+      }
+      showSnack('コンテンツをコピーしました')
+    } catch {
+      showSnack('コピーに失敗しました', 'error')
+    }
   }
 
   const handleImageSelect = async (e) => {
@@ -217,8 +242,8 @@ export default function PageEdit() {
     requestAnimationFrame(() => {
       el.focus()
       el.scrollTop = scrollTop
-      const pos = selectionStart + wrapped.length
-      el.setSelectionRange(pos, pos)
+      // 挿入したタグを含めて選択を維持し、続けて操作できるようにする
+      el.setSelectionRange(selectionStart, selectionStart + wrapped.length)
     })
   }
 
@@ -236,8 +261,8 @@ export default function PageEdit() {
     requestAnimationFrame(() => {
       el.focus()
       el.scrollTop = scrollTop
-      const pos = selectionStart + replaced.length
-      el.setSelectionRange(pos, pos)
+      // 挿入したタグを含めて選択を維持し、続けて操作できるようにする
+      el.setSelectionRange(selectionStart, selectionStart + replaced.length)
     })
   }
 
@@ -470,7 +495,19 @@ export default function PageEdit() {
         {/* 子ページ管理 + 保存/公開 */}
         <Box ref={actionsBarRef} sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
           {!isNew ? (
-            <Box sx={{ display: 'flex', gap: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              {form.parentId && (
+                <Tooltip title="親ページの子ページ管理へ戻る">
+                  <IconButton
+                    size="small"
+                    component={RouterLink}
+                    to={`/page/${form.parentId}/children`}
+                    aria-label="親ページの子ページ管理へ戻る"
+                  >
+                    <ArrowBackIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+              )}
               <Button
                 variant="text"
                 size="small"
@@ -484,15 +521,30 @@ export default function PageEdit() {
           ) : <Box />}
           <Box sx={{ ml: 'auto', display: 'flex', gap: 1 }}>
             {!isNew && data.page.canPublish && (
-              <Button
-                variant="outlined"
-                size="small"
-                color="success"
-                startIcon={<PublishIcon />}
-                onClick={handlePublish}
-              >
-                公開
-              </Button>
+              <>
+                <Tooltip title="オンにすると公開日を現在時刻で打ち直します。オフの場合は最終公開日のみ更新されます">
+                  <FormControlLabel
+                    sx={{ mr: 0 }}
+                    control={
+                      <Checkbox
+                        size="small"
+                        checked={publishUpdate}
+                        onChange={e => setPublishUpdate(e.target.checked)}
+                      />
+                    }
+                    label={<Typography variant="body2">公開日を更新</Typography>}
+                  />
+                </Tooltip>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  color="success"
+                  startIcon={<PublishIcon />}
+                  onClick={handlePublish}
+                >
+                  公開
+                </Button>
+              </>
             )}
             <Button
               variant="contained"
@@ -611,6 +663,22 @@ export default function PageEdit() {
               }}
             >
               <WrapTextIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="コンテンツをコピー">
+            <IconButton
+              size="small"
+              onClick={handleCopyContent}
+              sx={{
+                position: 'absolute',
+                bottom: 8,
+                right: 8,
+                bgcolor: 'background.paper',
+                opacity: 0.7,
+                '&:hover': { opacity: 1, bgcolor: 'background.paper' },
+              }}
+            >
+              <ContentCopyIcon fontSize="small" />
             </IconButton>
           </Tooltip>
         </Box>

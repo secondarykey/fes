@@ -49,10 +49,10 @@ export function getTemplateReferences(id) {
   return apiFetch(`${BASE}/${encodeURIComponent(id)}/references`)
 }
 
-export function publishPages(ids) {
+export function publishPages(ids, publishUpdate = false) {
   return apiFetch('/manage/api/html/publish-pages', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ids }),
+    body: JSON.stringify({ ids, publishUpdate }),
   })
 }

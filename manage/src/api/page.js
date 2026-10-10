@@ -33,8 +33,11 @@ export const deletePage = (key) =>
 export const deletePages = (ids) =>
   apiFetch('/page/', { method: 'DELETE', body: JSON.stringify({ ids }) })
 
-export const publishPage = (key) =>
-  apiFetch(`/html/publish/${key}`, { method: 'POST' })
+export const publishPage = (key, publishUpdate = false) =>
+  apiFetch(`/html/publish/${key}`, {
+    method: 'POST',
+    body: JSON.stringify({ publishUpdate }),
+  })
 
 export const unpublishPage = (key) =>
   apiFetch(`/html/unpublish/${key}`, { method: 'POST' })
@@ -45,8 +48,8 @@ export const sequencePages = (key, items) =>
 export const sortPages = (key) =>
   apiFetch(`/page/${key}/sort`, { method: 'POST' })
 
-export const movePage = (key, targetId) =>
-  apiFetch(`/page/${key}/move`, { method: 'POST', body: JSON.stringify({ targetId }) })
+export const movePages = (ids, targetId) =>
+  apiFetch('/page/move', { method: 'POST', body: JSON.stringify({ ids, targetId }) })
 
 export const getPageListHtml = (parentId) =>
   apiFetch(`/tool/page-list?parent=${encodeURIComponent(parentId)}`)
