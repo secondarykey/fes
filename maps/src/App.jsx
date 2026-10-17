@@ -24,6 +24,52 @@ const showShopNo = (s) => s.key !== undefined && (s.group !== "facility" || /^[A
 //会場が狭いので GPS を優先させる（ネットワーク測位だと誤差が会場の幅を超える）
 const geoOptions = { enableHighAccuracy: true };
 
+/**
+ * 最初に出すお知らせ
+ * App の中で定義すると、位置が届いて App を描き直すたびに作り直され、フェードインがやり直される
+ */
+const Notice = ({ onClose }) => {
+  //外側（暗い部分）を押しても閉じる
+  return (
+    <div id="experimental" onClick={onClose}>
+      <div className="card" role="dialog" aria-modal="true" aria-labelledby="experimentalTitle"
+        onClick={(e) => e.stopPropagation()}>
+        <div className="head">
+          <img src="/maps/images/BIRD/0.webp" alt="" />
+          <div>
+            <div className="event">Humming Bird 2026 秋</div>
+            <div className="title" id="experimentalTitle">会場マップ<span className="badge">体験版</span></div>
+          </div>
+        </div>
+        <div className="body">
+          <p>Small-Axe プロジェクトが開催する Humming Bird 2026 秋の会場マップです。</p>
+          <div className="note">
+            <p>
+              お店の情報や配置が実際と違うことがあります。
+              最新の情報は公式サイトでご確認ください。
+            </p>
+            <p>何か機能のご要望があれば、お問い合わせなどでお願いします。</p>
+          </div>
+        </div>
+        <button className="close" onClick={onClose}>マップを見る</button>
+        {/* マップは /maps/ で配信しているので、/ がサイトのトップになる */}
+        <a className="site" href="/">サイトに戻る</a>
+      </div>
+    </div>
+  )
+}
+
+//デバッグ表示（ボタンはコメントアウト中）
+const Debug = ({ text, onClose }) => {
+  return (
+    <div id="debugText">
+      <span>Debug</span>
+      <div>{text}</div>
+      <button onClick={onClose} >閉じる</button>
+    </div>
+  )
+}
+
 function App() {
 
   const shop = useRef(undefined);
@@ -165,55 +211,6 @@ function App() {
     setDebugDisplay(false);
   }
 
-  const Experimental = () => {
-
-    if (!release) {
-      return <></>;
-    }
-
-    //外側（暗い部分）を押しても閉じる
-    return (
-      <div id="experimental" onClick={handleHideMessage}>
-        <div className="card" role="dialog" aria-modal="true" aria-labelledby="experimentalTitle"
-          onClick={(e) => e.stopPropagation()}>
-          <div className="head">
-            <img src="/maps/images/BIRD/0.webp" alt="" />
-            <div>
-              <div className="event">Humming Bird 2026 秋</div>
-              <div className="title" id="experimentalTitle">会場マップ<span className="badge">体験版</span></div>
-            </div>
-          </div>
-          <div className="body">
-            <p>Small-Axe プロジェクトが開催する Humming Bird 2026 秋の会場マップです。</p>
-            <div className="note">
-              <p>
-                お店の情報や配置が実際と違うことがあります。
-                最新の情報は公式サイトでご確認ください。
-              </p>
-              <p>何か機能のご要望があれば、お問い合わせなどでお願いします。</p>
-            </div>
-          </div>
-          <button className="close" onClick={handleHideMessage}>マップを見る</button>
-          {/* マップは /maps/ で配信しているので、/ がサイトのトップになる */}
-          <a className="site" href="/">サイトに戻る</a>
-        </div>
-      </div>
-    )
-  }
-
-  const Debug = () => {
-    if ( !debugDisplay ) return (<></>);
-    return (<>
-      <div id="debugText">
-        <span>Debug</span>
-        <div>{debugText}</div>
-        <button onClick={handleHideDebug} >閉じる</button>
-      </div>
-    </>)
-
-  }
-
-
   const handlePosition = () => {
     if ( denied ) {
       recheck(() => setHelp(true));
@@ -316,8 +313,8 @@ function App() {
 
   return (
     <>
-      <Experimental />
-      <Debug />
+      {release && <Notice onClose={handleHideMessage} />}
+      {debugDisplay && <Debug text={debugText} onClose={handleHideDebug} />}
 
       <Map coords={coords} onShop={handleShop}
         overlay={surveyEnabled ? <SurveyOverlay survey={survey} /> : undefined} />

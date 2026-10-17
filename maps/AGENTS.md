@@ -46,7 +46,7 @@ npm run deploy    # lint → ビルド → app の embed 用ディレクトリ�
 
 ESLint 10 の flat config (`eslint.config.js`) を使用する。`eslint-plugin-react` は依存する `minimatch@3` → `brace-expansion@1` に脆弱性アドバイザリが残り、かつ ESLint 10 を peer に持たないため採用していない（`eslint-plugin-react-hooks` + `eslint-plugin-react-refresh` + `@eslint/js` で構成）。
 
-`eslint-plugin-react-hooks` v7 で追加された `set-state-in-effect` / `static-components` / `immutability` と `exhaustive-deps` は既存コード（`App.jsx` / `Map.jsx` / `SVGButton.jsx`）が多数抵触するため `off`。該当箇所をリファクタしたら個別に有効化すること。
+`eslint-plugin-react-hooks` v7 で追加された `set-state-in-effect` / `immutability` と `exhaustive-deps` は既存コード（`App.jsx` / `Map.jsx` / `SVGButton.jsx`）が多数抵触するため `off`。該当箇所をリファクタしたら個別に有効化すること。`static-components`（描画の中でコンポーネントを定義しない）は有効。App の中で定義したお知らせが、位置が届くたびに作り直されてフェードインを繰り返したため（2026-10-18）。
 
 店舗名・説明文に全角スペース (U+3000) を使うため `no-irregular-whitespace` は `skipStrings` / `skipTemplates` を有効にしている。
 

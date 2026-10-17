@@ -30,7 +30,6 @@ export default [
       // 以下は eslint-plugin-react-hooks v7 で追加された規則で、既存コードが多数抵触する。
       // App.jsx / Map.jsx / SVGButton.jsx のリファクタ後に個別に有効化すること。
       'react-hooks/set-state-in-effect': 'off',
-      'react-hooks/static-components': 'off',
       'react-hooks/immutability': 'off',
       'react-hooks/exhaustive-deps': 'off',
     },
