@@ -223,6 +223,11 @@ const Map = (props) => {
       onPointerUp={handlePointerUp} onPointerCancel={handlePointerUp}
       onWheel={handleWheel}>
       <canvas id="map" ref={view} style={mapStyle} />
+      {props.overlay && (
+        <svg id="overlay" width={MapPoint.imageWidth} height={MapPoint.imageHeight} style={mapStyle}>
+          {props.overlay}
+        </svg>
+      )}
     </div>
   )
 }

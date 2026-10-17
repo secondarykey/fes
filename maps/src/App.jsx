@@ -6,6 +6,8 @@ import useWindowSize from './Window';
 import './App.css'
 import SVGButton from './SVGButton';
 import MapPoint from './MapPoint';
+import { surveyEnabled, useSurvey } from './useSurvey';
+import { SurveyOverlay, SurveyPanel } from './Survey';
 
 //店舗パネルに出す区分の名前（マップ画像の店舗一覧の見出しに合わせる）
 const groupLabels = {
@@ -37,6 +39,9 @@ function App() {
   const [lock,setLock] = useState(false);
 
   const [shopStyle, setShopStyle] = useState({left:"100vw",width:"80%",transition:"0.5s"});
+
+  //現地調査（?debug のときだけ）
+  const survey = useSurvey(coords);
 
   const addDebugText = (line) => {
     setDebugText((text) => text + "\n" + line);
@@ -184,6 +189,9 @@ function App() {
   const handleShop = (x, y) => {
     if (shop.current === null) return;
 
+    //記録中のタップは今いる場所として使う
+    if ( survey.tap(x, y) ) return;
+
     var hide = false;
     //すでに表示状態かを取得
     if ( shopStyle.left !== "100vw" ) {
@@ -251,7 +259,9 @@ function App() {
       <Experimental />
       <Debug />
 
-      <Map coords={coords} onShop={handleShop} />
+      <Map coords={coords} onShop={handleShop}
+        overlay={surveyEnabled ? <SurveyOverlay survey={survey} /> : undefined} />
+      {surveyEnabled && <SurveyPanel survey={survey} />}
 {/**
       <SVGButton id="debugBtn" name="terminal" size="16px" onClick={handleDebug} />
  */}
