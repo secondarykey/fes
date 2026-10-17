@@ -8,6 +8,7 @@ import SVGButton from './SVGButton';
 import MapPoint from './MapPoint';
 import { surveyEnabled, useSurvey } from './useSurvey';
 import { SurveyOverlay, SurveyPanel } from './Survey';
+import LocationHelp from './LocationHelp';
 
 //店舗パネルに出す区分の名前（マップ画像の店舗一覧の見出しに合わせる）
 const groupLabels = {
@@ -37,6 +38,13 @@ function App() {
   const [debugDisplay,setDebugDisplay] = useState(false);
   const [debugText,setDebugText] = useState("");
   const [lock,setLock] = useState(false);
+
+  //位置情報が拒否されている（ブラウザが覚えるので、設定を直すまでダイアログは出ない）
+  const [denied, setDenied] = useState(false);
+  const deniedRef = useRef(false);
+  //拒否されているときの戻し方のカード
+  const [help, setHelp] = useState(false);
+  const watch = useRef(null);
 
   const [shopStyle, setShopStyle] = useState({left:"100vw",width:"80%",transition:"0.5s"});
 
@@ -70,25 +78,77 @@ function App() {
     setShopStyle(style);
   }
 
+  const setDeniedState = (v) => {
+    deniedRef.current = v;
+    setDenied(v);
+  }
+
   const handleSuccess = (position) => {
     var coords = position.coords;
     addDebugText("handleSuccess:"+coords.latitude + " - " + coords.longitude)
     setCoords(coords)
     setLock(false);
+    //拒否から許可に戻った。拒否で止まった追いかけをやり直す
+    if ( deniedRef.current ) {
+      setDeniedState(false);
+      setHelp(false);
+      startWatch();
+    }
   }
 
   const handleError = (error) => {
     addDebugText("handleError:"+error.message)
     console.error(`Error: ${error.message}`);
     setLock(false);
+    if ( error.code === error.PERMISSION_DENIED ) {
+      setDeniedState(true);
+    }
+  }
+
+  const startWatch = () => {
+    if ( watch.current !== null ) {
+      navigator.geolocation.clearWatch(watch.current);
+    }
+    addDebugText("watch:");
+    watch.current = navigator.geolocation.watchPosition(handleSuccess, handleError, geoOptions);
+  }
+
+  //拒否されたままかを確かめる（許可に戻っていれば handleSuccess で追いかけ直す）
+  const recheck = (onDenied) => {
+    navigator.geolocation.getCurrentPosition(handleSuccess, (e) => {
+      handleError(e);
+      if ( e.code === e.PERMISSION_DENIED && onDenied ) onDenied();
+    }, geoOptions);
   }
 
   useEffect(() => {
-    addDebugText("watch:");
-    const id = navigator.geolocation.watchPosition(handleSuccess, handleError, geoOptions);
+    startWatch();
     setLock(true);
+
+    //許可の状態が変わったら追いかけ直す（変化を通知しないブラウザもあるので、画面に戻ったときも確かめる）
+    let status = null;
+    navigator.permissions?.query({ name: "geolocation" }).then((s) => {
+      status = s;
+      if ( s.state === "denied" ) setDeniedState(true);
+      s.onchange = () => {
+        if ( s.state === "denied" ) {
+          setDeniedState(true);
+        } else if ( deniedRef.current ) {
+          startWatch();
+        }
+      };
+    }).catch(() => {});
+
+    const handleVisible = () => {
+      if ( document.visibilityState === "visible" && deniedRef.current ) recheck();
+    }
+    document.addEventListener("visibilitychange", handleVisible);
+
     return () => {
-      navigator.geolocation.clearWatch(id);
+      if ( status !== null ) status.onchange = null;
+      document.removeEventListener("visibilitychange", handleVisible);
+      navigator.geolocation.clearWatch(watch.current);
+      watch.current = null;
     }
   }, [])
 
@@ -159,6 +219,10 @@ function App() {
 
 
   const handlePosition = () => {
+    if ( denied ) {
+      recheck(() => setHelp(true));
+      return;
+    }
     if ( !lock ) {
       addDebugText("currentPosition:");
       navigator.geolocation.getCurrentPosition(handleSuccess, handleError, geoOptions);
@@ -267,7 +331,9 @@ function App() {
  */}
       <SVGButton id="updateBtn" name="update" size="16px" onClick={handleReload} />
 
-      <SVGButton id="positionBtn" name="cross" size="32px" onClick={handlePosition} />
+      <SVGButton id="positionBtn" name="cross" size="32px" onClick={handlePosition}
+        className={denied ? "denied" : undefined} title={denied ? "位置情報がオフです" : undefined} />
+      {help && <LocationHelp onClose={() => setHelp(false)} />}
 
       <div id="shops" ref={shop} style={shopStyle}>
 
