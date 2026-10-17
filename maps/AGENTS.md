@@ -36,6 +36,7 @@ npm run deploy    # lint → ビルド → app の embed 用ディレクトリ�
 | `tools/images/main.go` | 申込の写真（Drive の ZIP）を店舗番号ごとに分け、webp 化したものを `public/images` に置く |
 | `tools/heicrot/` | HEIC の写真の向きを EXIF に従って直す（cgo を使うため別モジュール） |
 | `data/<開催>/README.md` | その開催で使ったデータと作業の記録 |
+| `src/LocationHelp.jsx` | 位置情報が拒否されているときの戻し方（端末・ブラウザ別。現在地ボタンから出す） |
 | `src/useSurvey.js` / `src/Survey.jsx` | 現地調査（`/maps/?debug` のときだけ）。GPS と地図上の位置の組・軌跡を記録して書き出す（使い方は `data/2026-Fall/README.md`） |
 | `src/SVGButton.jsx` | SVG アイコンの汎用ボタン |
 | `src/Window.jsx` | ウィンドウサイズの監視 hook |
