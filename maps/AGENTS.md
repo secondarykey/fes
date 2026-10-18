@@ -58,7 +58,7 @@ ESLint 10 の flat config (`eslint.config.js`) を使用する。`eslint-plugin-
 
 ## 店舗データの管理
 
-店舗・施設は `src/data/shops.json` をビルド時に読み込み、`MapPoint.initShops()` でタップ範囲（`rects`）ごとに `Shop`（key, name, detail, 矩形領域 `Rect`）を作る。JSON は対応表（`data/<開催>/shops.tsv`）と出店申込の CSV から `tools/shops` で生成する（手順は [maps-update](../docs/skills/maps-update/SKILL.md)）。申込の CSV は電話番号や住所を含むため**リポジトリに置かない**。画像は `public/images/{key}/{n}.webp` に置き、`shops.json` の `images` で参照する（申込の写真からは `tools/images` で作る）。マップはアーカイブせず開催ごとに作り直すため、**店舗番号のディレクトリの画像は Git に入れない**（`.gitignore` 対象）。`BIRD` / `SEA` / `SECRET` と `noimage.png` だけを管理する。
+店舗・施設は `src/data/shops.json` をビルド時に読み込み、`MapPoint.initShops()` でタップ範囲（`rects`）ごとに `Shop`（key, name, detail, 矩形領域 `Rect`）を作る。JSON は対応表（`data/<開催>/shops.tsv`）と出店申込の CSV から `tools/shops` で生成する（手順は [maps-update](../docs/skills/maps-update/SKILL.md)）。申込の CSV は電話番号や住所を含むため**リポジトリに置かない**。画像は `public/images/{key}/{n}.webp` に置き、`shops.json` の `images` で参照する（申込の写真からは `tools/images` で作る）。マップはアーカイブせず開催ごとに作り直すため、**店舗番号のディレクトリの画像は Git に入れない**（`.gitignore` 対象）。施設の写真（`PLAY`・`SHIP`・`WC` など。現地で撮ったもの）も同じく Git に入れず、原本と控えは `maps/work/` に置く。管理するのはアプリの素材（ハッち `BIRD`・隠れハッち `SECRET`・`noimage.png`）と、以前からある `SEA/0.webp` だけ。
 
 ## Vite 設定
 

@@ -26,6 +26,10 @@ work
 *.sln
 *.sw?
 
-# 開催ごとの店舗画像（public/images/{店舗番号}/）。マップはアーカイブせず開催ごとに作り直すため Git に入れない。
-# 申込の写真から tools/images で作る。BIRD / SEA / SECRET と noimage.png は管理する
-/public/images/[0-9]*/
+# 開催ごとの店舗・施設の写真（public/images/{key}/）。マップはアーカイブせず開催ごとに作り直すため Git に入れない。
+# 店舗は申込の写真から tools/images で作る。施設（PLAY・SHIP・WC など）は現地で撮った写真から作る。原本と控えは work/
+# アプリの素材（ハッち BIRD・隠れハッち SECRET・noimage.png）だけ管理する。SEA/0.webp は以前から管理しているもの
+/public/images/*
+!/public/images/noimage.png
+!/public/images/BIRD/
+!/public/images/SECRET/

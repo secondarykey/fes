@@ -2304,7 +2304,9 @@
         95
       ]
     ],
-    "images": []
+    "images": [
+      "WC/0.webp"
+    ]
   },
   {
     "key": "GATE",
@@ -2337,7 +2339,8 @@
       ]
     ],
     "images": [
-      "SEA/0.webp"
+      "SEA/0.webp",
+      "SEA/1.webp"
     ]
   },
   {
@@ -2354,7 +2357,11 @@
         68
       ]
     ],
-    "images": []
+    "images": [
+      "PLAY/0.webp",
+      "PLAY/1.webp",
+      "PLAY/2.webp"
+    ]
   },
   {
     "key": "SHIP",
@@ -2370,7 +2377,11 @@
         170
       ]
     ],
-    "images": []
+    "images": [
+      "SHIP/0.webp",
+      "SHIP/1.webp",
+      "SHIP/2.webp"
+    ]
   },
   {
     "key": "SECRET",
