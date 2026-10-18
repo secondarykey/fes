@@ -24,6 +24,9 @@ const showShopNo = (s) => s.key !== undefined && (s.group !== "facility" || /^[A
 //会場が狭いので GPS を優先させる（ネットワーク測位だと誤差が会場の幅を超える）
 const geoOptions = { enableHighAccuracy: true };
 
+//全画面にできるブラウザだけ全画面ボタンを出す（iPhone の Safari は動画以外の全画面を許していない）
+const fullscreenEnabled = document.fullscreenEnabled === true;
+
 /**
  * 最初に出すお知らせ
  * App の中で定義すると、位置が届いて App を描き直すたびに作り直され、フェードインがやり直される
@@ -92,6 +95,8 @@ function App() {
   const [help, setHelp] = useState(false);
   //現在地ボタンを押した回数（押すたびにハッちを画面の真ん中に寄せる）
   const [center, setCenter] = useState(0);
+  //全画面表示中か（ブラウザの戻る操作などで抜けることもあるので、イベントで受け取る）
+  const [fullscreen, setFullscreen] = useState(false);
   const watch = useRef(null);
 
   const [shopStyle, setShopStyle] = useState({left:"100vw",width:"80%",transition:"0.5s"});
@@ -203,6 +208,21 @@ function App() {
   useEffect(() => {
     createShopStyle();
   },[winSize.width,winSize.height]);
+
+  useEffect(() => {
+    const handleChange = () => setFullscreen(document.fullscreenElement !== null);
+    document.addEventListener("fullscreenchange", handleChange);
+    return () => document.removeEventListener("fullscreenchange", handleChange);
+  }, []);
+
+  //ブラウザのバーを消してマップを画面いっぱいにする（タップからしか全画面にできない）
+  const handleFullscreen = () => {
+    if ( document.fullscreenElement ) {
+      document.exitFullscreen().catch(() => {});
+    } else {
+      document.documentElement.requestFullscreen({ navigationUI: "hide" }).catch((e) => console.error(e));
+    }
+  }
 
 
   const handleHideMessage = () => {
@@ -326,6 +346,10 @@ function App() {
       <SVGButton id="debugBtn" name="terminal" size="16px" onClick={handleDebug} />
  */}
       <SVGButton id="updateBtn" name="update" size="16px" onClick={handleReload} />
+      {fullscreenEnabled && (
+        <SVGButton id="fullscreenBtn" name={fullscreen ? "fullscreen-exit" : "fullscreen"} size="16px"
+          onClick={handleFullscreen} title={fullscreen ? "全画面をやめる" : "全画面"} />
+      )}
 
       <SVGButton id="positionBtn" name="cross" size="32px" onClick={handlePosition}
         className={denied ? "denied" : undefined} title={denied ? "位置情報がオフです" : undefined} />

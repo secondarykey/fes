@@ -147,7 +147,9 @@
   position: relative;
   margin:0;
   padding:0;
+  /* スマホの 100vh はバーを除いた見えている高さより大きく、マップの下がバーに隠れる。dvh は実際に見えている高さ */
   height:100vh;
+  height:100dvh;
 
   touch-action: pan-x;
   overflow-x: auto;
@@ -220,6 +222,16 @@
   opacity: 0.8;
 }
 
+/* 全画面（対応しているブラウザだけ出す）。再読み込みボタンの右 */
+#fullscreenBtn {
+  position: fixed;
+  background-color: #fafafa;
+  margin: 10px;
+  top: 0;
+  left: 48px;
+  opacity: 0.8;
+}
+
 #debugBtn {
   position: fixed;
   background-color: #fafafa;
@@ -235,6 +247,7 @@
   top:0;
   position: fixed;
   height: 100vh;
+  height: 100dvh;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -625,6 +638,7 @@
 #surveyList > .card {
   max-width: calc(100vw - 32px);
   max-height: calc(100vh - 32px);
+  max-height: calc(100dvh - 32px);
   overflow: auto;
   padding: 12px;
   border-radius: 10px;
