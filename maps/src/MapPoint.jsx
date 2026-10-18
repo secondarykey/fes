@@ -243,7 +243,7 @@ class MapPoint {
       if ( p === null ) {
         return null;
       }
-      var detail = `Humming Bird 非公式キャラ のハッちです。`;
+      var detail = `Humming Bird 非公式キャラ のハッちです。気になるものを突っつくので注意。`;
       if ( p.outside ) {
         detail += `今いる場所はマップの外、三角の方向に約 ${p.distance}m です。`;
       }
