@@ -90,6 +90,8 @@ function App() {
   const deniedRef = useRef(false);
   //拒否されているときの戻し方のカード
   const [help, setHelp] = useState(false);
+  //現在地ボタンを押した回数（押すたびに鳥を画面の真ん中に寄せる）
+  const [center, setCenter] = useState(0);
   const watch = useRef(null);
 
   const [shopStyle, setShopStyle] = useState({left:"100vw",width:"80%",transition:"0.5s"});
@@ -216,6 +218,7 @@ function App() {
       recheck(() => setHelp(true));
       return;
     }
+    setCenter((c) => c + 1);
     if ( !lock ) {
       addDebugText("currentPosition:");
       navigator.geolocation.getCurrentPosition(handleSuccess, handleError, geoOptions);
@@ -316,7 +319,7 @@ function App() {
       {release && <Notice onClose={handleHideMessage} />}
       {debugDisplay && <Debug text={debugText} onClose={handleHideDebug} />}
 
-      <Map coords={coords} onShop={handleShop}
+      <Map coords={coords} center={center} onShop={handleShop}
         overlay={surveyEnabled ? <SurveyOverlay survey={survey} /> : undefined} />
       {surveyEnabled && <SurveyPanel survey={survey} />}
 {/**

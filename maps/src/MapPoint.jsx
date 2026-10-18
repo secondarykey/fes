@@ -14,6 +14,9 @@ import gpsData from './data/gps.json';
 //緯度 1 度あたりの距離（m）
 const meterPerDegree = 111320;
 
+//マップの外にいても、端からこの距離（m）までは鳥を端に寄せて出す
+const outsideLimit = 100;
+
 //薄板スプラインの基底 r² log r（r は m）
 const kernel = (r) => r === 0 ? 0 : r * r * Math.log(r);
 
@@ -49,6 +52,10 @@ class MapPoint {
 
     //現在地アイコンの大きさ
     static pointerSize = 48;
+    //マップの外にいるときの方向の三角（鳥の中心からの距離と長さ）と、それを含めた端からの余白
+    static arrowGap = 30;
+    static arrowLength = 14;
+    static pointerMargin = 48;
 
     //基準点（{ name, x, y, lat, lon }）
     static controls = [];
@@ -145,6 +152,21 @@ class MapPoint {
      * @returns 画像の外になる場合は null
      */
     static get = (lat, lon) => {
+        let [x, y] = this.project(lat, lon);
+        x = Math.trunc(x);
+        y = Math.trunc(y);
+
+        if (x < 0 || x >= this.imageWidth || y < 0 || y >= this.imageHeight) {
+            return null;
+        }
+        return new Point(x, y, lat, lon);
+    }
+
+    /**
+     * 緯度・経度を画像上の位置に変換する（画像の外もそのまま返す）
+     * @returns [x, y]（小数）
+     */
+    static project = (lat, lon) => {
         const [e, m] = this.toMeter(lat, lon);
         const w = this.weights;
         const n = this.nodes.length;
@@ -158,13 +180,51 @@ class MapPoint {
             x += w[i][0] * u;
             y += w[i][1] * u;
         });
-        x = Math.trunc(x);
-        y = Math.trunc(y);
+        return [x, y];
+    }
 
-        if (x < 0 || x >= this.imageWidth || y < 0 || y >= this.imageHeight) {
+    /**
+     * 画像上で 1m が何 px になるか（その地点での変換から求める）
+     */
+    static pxPerMeter = (lat, lon) => {
+        //10m で測って平均する
+        const d = 10;
+        const [x, y] = this.project(lat, lon);
+        const [nx, ny] = this.project(lat + d / meterPerDegree, lon);
+        const [ex, ey] = this.project(lat, lon + d / (meterPerDegree * Math.cos(lat * Math.PI / 180)));
+        return (Math.hypot(nx - x, ny - y) + Math.hypot(ex - x, ey - y)) / 2 / d;
+    }
+
+    /**
+     * 現在地の鳥を置く位置
+     * 鳥の全身が見えるように端から内側に寄せる。マップの外でも、端から outsideLimit m 以内なら端に寄せて出し、
+     * outside と、本当の位置の方向 angle（ラジアン）・距離 distance（m）を付ける
+     * @returns { x, y, outside, angle, distance }。遠すぎるときは null
+     */
+    static locate = (lat, lon) => {
+        const [x, y] = this.project(lat, lon);
+        const w = this.imageWidth;
+        const h = this.imageHeight;
+        const clamp = (v, min, max) => Math.min(Math.max(v, min), max);
+
+        if (x >= 0 && x < w && y >= 0 && y < h) {
+            const m = this.pointerSize / 2;
+            return { x: Math.trunc(clamp(x, m, w - m)), y: Math.trunc(clamp(y, m, h - m)), outside: false };
+        }
+
+        //画像の範囲までの距離
+        const distance = Math.hypot(x - clamp(x, 0, w), y - clamp(y, 0, h)) / this.pxPerMeter(lat, lon);
+        if (!(distance <= outsideLimit)) {
             return null;
         }
-        return new Point(x, y, lat, lon);
+        //方向を示す三角も画像に収まるように寄せる
+        const m = this.pointerMargin;
+        const cx = clamp(x, m, w - m);
+        const cy = clamp(y, m, h - m);
+        return {
+            x: Math.trunc(cx), y: Math.trunc(cy), outside: true,
+            angle: Math.atan2(y - cy, x - cx), distance: Math.round(distance),
+        };
     }
 
     static getShop = (x, y) => {
@@ -179,13 +239,17 @@ class MapPoint {
     
     static getBird = (coords) => {
         if ( coords === undefined ) return null;
-      var p = MapPoint.get(coords.latitude,coords.longitude);
+      var p = MapPoint.locate(coords.latitude,coords.longitude);
       if ( p === null ) {
         return null;
       }
+      var detail = `Humming Bird 非公式キャラ のハッちです。`;
+      if ( p.outside ) {
+        detail += `今いる場所はマップの外、三角の方向に約 ${p.distance}m です。`;
+      }
       //アイコンは p を中心に描画している
       var size = MapPoint.pointerSize;
-      return new Shop("BIRD", "ハッち", `Humming Bird 非公式キャラ のハッちです。`,
+      return new Shop("BIRD", "ハッち", detail,
             new Rect(p.x - size / 2, p.y - size / 2, size, size), ["BIRD/0.webp"])
     }
 

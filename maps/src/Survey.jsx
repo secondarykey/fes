@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import MapPoint from './MapPoint';
-import { errorPx, pxPerMeter } from './useSurvey';
+import { errorPx } from './useSurvey';
 
 /**
  * 現地調査の操作パネル（?debug のときだけ出す）
@@ -57,8 +57,7 @@ const SurveyList = ({ survey, onClose }) => {
   const errorText = (pt) => {
     const px = errorPx(pt);
     if (px === null) return "画像外";
-    const k = pxPerMeter(pt.lat, pt.lon);
-    return k === null ? `${px}px` : `${px}px (${(px / k).toFixed(1)}m)`;
+    return `${px}px (${(px / MapPoint.pxPerMeter(pt.lat, pt.lon)).toFixed(1)}m)`;
   }
 
   return (
@@ -99,7 +98,7 @@ export const SurveyOverlay = ({ survey }) => {
 
   const last = survey.last;
   const p = last === null ? null : MapPoint.get(last.lat, last.lon);
-  const k = p === null ? null : pxPerMeter(last.lat, last.lon);
+  const k = p === null ? null : MapPoint.pxPerMeter(last.lat, last.lon);
 
   return (<>
     {MapPoint.controls.map((b) => (

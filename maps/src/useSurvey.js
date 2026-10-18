@@ -11,9 +11,6 @@ export const surveyEnabled = new URLSearchParams(location.search).has("debug");
 
 const storageKey = "maps.survey";
 
-//緯度 1 度あたりの距離（m）
-const meterPerDegree = 111320;
-
 //記録を始めたときに、これより古い位置は使わない（ms）
 const freshness = 30 * 1000;
 
@@ -24,19 +21,6 @@ const load = () => {
   } catch {
     return { points: [], track: [] };
   }
-}
-
-/**
- * 地図上で 1m が何 px になるか（その地点での変換から求める。求められないときは null）
- */
-export const pxPerMeter = (lat, lon) => {
-  //Math.trunc の誤差を小さくするため 10m で測る
-  const m = 10;
-  const p = MapPoint.get(lat, lon);
-  const n = MapPoint.get(lat + m / meterPerDegree, lon);
-  const e = MapPoint.get(lat, lon + m / (meterPerDegree * Math.cos(lat * Math.PI / 180)));
-  if (p === null || n === null || e === null) return null;
-  return (Math.hypot(n.x - p.x, n.y - p.y) + Math.hypot(e.x - p.x, e.y - p.y)) / 2 / m;
 }
 
 /**

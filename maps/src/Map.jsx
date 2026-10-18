@@ -6,6 +6,8 @@ import useWindowSize from './Window';
 import MapPoint, { Point } from './MapPoint';
 
 const iconSize = MapPoint.pointerSize;
+//鳥と方向の三角を描く範囲（中心からの半分の幅）。前のフレームの分を背景で消すため
+const drawHalf = MapPoint.pointerMargin;
 
 //この距離（px）以上動かしたらクリックではなくドラッグとみなす
 const dragThreshold = 5;
@@ -22,8 +24,10 @@ const Map = (props) => {
   const winSize = useWindowSize();
   const view = useRef(undefined);
 
-  //現在地のマップ上の点（未取得・マップ外は null）
+  //現在地のマップ上の点（MapPoint.locate の戻り値。未取得・遠すぎるときは null）
   const position = useRef(null);
+  //現在地ボタンが押された。次に位置が届いたら、鳥が画面の真ん中に来るように動かす
+  const centerPending = useRef(false);
 
   //マウスでドラッグ中の状態（開始位置、開始時のスクロール位置、動かしたか）
   const drag = useRef(null);
@@ -85,15 +89,15 @@ const Map = (props) => {
 
         const p = position.current;
         if (p !== null) {
-          //p をアイコンの中心にする
-          const x = p.x - iconSize / 2;
-          const y = p.y - iconSize / 2;
-          drawn = { x: x, y: y, back: ctx.getImageData(x, y, iconSize, iconSize) };
+          drawn = { x: p.x - drawHalf, y: p.y - drawHalf, back: ctx.getImageData(p.x - drawHalf, p.y - drawHalf, drawHalf * 2, drawHalf * 2) };
 
+          //p をアイコンの中心にする
           ctx.globalAlpha = alpha;
-          ctx.drawImage(pointer, x, y, iconSize, iconSize);
+          ctx.drawImage(pointer, p.x - iconSize / 2, p.y - iconSize / 2, iconSize, iconSize);
           ctx.globalAlpha = 1;
-          //centering(document.querySelector("#layer"),p.x);
+          if (p.outside) {
+            drawArrow(ctx, p);
+          }
         }
 
         if (fadeIn) {
@@ -112,6 +116,27 @@ const Map = (props) => {
       fade();
     }
 
+    /**
+     * マップの外にいるとき、本当の位置の方向に三角を描く
+     */
+    const drawArrow = (ctx, p) => {
+      const r = MapPoint.arrowGap;
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.angle);
+      ctx.beginPath();
+      ctx.moveTo(r + MapPoint.arrowLength, 0);
+      ctx.lineTo(r, -9);
+      ctx.lineTo(r, 9);
+      ctx.closePath();
+      ctx.fillStyle = "#d32f2f";
+      ctx.strokeStyle = "#ffffff";
+      ctx.lineWidth = 2;
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
+    }
+
     fitAll();
 
     return () => {
@@ -127,10 +152,23 @@ const Map = (props) => {
   useEffect(() => {
     var p = null;
     if (props.coords !== undefined) {
-      p = MapPoint.get(props.coords.latitude, props.coords.longitude);
+      p = MapPoint.locate(props.coords.latitude, props.coords.longitude);
     }
     position.current = p;
+    if (p !== null && centerPending.current) {
+      centerPending.current = false;
+      centering(p.x);
+    }
   }, [props.coords]);
+
+  //現在地ボタン：今の位置ですぐ寄せ、新しい位置が届いたらもう一度寄せる
+  useEffect(() => {
+    if (props.center === 0) return;
+    if (position.current !== null) {
+      centering(position.current.x);
+    }
+    centerPending.current = true;
+  }, [props.center]);
 
   /**
    * 表示切り替えイベント
@@ -169,14 +207,12 @@ const Map = (props) => {
     props.onShop(Math.trunc(x), Math.trunc(y));
   }
 
-  // eslint-disable-next-line no-unused-vars -- 現在地センタリングは未有効化のため残す
-  const centering = (elm,x) => {
-    
-    console.log("center",x);
-    console.log("scale",scale);
-
-    elm.scrollLeft = (x * scale) - (elm.clientWidth / 2);
-    //layer.scrollLeft = p.x + ( (layer.clientWidth) * scale / 2) + 100
+  /**
+   * 画像上の x が画面の真ん中に来るように横に動かす
+   */
+  const centering = (x) => {
+    const elm = document.querySelector("#layer");
+    elm.scrollTo({ left: (x * scale) - (elm.clientWidth / 2), behavior: "smooth" });
   }
 
   /**
