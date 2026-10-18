@@ -14,7 +14,7 @@ import gpsData from './data/gps.json';
 //緯度 1 度あたりの距離（m）
 const meterPerDegree = 111320;
 
-//マップの外にいても、端からこの距離（m）までは鳥を端に寄せて出す
+//マップの外にいても、端からこの距離（m）まではハッちを端に寄せて出す
 const outsideLimit = 100;
 
 //薄板スプラインの基底 r² log r（r は m）
@@ -52,7 +52,7 @@ class MapPoint {
 
     //現在地アイコンの大きさ
     static pointerSize = 48;
-    //マップの外にいるときの方向の三角（鳥の中心からの距離と長さ）と、それを含めた端からの余白
+    //マップの外にいるときの方向の三角（ハッちの中心からの距離と長さ）と、それを含めた端からの余白
     static arrowGap = 30;
     static arrowLength = 14;
     static pointerMargin = 48;
@@ -196,8 +196,8 @@ class MapPoint {
     }
 
     /**
-     * 現在地の鳥を置く位置
-     * 鳥の全身が見えるように端から内側に寄せる。マップの外でも、端から outsideLimit m 以内なら端に寄せて出し、
+     * 現在地のハッちを置く位置
+     * ハッちの全身が見えるように端から内側に寄せる。マップの外でも、端から outsideLimit m 以内なら端に寄せて出し、
      * outside と、本当の位置の方向 angle（ラジアン）・距離 distance（m）を付ける
      * @returns { x, y, outside, angle, distance }。遠すぎるときは null
      */

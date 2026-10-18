@@ -6,7 +6,7 @@ import useWindowSize from './Window';
 import MapPoint, { Point } from './MapPoint';
 
 const iconSize = MapPoint.pointerSize;
-//鳥と方向の三角を描く範囲（中心からの半分の幅）。前のフレームの分を背景で消すため
+//ハッちと方向の三角を描く範囲（中心からの半分の幅）。前のフレームの分を背景で消すため
 const drawHalf = MapPoint.pointerMargin;
 
 //この距離（px）以上動かしたらクリックではなくドラッグとみなす
@@ -26,7 +26,7 @@ const Map = (props) => {
 
   //現在地のマップ上の点（MapPoint.locate の戻り値。未取得・遠すぎるときは null）
   const position = useRef(null);
-  //現在地ボタンが押された。次に位置が届いたら、鳥が画面の真ん中に来るように動かす
+  //現在地ボタンが押された。次に位置が届いたら、ハッちが画面の真ん中に来るように動かす
   const centerPending = useRef(false);
 
   //マウスでドラッグ中の状態（開始位置、開始時のスクロール位置、動かしたか）
@@ -72,7 +72,7 @@ const Map = (props) => {
      */
     const drawPointer = (ctx, pointer) => {
 
-      //前のフレームで鳥を描いた位置と、その下の背景
+      //前のフレームでハッちを描いた位置と、その下の背景
       let drawn = null;
 
       let fadeIn = true;

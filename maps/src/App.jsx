@@ -90,7 +90,7 @@ function App() {
   const deniedRef = useRef(false);
   //拒否されているときの戻し方のカード
   const [help, setHelp] = useState(false);
-  //現在地ボタンを押した回数（押すたびに鳥を画面の真ん中に寄せる）
+  //現在地ボタンを押した回数（押すたびにハッちを画面の真ん中に寄せる）
   const [center, setCenter] = useState(0);
   const watch = useRef(null);
 
