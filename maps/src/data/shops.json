@@ -2359,8 +2359,31 @@
     ],
     "images": [
       "PLAY/0.webp",
-      "PLAY/1.webp",
-      "PLAY/2.webp"
+      "PLAY/1.webp"
+    ]
+  },
+  {
+    "key": "HILL",
+    "group": "facility",
+    "name": "丘",
+    "detail": "",
+    "links": [],
+    "rects": [
+      [
+        1415,
+        345,
+        50,
+        75
+      ]
+    ],
+    "images": [
+      "HILL/0.webp",
+      "HILL/1.webp",
+      "HILL/2.webp",
+      "HILL/3.webp",
+      "HILL/4.webp",
+      "HILL/5.webp",
+      "HILL/6.webp"
     ]
   },
   {

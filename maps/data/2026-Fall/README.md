@@ -21,7 +21,7 @@ ZIP 内のフォルダ名がフォームの質問文（115 文字）で、Window
 | ファイル | 内容 | 作り方 |
 |---|---|---|
 | `src/assets/map.jpg` | マップ画像（2000×522） | チラシの y=0〜522 を切り出した（店舗一覧の見出しの手前まで） |
-| `data/2026-Fall/shops.tsv` | 店舗の対応表（116 行。店舗 105、施設 10、隠れハッち） | 下記 |
+| `data/2026-Fall/shops.tsv` | 店舗の対応表（117 行。店舗 105、施設 11、隠れハッち） | 下記 |
 | `src/data/shops.json` | アプリが読む店舗データ | `tools/shops` で生成 |
 | `public/images/{key}/{n}.webp` | 店舗画像（78 店、273 枚、長い辺 1000、合計約 24MB）。**Git 管理外**。控えは `maps/work/public-images` | `tools/images` → 向きの補正 → webp 化 → `tools/images install` |
 | `src/data/gps.json` | GPS 基準点（22 点） | `node tools/gps.mjs data/2026-Fall/survey-20261018.json`（下記） |
@@ -34,7 +34,7 @@ ZIP 内のフォルダ名がフォームの質問文（115 文字）で、Window
 - **説明文（text）**: 基本は申込の販売メニュー。主催者向けの回答（「なし」「関係ない」「物販希望」など）は `-`（チラシの説明）にし、一部だけ主催者向けのもの（47, 49）は削った文を書いた。
 - **リンク（links）**: 申込の URL 欄から自動で作る。`@xxx` は Instagram とみなした。判断できなかった 27, 39, 68, 84 は主催者の確認で Instagram に決めた。
 - **タップ範囲（rects）**: マップ画像から凡例の色で四角を自動検出し、番号を目で割り当てた。斜めの 100, 101 と、文字の入った札（1 の BAR & BEER / BEER）は範囲を絞って検出した。ステージ・本部・トイレ・ゲート・海岸は手で範囲を決めた。
-- **施設（group = facility）**: ステージ A〜D の説明はチラシの記載。隠れハッち（SECRET）は 10×10px（24 日限定）。最初は遊具の六角形の中心に置いたが、2026-10-18 に喫煙所の吹き出しの左下（駐車場との間、`170,205`）へ移した。同じ日に遊具（PLAY、六角形）と難破船遊具（SHIP、船と小道のあたり）を施設として足した。施設の写真（遊具 3 枚、難破船遊具 3 枚、海岸 1 枚追加、トイレ 1 枚）は同じ日に現地で撮ったもの。元の写真（Google Drive から取ってきた jpg）は `maps/work/equip` に置いた（playground→PLAY、ship→SHIP、sea→SEA の 1、toilet→WC）。長い辺 1000px の webp にして `public/images/{key}/` に置いた（EXIF の位置情報は持ち込まない）。**店舗の写真と同じく Git に入れず、デプロイするだけ**。webp の控えは `maps/work/public-images/{key}/`。
+- **施設（group = facility）**: ステージ A〜D の説明はチラシの記載。隠れハッち（SECRET）は 10×10px（24 日限定）。最初は遊具の六角形の中心に置いたが、2026-10-18 に喫煙所の吹き出しの左下（駐車場との間、`170,205`）へ移した。同じ日に遊具（PLAY、六角形）と難破船遊具（SHIP、船と小道のあたり）と丘（HILL、「丘」の文字のまわり。97〜101 とゲートの赤線の間）を施設として足した。丘には石像が並んでいる。施設の写真（遊具 2 枚、丘の石像 7 枚、難破船遊具 3 枚、海岸 1 枚追加、トイレ 1 枚）は同じ日に現地で撮ったもの。元の写真（Google Drive から取ってきた jpg）は `maps/work/equip` に置いた（playground→PLAY、hill/→HILL（撮った順）、ship→SHIP、sea→SEA の 1、toilet→WC。playground3 は石像で、丘に移した）。長い辺 1000px の webp にして `public/images/{key}/` に置いた（EXIF の位置情報は持ち込まない）。**店舗の写真と同じく Git に入れず、デプロイするだけ**。webp の控えは `maps/work/public-images/{key}/`。
 
 ### 店舗画像
 
