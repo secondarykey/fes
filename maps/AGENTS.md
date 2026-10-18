@@ -29,7 +29,9 @@ npm run deploy    # lint → ビルド → app の embed 用ディレクトリ�
 |---|---|
 | `src/App.jsx` | ルートコンポーネント。GPS 取得・店舗パネル表示・デバッグUI を管理 |
 | `src/Map.jsx` | HTML5 Canvas によるマップ描画・スケーリング・現在地ポインター |
-| `src/MapPoint.jsx` | 基準点の定義・GPS 座標 ↔ 画像座標の変換ロジック・店舗データの読み込み |
+| `src/MapPoint.jsx` | GPS 座標 → 画像座標の変換（薄板スプライン）・店舗データの読み込み |
+| `src/data/gps.json` | GPS の基準点（現地調査の JSON から `tools/gps.mjs` で生成する。直接編集しない） |
+| `tools/gps.mjs` | 現地調査（`/maps/?debug` の「保存」）の JSON から `src/data/gps.json` を作る |
 | `src/data/shops.json` | 店舗・施設のデータ（`tools/shops` で生成する。直接編集しない） |
 | `data/<開催>/shops.tsv` | 店舗の対応表（番号・店名・説明・申込との対応・タップ範囲） |
 | `tools/shops/main.go` | 対応表と出店申込の CSV から `src/data/shops.json` を作る |
@@ -52,7 +54,7 @@ ESLint 10 の flat config (`eslint.config.js`) を使用する。`eslint-plugin-
 
 ## 座標変換の仕組み
 
-マップ画像（2000×522px）上に GPS 座標をマッピングするため、`MapPoint` クラスが画像の上辺・下辺に複数の基準点（`tops` / `bottoms`）を保持する。実際の GPS 座標から経度で基準点間を補間し、続いて緯度で上辺・下辺間を補間することで Canvas 上の (x, y) 座標を算出する。基準点の外は端の区間を延長し、画像の外になる場合は現在地を表示しない。
+マップ画像（2000×522px）はデフォルメされているので、現地で記録した基準点（`src/data/gps.json`。画像上の位置と緯度・経度の組）をなめらかにつなぐ薄板スプラインで変換する。`MapPoint.initTransform()` が基準点の数 + 3 元の連立一次方程式を解いて重みを作り、`MapPoint.get()` が緯度・経度から (x, y) を出す。`smoothing` を大きくすると GPS の誤差に引きずられにくくなる。基準点の外側はほぼアフィンで延長し、画像の外になる場合は現在地を表示しない。基準点の取り直しは [maps-update](../docs/skills/maps-update/SKILL.md) を参照。
 
 ## 店舗データの管理
 
