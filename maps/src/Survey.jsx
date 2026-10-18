@@ -90,7 +90,7 @@ const SurveyList = ({ survey, onClose }) => {
 
 /**
  * マップに重ねる表示（SVG の中身。座標はマップ画像の px）
- * 基準点の線、現在地の精度の円、記録した地点（緑: 実際の位置、赤: 計算した位置）、軌跡
+ * 基準点（黒い点）、現在地の精度の円、記録した地点（緑: 実際の位置、赤: 計算した位置）、軌跡
  * @param {*} props survey: useSurvey の戻り値
  */
 export const SurveyOverlay = ({ survey }) => {
@@ -102,10 +102,10 @@ export const SurveyOverlay = ({ survey }) => {
   const k = p === null ? null : pxPerMeter(last.lat, last.lon);
 
   return (<>
-    <polyline className="base" points={line(MapPoint.tops)} />
-    <polyline className="base" points={line(MapPoint.bottoms)} />
-    {[...MapPoint.tops, ...MapPoint.bottoms].map((b) => (
-      <circle key={`${b.x},${b.y}`} className="basePoint" cx={b.x} cy={b.y} r="4" />
+    {MapPoint.controls.map((b) => (
+      <circle key={b.source} className="basePoint" cx={b.x} cy={b.y} r="4">
+        <title>{b.name}</title>
+      </circle>
     ))}
 
     <polyline className="track" points={line(survey.track.filter((t) => t.x !== null))} />

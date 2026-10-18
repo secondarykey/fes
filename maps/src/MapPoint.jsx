@@ -1,12 +1,45 @@
 
 /**
  * 画像に対する座標処理を行うクラス
- * 
- * 画像のオフセット、各４点の座標を保持し、画像内での座標を計算する
- * 
+ *
+ * GPS の緯度・経度をマップ画像上の位置に変換する。変換は現地で記録した基準点
+ * （src/data/gps.json。tools/gps.mjs で現地調査の JSON から作る）をなめらかにつなぐ薄板スプライン。
+ * マップはデフォルメされているので、地点ごとに伸び縮みを変えられる方式にしている。
+ * 基準点の外側はほぼ平行移動・回転・拡大（アフィン）で延長される。
  */
 
 import shopData from './data/shops.json';
+import gpsData from './data/gps.json';
+
+//緯度 1 度あたりの距離（m）
+const meterPerDegree = 111320;
+
+//薄板スプラインの基底 r² log r（r は m）
+const kernel = (r) => r === 0 ? 0 : r * r * Math.log(r);
+
+/**
+ * 連立一次方程式 A X = B を解く（部分ピボット付きのガウスの消去法）
+ * @param {number[][]} A n×n
+ * @param {number[][]} B n×m
+ * @returns {number[][]} X n×m
+ */
+const solve = (A, B) => {
+    const n = A.length;
+    const a = A.map((row, i) => [...row, ...B[i]]);
+    for (let c = 0; c < n; c++) {
+        let pivot = c;
+        for (let r = c + 1; r < n; r++) {
+            if (Math.abs(a[r][c]) > Math.abs(a[pivot][c])) pivot = r;
+        }
+        [a[c], a[pivot]] = [a[pivot], a[c]];
+        for (let r = 0; r < n; r++) {
+            if (r === c) continue;
+            const f = a[r][c] / a[c][c];
+            for (let k = c; k < a[r].length; k++) a[r][k] -= f * a[c][k];
+        }
+    }
+    return a.map((row, i) => row.slice(n).map((v) => v / a[i][i]));
+}
 
 class MapPoint {
 
@@ -17,8 +50,12 @@ class MapPoint {
     //現在地アイコンの大きさ
     static pointerSize = 48;
 
-    static tops = [];
-    static bottoms = [];
+    //基準点（{ name, x, y, lat, lon }）
+    static controls = [];
+    //基準点の平均を原点にした m 単位の座標と、スプラインの重み
+    static origin = null;
+    static nodes = [];
+    static weights = [];
 
     static shops = [];
     /**
@@ -26,46 +63,43 @@ class MapPoint {
      * 何度呼ばれても重複しないよう、毎回作り直す
      */
     static init() {
-        this.tops = [];
-        this.bottoms = [];
         this.shops = [];
-
-        //上辺・下辺の基準点 (画像上の x, y, 緯度, 経度)
-        //会場の外周を歩いて記録した GPS（2025-04-05）を、マップ上の外周（店の裏・ステージの後ろ）に
-        //歩いた距離の比率で並べたもの。x の小さい順（経度の大きい順）に並べる
-        this.tops.push(new Point(320, 170, 34.9255120, 138.3803060));
-        this.tops.push(new Point(343, 163, 34.9254790, 138.3802950));
-        this.tops.push(new Point(401, 150, 34.9254150, 138.3802310));
-        this.tops.push(new Point(488, 156, 34.9253660, 138.3800950));
-        this.tops.push(new Point(573, 158, 34.9253270, 138.3799590));
-        this.tops.push(new Point(654, 160, 34.9252970, 138.3798260));
-        this.tops.push(new Point(743, 162, 34.9252500, 138.3796860));
-        this.tops.push(new Point(814, 163, 34.9252220, 138.3795700));
-        this.tops.push(new Point(891, 165, 34.9251800, 138.3794500));
-        this.tops.push(new Point(975, 167, 34.9251190, 138.3793270));
-        this.tops.push(new Point(1057, 167, 34.9250690, 138.3792030));
-        this.tops.push(new Point(1145, 150, 34.9250530, 138.3790490));
-        this.tops.push(new Point(1238, 140, 34.9250470, 138.3788880));
-        this.tops.push(new Point(1324, 161, 34.9249720, 138.3787660));
-        this.tops.push(new Point(1389, 177, 34.9248960, 138.3786980));
-        this.tops.push(new Point(1458, 195, 34.9248670, 138.3785820));
-
-        this.bottoms.push(new Point(330, 465, 34.9256930, 138.3800470));
-        this.bottoms.push(new Point(432, 465, 34.9256710, 138.3798940));
-        this.bottoms.push(new Point(527, 465, 34.9256180, 138.3797660));
-        this.bottoms.push(new Point(611, 469, 34.9255440, 138.3796750));
-        this.bottoms.push(new Point(690, 470, 34.9254740, 138.3795900));
-        this.bottoms.push(new Point(774, 470, 34.9254450, 138.3794680));
-        this.bottoms.push(new Point(877, 469, 34.9254760, 138.3793170));
-        this.bottoms.push(new Point(967, 466, 34.9254540, 138.3791830));
-        this.bottoms.push(new Point(1050, 461, 34.9254120, 138.3790670));
-        this.bottoms.push(new Point(1140, 457, 34.9253700, 138.3789400));
-        this.bottoms.push(new Point(1220, 456, 34.9253310, 138.3788290));
-        this.bottoms.push(new Point(1300, 455, 34.9252850, 138.3787210));
-        this.bottoms.push(new Point(1396, 449, 34.9252020, 138.3786150));
-        this.bottoms.push(new Point(1478, 425, 34.9251110, 138.3785430));
-
+        this.initTransform();
         this.initShops();
+    }
+
+    /**
+     * 基準点から変換（薄板スプライン）を作る
+     * 基準点の数 + 3 元の連立一次方程式を解く。smoothing が大きいほど基準点を厳密には通らず、なめらかになる
+     */
+    static initTransform() {
+        const pts = gpsData.points;
+        const n = pts.length;
+        this.controls = pts;
+
+        const lat0 = pts.reduce((s, p) => s + p.lat, 0) / n;
+        const lon0 = pts.reduce((s, p) => s + p.lon, 0) / n;
+        this.origin = { lat0, lon0, k: Math.cos(lat0 * Math.PI / 180) };
+        this.nodes = pts.map((p) => this.toMeter(p.lat, p.lon));
+
+        const A = Array.from({ length: n + 3 }, () => new Array(n + 3).fill(0));
+        const B = Array.from({ length: n + 3 }, () => [0, 0]);
+        this.nodes.forEach(([e, m], i) => {
+            this.nodes.forEach(([e2, m2], j) => {
+                A[i][j] = kernel(Math.hypot(e - e2, m - m2)) + (i === j ? gpsData.smoothing : 0);
+            });
+            A[i][n] = A[n][i] = 1;
+            A[i][n + 1] = A[n + 1][i] = e;
+            A[i][n + 2] = A[n + 2][i] = m;
+            B[i] = [pts[i].x, pts[i].y];
+        });
+        this.weights = solve(A, B);
+    }
+
+    //緯度・経度を、基準点の平均を原点にした東西・南北の m に直す
+    static toMeter(lat, lon) {
+        const o = this.origin;
+        return [(lon - o.lon0) * meterPerDegree * o.k, (lat - o.lat0) * meterPerDegree];
     }
 
     /**
@@ -81,21 +115,17 @@ class MapPoint {
     }
 
     static drawDebugPoint(ctx) {
-        this.drawDebugArray(ctx, this.tops);
-        this.drawDebugArray(ctx, this.bottoms);
-
-        this.drawShops(ctx)
-    }
-
-    static drawDebugArray(ctx, arr) {
-        arr.forEach((p) => {
+        this.controls.forEach((p) => {
             ctx.beginPath();
             ctx.arc(p.x, p.y, 8, 0, Math.PI * 2);
             ctx.fillStyle = "black";
             ctx.fill();
             ctx.stroke();
         });
+
+        this.drawShops(ctx)
     }
+
     static drawShops(ctx) {
         ctx.font = "14px Araial";
         ctx.strokeStyle = 'blue';
@@ -108,111 +138,33 @@ class MapPoint {
         })
     }
 
-    // tops / bottoms 内で経度 v を挟む2点を返す [経度の小さい点, 大きい点]
-    // 配列は経度の大きい順（画像の左から右）に並んでいる
-    // 基準点の範囲外は端の区間を延長して使う
-    static getBetweenPoint = (arr, v) => {
-        for (let idx = 1; idx < arr.length; idx++) {
-            if (v >= arr[idx].longitude) {
-                return [arr[idx], arr[idx - 1]];
-            }
-        }
-        var last = arr.length - 1;
-        return [arr[last], arr[last - 1]];
-    }
-
-    // 上辺の点 p1 と下辺の点 p2 の間を緯度 v で補間する（範囲外は延長）
-    static createBetweenLatitudePoint = (p1, p2, v) => {
-
-        var v1 = p1.latitude;
-        var v2 = p2.latitude;
-
-        var distance = v2 - v1;
-        var remain = v - v1;
-        var odds = remain / distance;
-        var dY = Math.abs(p1.y - p2.y);
-        var y = Math.trunc(p1.y + (dY * odds));
-
-        var dX = Math.abs(p1.x - p2.x);
-        var num = Math.trunc(dX * odds);
-        if (p1.x > p2.x) {
-            num *= -1;
-        }
-        var x = p1.x + num
-
-        //Y を割り出して、直線の点としてXを割り出す
-        //var m = (p2.y - p1.y) / (p2.x - p2.x);
-        //var x = ((y - p2.y) / m) + p2.x;
-
-        return new Point(x, y, v, p1.longitude);
-    }
-
-    static createBetweenLongitudePoint = (p1, p2, v) => {
-
-        var v1 = p1.longitude;
-        var v2 = p2.longitude;
-        var distance = v2 - v1;
-        var remain = v - v1;
-
-        //位置の割合を取得
-        var odds = remain / distance;
-
-        var d = p1.x - p2.x;
-        //逆側からの値でXは算出
-        var x = Math.trunc(p2.x + ((1 - odds) * d));
-        //基準点は外周に沿って置くので Y も補間する
-        var y = Math.trunc(p2.y + ((1 - odds) * (p1.y - p2.y)));
-
-        //同じ倍率の値を取得
-        var latD = p2.latitude - p1.latitude;
-        var lat = p1.latitude + (latD * odds);
-        // 求めている位置なのでそのまま利用
-        var lon = v;
-        return new Point(x, y, lat, lon);
-    }
-
-    // 緯度の割合を出す
-    static getLongitudePoint = (v) => {
-        var [p1, p2] = this.getBetweenPoint(this.tops, v);
-        var tp = this.createBetweenLongitudePoint(p1, p2, v)
-
-        var [p3, p4] = this.getBetweenPoint(this.bottoms, v);
-        var bp = this.createBetweenLongitudePoint(p3, p4, v)
-        return [tp, bp];
-    }
-
     /**
      * マップ上の点を取得
      * @param {*} lat
      * @param {*} lon
      * @returns 画像の外になる場合は null
      */
-    static get = (lat, lon, ctx) => {
+    static get = (lat, lon) => {
+        const [e, m] = this.toMeter(lat, lon);
+        const w = this.weights;
+        const n = this.nodes.length;
 
-        //経度から定点を利用して、マップの上部、下部の点を算出
-        var [p1, p2] = this.getLongitudePoint(lon)
+        //アフィンの部分
+        let x = w[n][0] + w[n + 1][0] * e + w[n + 2][0] * m;
+        let y = w[n][1] + w[n + 1][1] * e + w[n + 2][1] * m;
+        //基準点ごとの曲げ
+        this.nodes.forEach(([e2, m2], i) => {
+            const u = kernel(Math.hypot(e - e2, m - m2));
+            x += w[i][0] * u;
+            y += w[i][1] * u;
+        });
+        x = Math.trunc(x);
+        y = Math.trunc(y);
 
-        if (ctx !== undefined) {
-            ctx.beginPath();
-            ctx.arc(p1.x, p1.y, 4, 0, Math.PI * 2);
-            ctx.fillStyle = "red";
-            ctx.fill();
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.arc(p2.x, p2.y, 4, 0, Math.PI * 2);
-            ctx.fillStyle = "red";
-            ctx.fill();
-            ctx.stroke();
-        }
-
-        //上部と下部の線から緯度を割り出す
-        var p = this.createBetweenLatitudePoint(p1, p2, lat)
-        console.debug("point", p);
-
-        if (p.x < 0 || p.x >= this.imageWidth || p.y < 0 || p.y >= this.imageHeight) {
+        if (x < 0 || x >= this.imageWidth || y < 0 || y >= this.imageHeight) {
             return null;
         }
-        return p;
+        return new Point(x, y, lat, lon);
     }
 
     static getShop = (x, y) => {

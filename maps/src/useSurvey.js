@@ -4,7 +4,7 @@ import MapPoint from './MapPoint';
 /**
  * 現地調査（URL に ?debug を付けたときだけ使う）
  *
- * その場の GPS と「実際にいる地図上の位置」の組を記録して、基準点（MapPoint の tops / bottoms）の見直しに使う。
+ * その場の GPS と「実際にいる地図上の位置」の組を記録して、基準点（src/data/gps.json。tools/gps.mjs で作る）に使う。
  * 歩いた道のり（軌跡）も記録できる。記録は端末の localStorage に残し、JSON / TSV で書き出す。
  */
 export const surveyEnabled = new URLSearchParams(location.search).has("debug");

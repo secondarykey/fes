@@ -127,8 +127,7 @@ const Map = (props) => {
   useEffect(() => {
     var p = null;
     if (props.coords !== undefined) {
-      var ctx = debug ? view.current.getContext('2d', { willReadFrequently: true }) : undefined;
-      p = MapPoint.get(props.coords.latitude, props.coords.longitude, ctx);
+      p = MapPoint.get(props.coords.latitude, props.coords.longitude);
     }
     position.current = p;
   }, [props.coords]);
