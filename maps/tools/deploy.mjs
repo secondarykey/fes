@@ -18,11 +18,17 @@ if (!fs.existsSync(path.join(dist, 'index.html'))) {
 // クローン直後はコピー先が無い（.gitignore 対象のため）
 fs.mkdirSync(dest, { recursive: true })
 
-// 店舗画像は Git に入れていないので、無いまま出していないか知らせる
+// 店舗・施設の写真は Git に入れていないので、無いまま出していないか知らせる
 const images = path.join(dist, 'images')
 const shopDirs = fs.existsSync(images) ? fs.readdirSync(images).filter((d) => /^\d+$/.test(d)) : []
 if (shopDirs.length === 0) {
   console.warn('警告: 店舗画像（public/images/{店舗番号}/）がありません。全店 noimage.png になります。')
+}
+// shops.json が参照している写真がそろっているか（施設の写真もここで分かる）
+const shops = JSON.parse(fs.readFileSync(path.join(root, 'src', 'data', 'shops.json'), 'utf8'))
+const missing = shops.flatMap((s) => s.images).filter((p) => !fs.existsSync(path.join(images, p)))
+if (missing.length > 0) {
+  console.warn(`警告: shops.json の写真が ${missing.length} 枚ありません（その店・施設は noimage.png になります）: ${missing.slice(0, 10).join(' ')}${missing.length > 10 ? ' …' : ''}`)
 }
 
 for (const name of fs.readdirSync(dest)) {
