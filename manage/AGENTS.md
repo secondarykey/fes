@@ -9,10 +9,16 @@ API を提供する Go 側は `app/`（[app/AGENTS.md](../app/AGENTS.md)）を�
 ```powershell
 cd manage
 npm install
-npm run dev       # 開発サーバー (Vite proxy 不要、Go サーバー経由で動作確認)
+npm run dev       # 開発サーバー (http://localhost:5173/manage/。API などは localhost:8080 の Go へ中継)
 npm run build     # manage/dist/ に出力
 npm run deploy    # lint → ビルド → app の embed 用ディレクトリへコピー
 ```
+
+## 開発サーバー（npm run dev）
+
+`vite.config.js` の `server.proxy` が `/manage/api` や `/login`・`/page` などを `http://localhost:8080` の Go サーバーへ中継する。Go のサーバー（とエミュレータ）を先に起動し、ログインは `http://localhost:8080` で済ませておく（Cookie はポートをまたいで共有される）。
+
+中継のとき `Origin` ヘッダを `http://localhost:8080` に書き換えている。Go 側の CSRF 対策（下の「認証」）は Origin のホストと Host が同じときだけ GET 以外を受け付けるため、書き換えないと保存などがすべて 403 になる。中継先を追加するときは `toServer` を使うこと。
 
 ## 反映（npm run deploy）
 

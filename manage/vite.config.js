@@ -1,6 +1,22 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react-swc'
 
+// npm run dev のとき、API などは Go のサーバーへ中継する。
+const server = 'http://localhost:8080'
+
+// Go 側は /manage/ 配下の GET 以外を、Origin が Host と同じときだけ受け付ける（CSRF 対策）。
+// changeOrigin で Host は server に変わるが、ブラウザが付けた Origin は
+// http://localhost:5173 のまま届いて 403 になるため、Origin も server に合わせる。
+const toServer = {
+  target: server,
+  changeOrigin: true,
+  configure(proxy) {
+    proxy.on('proxyReq', (req) => {
+      if (req.getHeader('origin')) req.setHeader('origin', server)
+    })
+  },
+}
+
 export default defineConfig({
   plugins: [react()],
   base: '/manage/',
@@ -22,35 +38,9 @@ export default defineConfig({
     },
   },
   server: {
-    proxy: {
-      '/manage/api': {
-        target: 'http://localhost:8080',
-        changeOrigin: true,
-      },
-      '/login': {
-        target: 'http://localhost:8080',
-        changeOrigin: true,
-      },
-      '/logout': {
-        target: 'http://localhost:8080',
-        changeOrigin: true,
-      },
-      '/session': {
-        target: 'http://localhost:8080',
-        changeOrigin: true,
-      },
-      '/manage/page/view': {
-        target: 'http://localhost:8080',
-        changeOrigin: true,
-      },
-      '/page': {
-        target: 'http://localhost:8080',
-        changeOrigin: true,
-      },
-      '/file': {
-        target: 'http://localhost:8080',
-        changeOrigin: true,
-      },
-    },
+    proxy: Object.fromEntries(
+      ['/manage/api', '/login', '/logout', '/session', '/manage/page/view', '/page', '/file']
+        .map((path) => [path, toServer]),
+    ),
   },
 })
