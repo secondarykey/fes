@@ -10,7 +10,10 @@ import UploadIcon from '@mui/icons-material/Upload'
 import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import EditIcon from '@mui/icons-material/Edit'
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz'
+import CloudUploadIcon from '@mui/icons-material/CloudUpload'
 import { getFiles, uploadFile, deleteFiles, renameFile, replaceFile, checkFile } from '../api/file'
+import FileDropOverlay from '../components/FileDropOverlay'
+import { useFileDrop } from '../hooks/useFileDrop'
 
 const TYPE_LABELS = { 1: 'データ', 2: 'ページ画像', 3: 'システム' }
 const TYPE_COLORS = { 1: 'default', 2: 'primary', 3: 'warning' }
@@ -39,8 +42,9 @@ export default function FileList() {
   const [renameName, setRenameName] = useState('')
   const [replaceTarget, setReplaceTarget] = useState(null)
   const replaceInputRef = useRef()
-  const [uploadConfirmDialog, setUploadConfirmDialog] = useState(false)
-  const [pendingUploadFile, setPendingUploadFile] = useState(null)
+  //同じ名前のファイルがあり、上書きの確認を待っているアップロード
+  const [pendingUpload, setPendingUpload] = useState(null) // { files, duplicates }
+  const [uploadProgress, setUploadProgress] = useState(null) // { done, total }
   const [snack, setSnack] = useState({ open: false, message: '', severity: 'success' })
   const fileInputRef = useRef()
 
@@ -81,48 +85,57 @@ export default function FileList() {
     })
   }
 
-  const handleUpload = async (e) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+  //同じ名前のファイルがあれば確認を出し、無ければそのまま登録する
+  const startUpload = async (files) => {
+    if (files.length === 0) return
+    const exists = await Promise.all(files.map(f =>
+      checkFile(f.name).then(r => !!r).catch(() => false), // チェック失敗時はそのままアップロード
+    ))
+    const duplicates = files.filter((_, i) => exists[i]).map(f => f.name)
+    if (duplicates.length > 0) {
+      setPendingUpload({ files, duplicates })
+      return
+    }
+    doUpload(files)
+  }
+
+  const handleUpload = (e) => {
+    const files = Array.from(e.target.files || [])
     e.target.value = ''
-    try {
-      const existing = await checkFile(file.name)
-      if (existing) {
-        setPendingUploadFile(file)
-        setUploadConfirmDialog(true)
-        return
+    startUpload(files)
+  }
+
+  const doUpload = async (files) => {
+    if (files.length === 0) return
+    const failed = []
+    setUploadProgress({ done: 0, total: files.length })
+    for (const [idx, file] of files.entries()) {
+      try {
+        await uploadFile(file)
+      } catch (err) {
+        failed.push(`${file.name}（${err.message}）`)
       }
-    } catch {
-      // チェック失敗時はそのままアップロード
+      setUploadProgress({ done: idx + 1, total: files.length })
     }
-    doUpload(file)
+    setUploadProgress(null)
+    if (failed.length === 0) {
+      showSnack(files.length === 1 ? 'アップロードしました' : `${files.length} 件アップロードしました`)
+    } else {
+      showSnack(`${files.length - failed.length} 件アップロード、${failed.length} 件失敗しました: ${failed.join('、')}`, 'error')
+    }
+    load(typeTab)
   }
 
-  const doUpload = async (file) => {
-    setUploading(true)
-    try {
-      await uploadFile(file)
-      showSnack('アップロードしました')
-      load(typeTab)
-    } catch (err) {
-      showSnack(err.message, 'error')
-    } finally {
-      setUploading(false)
-    }
+  const handleUploadConfirm = (skipDuplicates) => {
+    const p = pendingUpload
+    setPendingUpload(null)
+    if (!p) return
+    doUpload(skipDuplicates ? p.files.filter(f => !p.duplicates.includes(f.name)) : p.files)
   }
 
-  const handleUploadConfirm = () => {
-    setUploadConfirmDialog(false)
-    if (pendingUploadFile) {
-      doUpload(pendingUploadFile)
-      setPendingUploadFile(null)
-    }
-  }
+  const handleUploadCancel = () => setPendingUpload(null)
 
-  const handleUploadCancel = () => {
-    setUploadConfirmDialog(false)
-    setPendingUploadFile(null)
-  }
+  const fileDrop = useFileDrop(startUpload, !uploading && !uploadProgress && !pendingUpload)
 
   const handleDeleteConfirm = async () => {
     try {
@@ -179,12 +192,21 @@ export default function FileList() {
   }
 
   return (
-    <Box>
+    <Box sx={{ position: 'relative' }} {...fileDrop.handlers}>
+      <FileDropOverlay
+        dragging={fileDrop.dragging}
+        progress={uploadProgress}
+        icon={<CloudUploadIcon color="primary" sx={{ fontSize: 48 }} />}
+        label="ファイルを登録"
+        progressLabel="アップロード中"
+      />
+
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1 }}>
         <Typography variant="h5" sx={{ fontWeight: 600, flexGrow: 1 }}>Files</Typography>
         <input
           type="file"
           ref={fileInputRef}
+          multiple
           style={{ display: 'none' }}
           onChange={handleUpload}
         />
@@ -192,9 +214,9 @@ export default function FileList() {
           variant="contained"
           startIcon={<UploadIcon />}
           onClick={() => fileInputRef.current?.click()}
-          disabled={uploading}
+          disabled={uploading || !!uploadProgress}
         >
-          {uploading ? 'アップロード中...' : 'アップロード'}
+          {uploading || uploadProgress ? 'アップロード中...' : 'アップロード'}
         </Button>
       </Box>
 
@@ -204,7 +226,13 @@ export default function FileList() {
         <Tab label="ページ画像" value="2" />
       </Tabs>
 
-      {uploading && <LinearProgress sx={{ mb: 1 }} />}
+      {uploadProgress ? (
+        <LinearProgress
+          variant="determinate"
+          value={(uploadProgress.done / uploadProgress.total) * 100}
+          sx={{ mb: 1 }}
+        />
+      ) : uploading && <LinearProgress sx={{ mb: 1 }} />}
 
       {loadError && (
         <Alert severity="error" sx={{ mb: 2 }} onClose={() => setLoadError(null)}>
@@ -355,16 +383,34 @@ export default function FileList() {
       })()}
 
       {/* アップロード上書き確認ダイアログ */}
-      <Dialog open={uploadConfirmDialog} onClose={handleUploadCancel}>
+      <Dialog open={!!pendingUpload} onClose={handleUploadCancel}>
         <DialogTitle>ファイルの上書き確認</DialogTitle>
         <DialogContent>
-          <DialogContentText>
-            同一のファイル名「{pendingUploadFile?.name}」が存在します。更新しますか？
-          </DialogContentText>
+          {pendingUpload?.files.length === 1 ? (
+            <DialogContentText>
+              同一のファイル名「{pendingUpload.duplicates[0]}」が存在します。更新しますか？
+            </DialogContentText>
+          ) : (
+            <>
+              <DialogContentText>
+                {pendingUpload?.files.length} 件のうち、次の {pendingUpload?.duplicates.length} 件は同一のファイル名が存在します。更新しますか？
+              </DialogContentText>
+              <Box component="ul" sx={{ mt: 1, mb: 0, pl: 3, maxHeight: 200, overflowY: 'auto' }}>
+                {pendingUpload?.duplicates.map(name => (
+                  <Typography component="li" variant="body2" key={name} sx={{ fontFamily: 'monospace', wordBreak: 'break-all' }}>
+                    {name}
+                  </Typography>
+                ))}
+              </Box>
+            </>
+          )}
         </DialogContent>
         <DialogActions>
           <Button onClick={handleUploadCancel}>キャンセル</Button>
-          <Button onClick={handleUploadConfirm} variant="contained" color="warning">更新</Button>
+          {pendingUpload && pendingUpload.files.length > pendingUpload.duplicates.length && (
+            <Button onClick={() => handleUploadConfirm(true)}>既存を除いて登録</Button>
+          )}
+          <Button onClick={() => handleUploadConfirm(false)} variant="contained" color="warning">更新</Button>
         </DialogActions>
       </Dialog>
 
