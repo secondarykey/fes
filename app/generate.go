@@ -36,17 +36,3 @@ func CreateStaticSite(dir string, opts ...config.Option) error {
 	}
 	return nil
 }
-
-func GenerateFiles(dir string, opts ...config.Option) error {
-
-	err := config.Set(opts)
-	if err != nil {
-		return xerrors.Errorf("config.Set() error: %w", err)
-	}
-
-	err = logic.GenerateFiles(dir)
-	if err != nil {
-		return xerrors.Errorf("logic.GenerateFiles() error: %w", err)
-	}
-	return nil
-}
