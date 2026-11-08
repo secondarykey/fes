@@ -11,6 +11,9 @@ import { getChildren, getPage } from '../api/page'
 
 const TRASH_ID = 'Trash'
 
+//登録日（作成日）を 2026/11/09 の形で出す
+const fmtDate = (iso) => (iso ? new Date(iso).toLocaleDateString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit' }) : '')
+
 TrashCopyDialog.propTypes = {
   open: PropTypes.bool.isRequired,
   initialQuery: PropTypes.string,
@@ -130,10 +133,18 @@ export default function TrashCopyDialog({ open, initialQuery = '', onClose, onAp
                       onClick={() => handleSelect(p.id)}
                     >
                       <ListItemText
-                        primary={p.name || '(名前なし)'}
+                        primary={
+                          <Box component="span" sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
+                            <Box component="span" sx={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              {p.name || '(名前なし)'}
+                            </Box>
+                            <Typography component="span" variant="caption" color="text.secondary" sx={{ flexShrink: 0 }}>
+                              {fmtDate(p.createdAt)}
+                            </Typography>
+                          </Box>
+                        }
                         secondary={p.description || null}
                         slotProps={{
-                          primary: { noWrap: true },
                           secondary: { noWrap: true },
                         }}
                       />
