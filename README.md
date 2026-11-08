@@ -99,11 +99,11 @@ http://localhost:8080 で起動します（環境変数 `PORT` で変更可）�
 | 変更したもの | 確かめ方 |
 |---|---|
 | `app/`（Go・テンプレート） | `go run ./_cmd/main.go` を起動し直す |
-| `manage/` | `cd app; go run ./_cmd/frontbuild -only manage` で反映し、サーバーを起動し直す（embed しているため） |
+| `manage/` | `cd manage; npm run dev`（下記）。サーバーに載せるときは `cd app; go run ./_cmd/frontbuild -only manage` で反映し、サーバーを起動し直す（embed しているため） |
 | `maps/` | `cd maps; npm run dev` で単体で動く（http://localhost:5173/maps/）。サーバーに載せるときは `-only maps` で反映して起動し直す |
 
-`manage/` も `npm run dev`（http://localhost:5173/manage/）で動かせます。API などは `localhost:8080` へプロキシされるので、Go のサーバーも起動しておきます。
-ただし、ログインは先に http://localhost:8080 で済ませておく必要があります。また、保存などの GET 以外のリクエストは、管理 API の CSRF 対策（Origin の検証）で 403 になります。画面の見た目を確かめるとき向けです。
+`manage/` は `npm run dev`（http://localhost:5173/manage/）でも動かせます。反映や再起動をしなくても、変更がすぐ画面に出ます。
+API などは `localhost:8080` へ中継されるので、Go のサーバーも起動しておきます。ログインは先に http://localhost:8080 で済ませておきます（Cookie はポートが違っても共有されます）。
 
 各ディレクトリの詳しいことは [app/AGENTS.md](app/AGENTS.md)・[manage/AGENTS.md](manage/AGENTS.md)・[maps/AGENTS.md](maps/AGENTS.md) にあります。
 
