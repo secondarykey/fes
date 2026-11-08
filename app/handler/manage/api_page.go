@@ -3,6 +3,7 @@ package manage
 import (
 	"app/datastore"
 	"app/logic"
+	"context"
 	"encoding/json"
 	"net/http"
 	"strconv"
@@ -493,8 +494,26 @@ func apiPageMove(w http.ResponseWriter, r *http.Request) {
 }
 
 type apiImageRes struct {
+	// URL は現在の画像（下書きがあれば下書き、無ければ公開中の画像）
 	URL   string `json:"url"`
 	Draft bool   `json:"draft"`
+	// PublishedURL は公開中の画像。下書きで差し替え中でも、差し替え前の画像を見せるために返す
+	PublishedURL string `json:"publishedUrl,omitempty"`
+}
+
+// pageImageState はページ画像の下書き・公開中の有無から、画面に返す状態を作る
+func pageImageState(ctx context.Context, dao *datastore.Dao, id string) apiImageRes {
+	var res apiImageRes
+	if dao.ExistFile(ctx, id) {
+		res.PublishedURL = "/manage/file/view/" + id
+		res.URL = res.PublishedURL
+	}
+	draftID := datastore.CreateDraftPageImageID(id)
+	if dao.ExistFile(ctx, draftID) {
+		res.URL = "/manage/file/view/" + draftID
+		res.Draft = true
+	}
+	return res
 }
 
 func apiGetPageImage(w http.ResponseWriter, r *http.Request) {
@@ -503,16 +522,7 @@ func apiGetPageImage(w http.ResponseWriter, r *http.Request) {
 	dao := datastore.NewDao()
 	defer dao.Close()
 
-	draftID := datastore.CreateDraftPageImageID(id)
-	if dao.ExistFile(ctx, draftID) {
-		apiJSON(w, apiImageRes{URL: "/manage/file/view/" + draftID, Draft: true})
-		return
-	}
-	if dao.ExistFile(ctx, id) {
-		apiJSON(w, apiImageRes{URL: "/manage/file/view/" + id, Draft: false})
-		return
-	}
-	apiJSON(w, apiImageRes{})
+	apiJSON(w, pageImageState(ctx, dao, id))
 }
 
 func apiUploadPageImage(w http.ResponseWriter, r *http.Request) {
@@ -570,7 +580,7 @@ func apiUploadPageImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	apiJSON(w, apiImageRes{URL: "/manage/file/view/" + draftID, Draft: true})
+	apiJSON(w, pageImageState(ctx, dao, id))
 }
 
 func apiDeletePageImage(w http.ResponseWriter, r *http.Request) {
@@ -600,14 +610,5 @@ func apiDeletePageImage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 削除後の現在の画像状態を返す
-	draftID2 := datastore.CreateDraftPageImageID(id)
-	if dao.ExistFile(ctx, draftID2) {
-		apiJSON(w, apiImageRes{URL: "/manage/file/view/" + draftID2, Draft: true})
-		return
-	}
-	if dao.ExistFile(ctx, id) {
-		apiJSON(w, apiImageRes{URL: "/manage/file/view/" + id, Draft: false})
-		return
-	}
-	apiJSON(w, apiImageRes{})
+	apiJSON(w, pageImageState(ctx, dao, id))
 }

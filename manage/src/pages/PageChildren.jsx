@@ -22,6 +22,7 @@ import AddIcon from '@mui/icons-material/Add'
 import SearchIcon from '@mui/icons-material/Search'
 import ClearIcon from '@mui/icons-material/Clear'
 import PublishIcon from '@mui/icons-material/Publish'
+import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate'
 import {
   DndContext,
   closestCenter,
@@ -36,9 +37,18 @@ import {
   arrayMove,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { getPage, getChildren, newPage, sequencePages, movePages, deletePages, getPageListHtml } from '../api/page'
+import { getPage, getChildren, newPage, updatePage, uploadPageImage, sequencePages, movePages, deletePages, getPageListHtml } from '../api/page'
 import { addDraftPages, getCurrentDraft } from '../api/draft'
+import FileDropOverlay from '../components/FileDropOverlay'
+import { useFileDrop } from '../hooks/useFileDrop'
+import { byNameThenNewest } from '../utils/sortPages'
 import { publishPages } from '../api/template'
+
+const SITE_TEMPLATE = 1
+const PAGE_TEMPLATE = 2
+
+//ファイル名から拡張子を除いてページ名にする
+const pageNameFromFile = (file) => file.name.replace(/\.[^.]+$/, '') || file.name
 
 SortableRow.propTypes = {
   item: PropTypes.object.isRequired,
@@ -143,6 +153,8 @@ export default function PageChildren() {
   const [publishing, setPublishing] = useState(false)
   //公開日の打ち直しは既定でオフ
   const [publishUpdate, setPublishUpdate] = useState(false)
+  //画像ドロップによるページの一括作成
+  const [creating, setCreating] = useState(null) // { done, total }
 
   const sensors = useSensors(useSensor(PointerSensor))
 
@@ -232,11 +244,9 @@ export default function PageChildren() {
     setSaving(false)
   }
 
+  //名前順。同じ名前どうしは作成日の新しい順
   const handleSort = () => {
-    setItems(prev => {
-      const sorted = [...prev].sort((a, b) => a.name.localeCompare(b.name, 'ja'))
-      return sorted
-    })
+    setItems(prev => [...prev].sort(byNameThenNewest))
     setDirty(true)
   }
 
@@ -248,6 +258,69 @@ export default function PageChildren() {
       showSnack(e.message, 'error')
     }
   }
+
+  //ドロップした画像 1 枚につき 1 ページを作り、画像をページ画像にする
+  const createPagesFromImages = async (files) => {
+    const images = files
+      .filter(f => f.type.startsWith('image/'))
+      .sort((a, b) => a.name.localeCompare(b.name, 'ja', { numeric: true }))
+    if (images.length === 0) {
+      showSnack('画像ファイルがありません', 'error')
+      return
+    }
+    if (dirty) {
+      showSnack('並び順の変更を保存してから追加してください', 'error')
+      return
+    }
+
+    //テンプレートは末尾の兄弟ページに合わせる。兄弟が無ければ最初のテンプレート
+    const last = items[items.length - 1]
+    let seq = items.reduce((max, i) => Math.max(max, i.seq || 0), 0)
+    let siteTemplate = last?.siteTemplate || ''
+    let pageTemplate = last?.pageTemplate || ''
+
+    const failed = []
+    setCreating({ done: 0, total: images.length })
+    for (const [idx, file] of images.entries()) {
+      const name = pageNameFromFile(file)
+      try {
+        const scaffold = await newPage(key)
+        if (!scaffold) return
+        const templates = scaffold.templates || []
+        if (!siteTemplate) siteTemplate = templates.find(t => t.type === SITE_TEMPLATE)?.id || ''
+        if (!pageTemplate) pageTemplate = templates.find(t => t.type === PAGE_TEMPLATE)?.id || ''
+        const id = scaffold.page.id
+        seq += 1
+        await updatePage(id, {
+          name,
+          description: '',
+          content: '',
+          parentId: key,
+          siteTemplate,
+          pageTemplate,
+          paging: 0,
+          published: true,
+          version: 0,
+          seq,
+        })
+        await uploadPageImage(id, file)
+      } catch (e) {
+        failed.push(`${name}（${e.message}）`)
+      }
+      setCreating({ done: idx + 1, total: images.length })
+    }
+    setCreating(null)
+
+    const created = images.length - failed.length
+    if (failed.length === 0) {
+      showSnack(`${created} ページを作成しました`)
+    } else {
+      showSnack(`${created} ページを作成、${failed.length} 件失敗しました: ${failed.join('、')}`, 'error')
+    }
+    await load()
+  }
+
+  const fileDrop = useFileDrop(createPagesFromImages, key !== 'Trash' && !creating)
 
   const handleGenerateList = async () => {
     setListLoading(true)
@@ -369,7 +442,15 @@ export default function PageChildren() {
         <Typography color="text.primary">子ページ管理</Typography>
       </Breadcrumbs>
 
-      <Paper sx={{ p: 3 }}>
+      <Paper sx={{ p: 3, position: 'relative' }} {...fileDrop.handlers}>
+        <FileDropOverlay
+          dragging={fileDrop.dragging}
+          progress={creating}
+          icon={<AddPhotoAlternateIcon color="primary" sx={{ fontSize: 48 }} />}
+          label="画像からページを作成"
+          progressLabel="ページを作成中"
+        />
+
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2, flexWrap: 'wrap' }}>
           <Typography variant="h6">
             子ページ管理 — {page.name}
@@ -413,7 +494,7 @@ export default function PageChildren() {
             </Button>
           )}
           {key === 'Trash' && (
-            <Tooltip title="名前でアルファベット順に自動ソート">
+            <Tooltip title="名前順に自動ソート（同じ名前は作成日の新しい順）">
               <Button size="small" variant="outlined" startIcon={<SortByAlphaIcon />} onClick={handleSort}>
                 自動ソート
               </Button>

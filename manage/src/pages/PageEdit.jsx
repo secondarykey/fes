@@ -14,7 +14,8 @@ import UnpublishedIcon from '@mui/icons-material/Unpublished'
 import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import PreviewIcon from '@mui/icons-material/Preview'
 import AccountTreeIcon from '@mui/icons-material/AccountTree'
-import ArrowBackIcon from '@mui/icons-material/ArrowBack'
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
+import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import BookmarkAddIcon from '@mui/icons-material/BookmarkAdd'
 import AddIcon from '@mui/icons-material/Add'
 import ImageIcon from '@mui/icons-material/Image'
@@ -25,14 +26,27 @@ import WrapTextIcon from '@mui/icons-material/WrapText'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import TextIncreaseIcon from '@mui/icons-material/TextIncrease'
 import TextDecreaseIcon from '@mui/icons-material/TextDecrease'
+import ManageSearchIcon from '@mui/icons-material/ManageSearch'
 import { useRef } from 'react'
-import { getPage, newPage, updatePage, deletePage, publishPage, unpublishPage, getPageImage, uploadPageImage, deletePageImage } from '../api/page'
+import { getPage, getChildren, newPage, updatePage, deletePage, publishPage, unpublishPage, getPageImage, uploadPageImage, deletePageImage } from '../api/page'
 import { getCurrentDraft, addDraftPage } from '../api/draft'
+import TrashCopyDialog from '../components/TrashCopyDialog'
 
 const SITE_TEMPLATE = 1
 const PAGE_TEMPLATE = 2
 //子ページの Select で「子ページの追加」を表す値（ページ ID と重ならない）
 const ADD_CHILD = '__add_child__'
+
+//前・次のページボタンのページ名（長い名前は省略する）
+const siblingLabelSx = { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }
+
+//ページ画像に重ねる操作ボタン
+const imageOverlayButtonSx = {
+  bgcolor: 'background.paper',
+  opacity: 0.85,
+  boxShadow: 1,
+  '&:hover': { opacity: 1, bgcolor: 'background.paper' },
+}
 
 function toForm(d) {
   return {
@@ -64,6 +78,8 @@ export default function PageEdit() {
   //公開日の打ち直しは既定でオフ
   const [publishUpdate, setPublishUpdate] = useState(false)
   const [deleteDialog, setDeleteDialog] = useState(false)
+  const [imageDeleteDialog, setImageDeleteDialog] = useState(false)
+  const [trashDialog, setTrashDialog] = useState(false)
   const [disableDialog, setDisableDialog] = useState(false)
   const [image, setImage] = useState(null)
   const [imageUploading, setImageUploading] = useState(false)
@@ -78,6 +94,9 @@ export default function PageEdit() {
   const [contentFontSize, setContentFontSize] = useState(13)
   const [snack, setSnack] = useState({ open: false, message: '', severity: 'success' })
   const [draftRegistering, setDraftRegistering] = useState(false)
+  //同じ親を持つページのうち、並び順で前と次のページ
+  const [siblings, setSiblings] = useState({ prev: null, next: null })
+  const parentId = data?.page?.parent || ''
 
   useEffect(() => {
     const load = isNew ? newPage(parentKey) : getPage(key)
@@ -111,6 +130,28 @@ export default function PageEdit() {
       .then(d => setImage(d))
       .catch(() => {})
   }, [key, isNew])
+
+  useEffect(() => {
+    if (isNew || !key || !parentId) {
+      setSiblings({ prev: null, next: null })
+      return
+    }
+    let canceled = false
+    getChildren(parentId)
+      .then(list => {
+        if (canceled) return
+        const items = list || []
+        const i = items.findIndex(c => c.id === key)
+        setSiblings({
+          prev: i > 0 ? items[i - 1] : null,
+          next: i >= 0 && i < items.length - 1 ? items[i + 1] : null,
+        })
+      })
+      .catch(() => {
+        if (!canceled) setSiblings({ prev: null, next: null })
+      })
+    return () => { canceled = true }
+  }, [key, isNew, parentId])
 
   const showSnack = (message, severity = 'success') =>
     setSnack({ open: true, message, severity })
@@ -205,6 +246,7 @@ export default function PageEdit() {
   }
 
   const handleImageDelete = async () => {
+    setImageDeleteDialog(false)
     setImageUploading(true)
     try {
       const pageKey = isNew ? presetKey : key
@@ -266,6 +308,13 @@ export default function PageEdit() {
       // 挿入したタグを含めて選択を維持し、続けて操作できるようにする
       el.setSelectionRange(selectionStart, selectionStart + replaced.length)
     })
+  }
+
+  //Trash のページから説明・コンテンツを写す（保存はしない）
+  const handleApplyFromTrash = ({ description, content }) => {
+    setForm(prev => ({ ...prev, description, content }))
+    setTrashDialog(false)
+    showSnack('説明・コンテンツを設定しました（未保存）')
   }
 
   const handleAddChild = async () => {
@@ -360,19 +409,25 @@ export default function PageEdit() {
       <Paper sx={{ p: 3 }}>
 
         {/* 上段: 左=基本情報、右=ページ画像 */}
-        <Box sx={{ display: 'flex', gap: 3, mb: 2, alignItems: 'flex-start' }}>
+        <Box sx={{ display: 'flex', gap: 3, mb: 2, alignItems: 'stretch' }}>
 
           {/* 左カラム */}
           <Box sx={{ flex: 1, minWidth: 0 }}>
-            {/* ページ名 */}
-            <TextField
-              label="ページ名"
-              value={form.name}
-              onChange={handleText('name')}
-              fullWidth
-              size="small"
-              sx={{ mb: 2 }}
-            />
+            {/* ページ名 + Trash から説明・コンテンツを設定 */}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+              <TextField
+                label="ページ名"
+                value={form.name}
+                onChange={handleText('name')}
+                fullWidth
+                size="small"
+              />
+              <Tooltip title="Trash から説明・コンテンツを設定">
+                <IconButton onClick={() => setTrashDialog(true)} aria-label="Trash から説明・コンテンツを設定">
+                  <ManageSearchIcon />
+                </IconButton>
+              </Tooltip>
+            </Box>
 
             {/* 説明 */}
             <TextField
@@ -427,36 +482,72 @@ export default function PageEdit() {
             </Box>
           </Box>
 
-          {/* 右カラム: ページ画像 */}
-          <Box sx={{ width: 260, flexShrink: 0 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-              <Typography variant="subtitle2">ページ画像</Typography>
-              {image?.url && (
-                <Chip
-                  label={image.draft ? '下書き' : '公開中'}
-                  size="small"
-                  color={image.draft ? 'warning' : 'success'}
-                  variant="outlined"
-                />
-              )}
-            </Box>
+          {/* 右カラム: ページ画像（枠は左カラムと同じ高さ） */}
+          <Box
+            sx={{
+              width: 260,
+              flexShrink: 0,
+              position: 'relative',
+              borderWidth: '1px',
+              borderStyle: image?.url ? 'solid' : 'dashed',
+              borderColor: 'divider',
+              borderRadius: 1,
+              overflow: 'hidden',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
             {isNew ? (
-              <Box sx={{ width: '100%', height: 120, border: '1px dashed', borderColor: 'divider', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1 }}>
-                <Typography variant="body2" color="text.disabled">保存後に設定できます</Typography>
-              </Box>
+              <Typography variant="body2" color="text.disabled">保存後に設定できます</Typography>
             ) : (
               <>
-                {image?.url ? (
-                  <Box
-                    component="img"
-                    src={image.url}
-                    alt="ページ画像"
-                    sx={{ width: '100%', maxHeight: 160, objectFit: 'contain', border: '1px solid', borderColor: 'divider', borderRadius: 1, display: 'block', mb: 1 }}
-                  />
+                {image?.draft && image.publishedUrl ? (
+                  <>
+                    {/* 差し替え中: 公開中を左上、差し替え（下書き）を右下に 80% で重ねる */}
+                    <Box
+                      component="img"
+                      src={image.publishedUrl}
+                      alt="公開中のページ画像"
+                      sx={{ position: 'absolute', top: 0, left: 0, width: '80%', height: '80%', objectFit: 'contain', objectPosition: 'left top' }}
+                    />
+                    <Box
+                      component="img"
+                      src={image.url}
+                      alt="差し替えるページ画像"
+                      sx={{
+                        position: 'absolute',
+                        right: 0,
+                        bottom: 0,
+                        width: '80%',
+                        height: '80%',
+                        objectFit: 'contain',
+                        objectPosition: 'right bottom',
+                        //重なりの境目が分かるよう、画像の形に沿って影を付ける
+                        filter: 'drop-shadow(0 0 4px rgba(0, 0, 0, 0.5))',
+                      }}
+                    />
+                    <Chip label="公開中" size="small" color="success" sx={{ position: 'absolute', top: 8, left: 8 }} />
+                    <Chip label="下書き" size="small" color="warning" sx={{ position: 'absolute', bottom: 8, left: 'calc(20% + 8px)' }} />
+                  </>
+                ) : image?.url ? (
+                  <>
+                    {/* 画像の大きさで枠が伸びないよう、絶対配置で枠いっぱいに収める */}
+                    <Box
+                      component="img"
+                      src={image.url}
+                      alt="ページ画像"
+                      sx={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain' }}
+                    />
+                    <Chip
+                      label={image.draft ? '下書き' : '公開中'}
+                      size="small"
+                      color={image.draft ? 'warning' : 'success'}
+                      sx={{ position: 'absolute', top: 8, left: 8 }}
+                    />
+                  </>
                 ) : (
-                  <Box sx={{ width: '100%', height: 120, border: '1px dashed', borderColor: 'divider', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1 }}>
-                    <Typography variant="body2" color="text.disabled">画像なし</Typography>
-                  </Box>
+                  <Typography variant="body2" color="text.disabled">画像なし</Typography>
                 )}
                 <input
                   type="file"
@@ -465,28 +556,35 @@ export default function PageEdit() {
                   style={{ display: 'none' }}
                   onChange={handleImageSelect}
                 />
-                <Box sx={{ display: 'flex', gap: 1 }}>
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    sx={{ flex: 1 }}
-                    startIcon={imageUploading ? <CircularProgress size={14} /> : <ImageIcon />}
-                    onClick={() => imageInputRef.current?.click()}
-                    disabled={imageUploading}
-                  >
-                    {imageUploading ? '処理中...' : '画像を選択'}
-                  </Button>
+                <Box sx={{ position: 'absolute', bottom: 8, right: 8, display: 'flex', gap: 0.5 }}>
+                  <Tooltip title="画像を選択">
+                    <span>
+                      <IconButton
+                        size="small"
+                        onClick={() => imageInputRef.current?.click()}
+                        disabled={imageUploading}
+                        aria-label="画像を選択"
+                        sx={imageOverlayButtonSx}
+                      >
+                        {imageUploading ? <CircularProgress size={18} /> : <ImageIcon fontSize="small" />}
+                      </IconButton>
+                    </span>
+                  </Tooltip>
                   {image?.url && (
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      color="error"
-                      startIcon={<DeleteIcon />}
-                      onClick={handleImageDelete}
-                      disabled={imageUploading}
-                    >
-                      削除
-                    </Button>
+                    <Tooltip title="画像を削除">
+                      <span>
+                        <IconButton
+                          size="small"
+                          color="error"
+                          onClick={() => setImageDeleteDialog(true)}
+                          disabled={imageUploading}
+                          aria-label="画像を削除"
+                          sx={imageOverlayButtonSx}
+                        >
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      </span>
+                    </Tooltip>
                   )}
                 </Box>
               </>
@@ -494,22 +592,10 @@ export default function PageEdit() {
           </Box>
         </Box>
 
-        {/* 子ページ管理 + 保存/公開 */}
+        {/* 子ページ・コンテンツの表示 + 保存/公開 */}
         <Box ref={actionsBarRef} sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-          {!isNew ? (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              {form.parentId && (
-                <Tooltip title="親ページの子ページ管理へ戻る">
-                  <IconButton
-                    size="small"
-                    component={RouterLink}
-                    to={`/page/${form.parentId}/children`}
-                    aria-label="親ページの子ページ管理へ戻る"
-                  >
-                    <ArrowBackIcon fontSize="small" />
-                  </IconButton>
-                </Tooltip>
-              )}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            {!isNew && (
               <FormControl size="small" sx={{ minWidth: 200 }}>
                 <InputLabel>子ページ</InputLabel>
                 <Select
@@ -536,17 +622,43 @@ export default function PageEdit() {
                   ))}
                 </Select>
               </FormControl>
-              <Button
-                variant="text"
+            )}
+            <Tooltip title="フォント縮小">
+              <span>
+                <IconButton
+                  size="small"
+                  onClick={() => setContentFontSize(v => Math.max(9, v - 1))}
+                  disabled={contentFontSize <= 9}
+                  aria-label="フォント縮小"
+                >
+                  <TextDecreaseIcon fontSize="small" />
+                </IconButton>
+              </span>
+            </Tooltip>
+            <Tooltip title="フォント拡大">
+              <span>
+                <IconButton
+                  size="small"
+                  onClick={() => setContentFontSize(v => Math.min(22, v + 1))}
+                  disabled={contentFontSize >= 22}
+                  aria-label="フォント拡大"
+                >
+                  <TextIncreaseIcon fontSize="small" />
+                </IconButton>
+              </span>
+            </Tooltip>
+            <Tooltip title={wordWrap ? '折り返しOFF' : '折り返しON'}>
+              <IconButton
                 size="small"
-                startIcon={<BookmarkAddIcon />}
-                onClick={handleAddToDraft}
-                disabled={draftRegistering}
+                onClick={() => setWordWrap(v => !v)}
+                color={wordWrap ? 'primary' : 'default'}
+                aria-label={wordWrap ? '折り返しOFF' : '折り返しON'}
+                aria-pressed={wordWrap}
               >
-                ドラフトに設定
-              </Button>
-            </Box>
-          ) : <Box />}
+                <WrapTextIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          </Box>
           <Box sx={{ ml: 'auto', display: 'flex', gap: 1 }}>
             {!isNew && data.page.canPublish && (
               <>
@@ -634,63 +746,13 @@ export default function PageEdit() {
               sx={{
                 position: 'absolute',
                 top: 4,
-                right: 40,
+                right: 8,
                 bgcolor: 'background.paper',
                 opacity: 0.7,
                 '&:hover': { opacity: 1, bgcolor: 'background.paper' },
               }}
             >
               {contentExpanded ? <UnfoldLessIcon fontSize="small" /> : <UnfoldMoreIcon fontSize="small" />}
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="フォント縮小">
-            <IconButton
-              size="small"
-              onClick={() => setContentFontSize(v => Math.max(9, v - 1))}
-              disabled={contentFontSize <= 9}
-              sx={{
-                position: 'absolute',
-                top: 4,
-                right: 136,
-                bgcolor: 'background.paper',
-                opacity: 0.7,
-                '&:hover': { opacity: 1, bgcolor: 'background.paper' },
-              }}
-            >
-              <TextDecreaseIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="フォント拡大">
-            <IconButton
-              size="small"
-              onClick={() => setContentFontSize(v => Math.min(22, v + 1))}
-              disabled={contentFontSize >= 22}
-              sx={{
-                position: 'absolute',
-                top: 4,
-                right: 104,
-                bgcolor: 'background.paper',
-                opacity: 0.7,
-                '&:hover': { opacity: 1, bgcolor: 'background.paper' },
-              }}
-            >
-              <TextIncreaseIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title={wordWrap ? '折り返しOFF' : '折り返しON'}>
-            <IconButton
-              size="small"
-              onClick={() => setWordWrap(v => !v)}
-              sx={{
-                position: 'absolute',
-                top: 4,
-                right: 72,
-                bgcolor: 'background.paper',
-                opacity: wordWrap ? 0.7 : 0.4,
-                '&:hover': { opacity: 1, bgcolor: 'background.paper' },
-              }}
-            >
-              <WrapTextIcon fontSize="small" />
             </IconButton>
           </Tooltip>
           <Tooltip title="コンテンツをコピー">
@@ -719,6 +781,18 @@ export default function PageEdit() {
             onClick={insertBr}>
             &lt;br&gt;
           </Button>
+          {!isNew && (
+            <Button
+              variant="text"
+              size="small"
+              startIcon={<BookmarkAddIcon />}
+              onClick={handleAddToDraft}
+              disabled={draftRegistering}
+              sx={{ ml: 'auto' }}
+            >
+              ドラフトに設定
+            </Button>
+          )}
         </Box>
 
         {!isNew && (
@@ -768,6 +842,57 @@ export default function PageEdit() {
                 子ページ管理
               </Button>
             </Box>
+
+            {parentId && (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
+                <Box sx={{ flex: 1, minWidth: 0, display: 'flex' }}>
+                  {siblings.prev && (
+                    <Tooltip title="前のページ">
+                      <Button
+                        variant="text"
+                        size="small"
+                        startIcon={<ChevronLeftIcon />}
+                        component={RouterLink}
+                        to={`/page/${siblings.prev.id}`}
+                        sx={{ maxWidth: '100%', textTransform: 'none' }}
+                      >
+                        <Box component="span" sx={{ ...siblingLabelSx, textDecoration: siblings.prev.deleted ? 'line-through' : 'none' }}>
+                          {siblings.prev.name || '(名前なし)'}
+                        </Box>
+                      </Button>
+                    </Tooltip>
+                  )}
+                </Box>
+                <Button
+                  variant="text"
+                  size="small"
+                  startIcon={<AccountTreeIcon />}
+                  component={RouterLink}
+                  to={`/page/${parentId}/children`}
+                  sx={{ flexShrink: 0 }}
+                >
+                  親の子ページ管理
+                </Button>
+                <Box sx={{ flex: 1, minWidth: 0, display: 'flex', justifyContent: 'flex-end' }}>
+                  {siblings.next && (
+                    <Tooltip title="次のページ">
+                      <Button
+                        variant="text"
+                        size="small"
+                        endIcon={<ChevronRightIcon />}
+                        component={RouterLink}
+                        to={`/page/${siblings.next.id}`}
+                        sx={{ maxWidth: '100%', textTransform: 'none' }}
+                      >
+                        <Box component="span" sx={{ ...siblingLabelSx, textDecoration: siblings.next.deleted ? 'line-through' : 'none' }}>
+                          {siblings.next.name || '(名前なし)'}
+                        </Box>
+                      </Button>
+                    </Tooltip>
+                  )}
+                </Box>
+              </Box>
+            )}
           </>
         )}
       </Paper>
@@ -795,6 +920,30 @@ export default function PageEdit() {
         <DialogActions>
           <Button onClick={() => setDeleteDialog(false)}>キャンセル</Button>
           <Button onClick={handleDelete} color="error" variant="contained">削除</Button>
+        </DialogActions>
+      </Dialog>
+
+      <TrashCopyDialog
+        open={trashDialog}
+        initialQuery={form.name}
+        onClose={() => setTrashDialog(false)}
+        onApply={handleApplyFromTrash}
+      />
+
+      <Dialog open={imageDeleteDialog} onClose={() => setImageDeleteDialog(false)}>
+        <DialogTitle>
+          {image?.draft ? '下書きの画像を削除しますか？' : 'ページ画像を削除しますか？'}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            {image?.draft
+              ? '下書きの画像を削除します。公開中の画像がある場合は、その画像に戻ります。'
+              : '公開中のページ画像を削除します。この操作は取り消せません。'}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setImageDeleteDialog(false)}>キャンセル</Button>
+          <Button onClick={handleImageDelete} color="error" variant="contained">削除</Button>
         </DialogActions>
       </Dialog>
 
