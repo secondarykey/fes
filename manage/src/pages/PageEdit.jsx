@@ -753,6 +753,18 @@ export default function PageEdit() {
             onClick={insertBr}>
             &lt;br&gt;
           </Button>
+          {!isNew && (
+            <Button
+              variant="text"
+              size="small"
+              startIcon={<BookmarkAddIcon />}
+              onClick={handleAddToDraft}
+              disabled={draftRegistering}
+              sx={{ ml: 'auto' }}
+            >
+              ドラフトに設定
+            </Button>
+          )}
         </Box>
 
         {!isNew && (
@@ -792,15 +804,6 @@ export default function PageEdit() {
 
             <Divider sx={{ my: 2 }} />
             <Box sx={{ display: 'flex', gap: 1 }}>
-              <Button
-                variant="text"
-                size="small"
-                startIcon={<BookmarkAddIcon />}
-                onClick={handleAddToDraft}
-                disabled={draftRegistering}
-              >
-                ドラフトに設定
-              </Button>
               <Button
                 variant="text"
                 size="small"
