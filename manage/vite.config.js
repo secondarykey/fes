@@ -38,9 +38,20 @@ export default defineConfig({
     },
   },
   server: {
+    // /manage/ 配下は SPA 自身（vite が返す）なので、Go が返すパスだけを並べる。
+    // 先頭一致なので '/file' は /file_cache も含む。
     proxy: Object.fromEntries(
-      ['/manage/api', '/login', '/logout', '/session', '/manage/page/view', '/page', '/file']
-        .map((path) => [path, toServer]),
+      [
+        '/manage/api',
+        '/manage/page/view', // ページのプレビュー
+        '/manage/file/view', // 下書きを含む画像（ページ画像など）
+        '/manage/debug/pprof',
+        '/login',
+        '/logout',
+        '/session',
+        '/page',
+        '/file',
+      ].map((path) => [path, toServer]),
     ),
   },
 })
