@@ -8,6 +8,7 @@ import {
 import SearchIcon from '@mui/icons-material/Search'
 import ClearIcon from '@mui/icons-material/Clear'
 import { getChildren, getPage } from '../api/page'
+import { byNameThenNewest } from '../utils/sortPages'
 
 const TRASH_ID = 'Trash'
 
@@ -42,9 +43,8 @@ export default function TrashCopyDialog({ open, initialQuery = '', onClose, onAp
     getChildren(TRASH_ID)
       .then(list => {
         if (canceled) return
-        //登録日の新しい順
-        const byCreatedDesc = (a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)
-        setPages([...(list || [])].sort(byCreatedDesc))
+        //名前順。同じ名前どうしは登録日の新しい順（子ページ管理の自動ソートと同じ）
+        setPages([...(list || [])].sort(byNameThenNewest))
       })
       .catch(e => { if (!canceled) setLoadError(e.message) })
     return () => { canceled = true }

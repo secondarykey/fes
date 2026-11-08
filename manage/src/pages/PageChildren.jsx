@@ -41,6 +41,7 @@ import { getPage, getChildren, newPage, updatePage, uploadPageImage, sequencePag
 import { addDraftPages, getCurrentDraft } from '../api/draft'
 import FileDropOverlay from '../components/FileDropOverlay'
 import { useFileDrop } from '../hooks/useFileDrop'
+import { byNameThenNewest } from '../utils/sortPages'
 import { publishPages } from '../api/template'
 
 const SITE_TEMPLATE = 1
@@ -245,10 +246,7 @@ export default function PageChildren() {
 
   //名前順。同じ名前どうしは作成日の新しい順
   const handleSort = () => {
-    setItems(prev => [...prev].sort((a, b) => (
-      (a.name || '').localeCompare(b.name || '', 'ja')
-        || new Date(b.createdAt || 0) - new Date(a.createdAt || 0)
-    )))
+    setItems(prev => [...prev].sort(byNameThenNewest))
     setDirty(true)
   }
 
