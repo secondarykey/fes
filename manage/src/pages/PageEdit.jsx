@@ -72,6 +72,7 @@ export default function PageEdit() {
   //公開日の打ち直しは既定でオフ
   const [publishUpdate, setPublishUpdate] = useState(false)
   const [deleteDialog, setDeleteDialog] = useState(false)
+  const [imageDeleteDialog, setImageDeleteDialog] = useState(false)
   const [disableDialog, setDisableDialog] = useState(false)
   const [image, setImage] = useState(null)
   const [imageUploading, setImageUploading] = useState(false)
@@ -213,6 +214,7 @@ export default function PageEdit() {
   }
 
   const handleImageDelete = async () => {
+    setImageDeleteDialog(false)
     setImageUploading(true)
     try {
       const pageKey = isNew ? presetKey : key
@@ -501,7 +503,7 @@ export default function PageEdit() {
                         <IconButton
                           size="small"
                           color="error"
-                          onClick={handleImageDelete}
+                          onClick={() => setImageDeleteDialog(true)}
                           disabled={imageUploading}
                           aria-label="画像を削除"
                           sx={imageOverlayButtonSx}
@@ -517,22 +519,22 @@ export default function PageEdit() {
           </Box>
         </Box>
 
-        {/* 子ページ管理 + 保存/公開 */}
+        {/* 子ページ・コンテンツの表示 + 保存/公開 */}
         <Box ref={actionsBarRef} sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-          {!isNew ? (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              {form.parentId && (
-                <Tooltip title="親ページの子ページ管理へ戻る">
-                  <IconButton
-                    size="small"
-                    component={RouterLink}
-                    to={`/page/${form.parentId}/children`}
-                    aria-label="親ページの子ページ管理へ戻る"
-                  >
-                    <ArrowBackIcon fontSize="small" />
-                  </IconButton>
-                </Tooltip>
-              )}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            {!isNew && form.parentId && (
+              <Tooltip title="親ページの子ページ管理へ戻る">
+                <IconButton
+                  size="small"
+                  component={RouterLink}
+                  to={`/page/${form.parentId}/children`}
+                  aria-label="親ページの子ページ管理へ戻る"
+                >
+                  <ArrowBackIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            )}
+            {!isNew && (
               <FormControl size="small" sx={{ minWidth: 200 }}>
                 <InputLabel>子ページ</InputLabel>
                 <Select
@@ -559,17 +561,43 @@ export default function PageEdit() {
                   ))}
                 </Select>
               </FormControl>
-              <Button
-                variant="text"
+            )}
+            <Tooltip title="フォント縮小">
+              <span>
+                <IconButton
+                  size="small"
+                  onClick={() => setContentFontSize(v => Math.max(9, v - 1))}
+                  disabled={contentFontSize <= 9}
+                  aria-label="フォント縮小"
+                >
+                  <TextDecreaseIcon fontSize="small" />
+                </IconButton>
+              </span>
+            </Tooltip>
+            <Tooltip title="フォント拡大">
+              <span>
+                <IconButton
+                  size="small"
+                  onClick={() => setContentFontSize(v => Math.min(22, v + 1))}
+                  disabled={contentFontSize >= 22}
+                  aria-label="フォント拡大"
+                >
+                  <TextIncreaseIcon fontSize="small" />
+                </IconButton>
+              </span>
+            </Tooltip>
+            <Tooltip title={wordWrap ? '折り返しOFF' : '折り返しON'}>
+              <IconButton
                 size="small"
-                startIcon={<BookmarkAddIcon />}
-                onClick={handleAddToDraft}
-                disabled={draftRegistering}
+                onClick={() => setWordWrap(v => !v)}
+                color={wordWrap ? 'primary' : 'default'}
+                aria-label={wordWrap ? '折り返しOFF' : '折り返しON'}
+                aria-pressed={wordWrap}
               >
-                ドラフトに設定
-              </Button>
-            </Box>
-          ) : <Box />}
+                <WrapTextIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          </Box>
           <Box sx={{ ml: 'auto', display: 'flex', gap: 1 }}>
             {!isNew && data.page.canPublish && (
               <>
@@ -657,63 +685,13 @@ export default function PageEdit() {
               sx={{
                 position: 'absolute',
                 top: 4,
-                right: 40,
+                right: 8,
                 bgcolor: 'background.paper',
                 opacity: 0.7,
                 '&:hover': { opacity: 1, bgcolor: 'background.paper' },
               }}
             >
               {contentExpanded ? <UnfoldLessIcon fontSize="small" /> : <UnfoldMoreIcon fontSize="small" />}
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="フォント縮小">
-            <IconButton
-              size="small"
-              onClick={() => setContentFontSize(v => Math.max(9, v - 1))}
-              disabled={contentFontSize <= 9}
-              sx={{
-                position: 'absolute',
-                top: 4,
-                right: 136,
-                bgcolor: 'background.paper',
-                opacity: 0.7,
-                '&:hover': { opacity: 1, bgcolor: 'background.paper' },
-              }}
-            >
-              <TextDecreaseIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="フォント拡大">
-            <IconButton
-              size="small"
-              onClick={() => setContentFontSize(v => Math.min(22, v + 1))}
-              disabled={contentFontSize >= 22}
-              sx={{
-                position: 'absolute',
-                top: 4,
-                right: 104,
-                bgcolor: 'background.paper',
-                opacity: 0.7,
-                '&:hover': { opacity: 1, bgcolor: 'background.paper' },
-              }}
-            >
-              <TextIncreaseIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title={wordWrap ? '折り返しOFF' : '折り返しON'}>
-            <IconButton
-              size="small"
-              onClick={() => setWordWrap(v => !v)}
-              sx={{
-                position: 'absolute',
-                top: 4,
-                right: 72,
-                bgcolor: 'background.paper',
-                opacity: wordWrap ? 0.7 : 0.4,
-                '&:hover': { opacity: 1, bgcolor: 'background.paper' },
-              }}
-            >
-              <WrapTextIcon fontSize="small" />
             </IconButton>
           </Tooltip>
           <Tooltip title="コンテンツをコピー">
@@ -784,6 +762,15 @@ export default function PageEdit() {
               <Button
                 variant="text"
                 size="small"
+                startIcon={<BookmarkAddIcon />}
+                onClick={handleAddToDraft}
+                disabled={draftRegistering}
+              >
+                ドラフトに設定
+              </Button>
+              <Button
+                variant="text"
+                size="small"
                 startIcon={<AccountTreeIcon />}
                 component={RouterLink}
                 to={`/page/${key}/children`}
@@ -818,6 +805,23 @@ export default function PageEdit() {
         <DialogActions>
           <Button onClick={() => setDeleteDialog(false)}>キャンセル</Button>
           <Button onClick={handleDelete} color="error" variant="contained">削除</Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={imageDeleteDialog} onClose={() => setImageDeleteDialog(false)}>
+        <DialogTitle>
+          {image?.draft ? '下書きの画像を削除しますか？' : 'ページ画像を削除しますか？'}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            {image?.draft
+              ? '下書きの画像を削除します。公開中の画像がある場合は、その画像に戻ります。'
+              : '公開中のページ画像を削除します。この操作は取り消せません。'}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setImageDeleteDialog(false)}>キャンセル</Button>
+          <Button onClick={handleImageDelete} color="error" variant="contained">削除</Button>
         </DialogActions>
       </Dialog>
 
