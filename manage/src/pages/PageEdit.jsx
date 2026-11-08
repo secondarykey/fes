@@ -14,7 +14,8 @@ import UnpublishedIcon from '@mui/icons-material/Unpublished'
 import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import PreviewIcon from '@mui/icons-material/Preview'
 import AccountTreeIcon from '@mui/icons-material/AccountTree'
-import ArrowBackIcon from '@mui/icons-material/ArrowBack'
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
+import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import BookmarkAddIcon from '@mui/icons-material/BookmarkAdd'
 import AddIcon from '@mui/icons-material/Add'
 import ImageIcon from '@mui/icons-material/Image'
@@ -26,13 +27,16 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import TextIncreaseIcon from '@mui/icons-material/TextIncrease'
 import TextDecreaseIcon from '@mui/icons-material/TextDecrease'
 import { useRef } from 'react'
-import { getPage, newPage, updatePage, deletePage, publishPage, unpublishPage, getPageImage, uploadPageImage, deletePageImage } from '../api/page'
+import { getPage, getChildren, newPage, updatePage, deletePage, publishPage, unpublishPage, getPageImage, uploadPageImage, deletePageImage } from '../api/page'
 import { getCurrentDraft, addDraftPage } from '../api/draft'
 
 const SITE_TEMPLATE = 1
 const PAGE_TEMPLATE = 2
 //子ページの Select で「子ページの追加」を表す値（ページ ID と重ならない）
 const ADD_CHILD = '__add_child__'
+
+//前・次のページボタンのページ名（長い名前は省略する）
+const siblingLabelSx = { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }
 
 //ページ画像に重ねる操作ボタン
 const imageOverlayButtonSx = {
@@ -87,6 +91,9 @@ export default function PageEdit() {
   const [contentFontSize, setContentFontSize] = useState(13)
   const [snack, setSnack] = useState({ open: false, message: '', severity: 'success' })
   const [draftRegistering, setDraftRegistering] = useState(false)
+  //同じ親を持つページのうち、並び順で前と次のページ
+  const [siblings, setSiblings] = useState({ prev: null, next: null })
+  const parentId = data?.page?.parent || ''
 
   useEffect(() => {
     const load = isNew ? newPage(parentKey) : getPage(key)
@@ -120,6 +127,28 @@ export default function PageEdit() {
       .then(d => setImage(d))
       .catch(() => {})
   }, [key, isNew])
+
+  useEffect(() => {
+    if (isNew || !key || !parentId) {
+      setSiblings({ prev: null, next: null })
+      return
+    }
+    let canceled = false
+    getChildren(parentId)
+      .then(list => {
+        if (canceled) return
+        const items = list || []
+        const i = items.findIndex(c => c.id === key)
+        setSiblings({
+          prev: i > 0 ? items[i - 1] : null,
+          next: i >= 0 && i < items.length - 1 ? items[i + 1] : null,
+        })
+      })
+      .catch(() => {
+        if (!canceled) setSiblings({ prev: null, next: null })
+      })
+    return () => { canceled = true }
+  }, [key, isNew, parentId])
 
   const showSnack = (message, severity = 'success') =>
     setSnack({ open: true, message, severity })
@@ -522,18 +551,6 @@ export default function PageEdit() {
         {/* 子ページ・コンテンツの表示 + 保存/公開 */}
         <Box ref={actionsBarRef} sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            {!isNew && form.parentId && (
-              <Tooltip title="親ページの子ページ管理へ戻る">
-                <IconButton
-                  size="small"
-                  component={RouterLink}
-                  to={`/page/${form.parentId}/children`}
-                  aria-label="親ページの子ページ管理へ戻る"
-                >
-                  <ArrowBackIcon fontSize="small" />
-                </IconButton>
-              </Tooltip>
-            )}
             {!isNew && (
               <FormControl size="small" sx={{ minWidth: 200 }}>
                 <InputLabel>子ページ</InputLabel>
@@ -778,6 +795,57 @@ export default function PageEdit() {
                 子ページ管理
               </Button>
             </Box>
+
+            {parentId && (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
+                <Box sx={{ flex: 1, minWidth: 0, display: 'flex' }}>
+                  {siblings.prev && (
+                    <Tooltip title="前のページ">
+                      <Button
+                        variant="text"
+                        size="small"
+                        startIcon={<ChevronLeftIcon />}
+                        component={RouterLink}
+                        to={`/page/${siblings.prev.id}`}
+                        sx={{ maxWidth: '100%', textTransform: 'none' }}
+                      >
+                        <Box component="span" sx={{ ...siblingLabelSx, textDecoration: siblings.prev.deleted ? 'line-through' : 'none' }}>
+                          {siblings.prev.name || '(名前なし)'}
+                        </Box>
+                      </Button>
+                    </Tooltip>
+                  )}
+                </Box>
+                <Button
+                  variant="text"
+                  size="small"
+                  startIcon={<AccountTreeIcon />}
+                  component={RouterLink}
+                  to={`/page/${parentId}/children`}
+                  sx={{ flexShrink: 0 }}
+                >
+                  親の子ページ管理
+                </Button>
+                <Box sx={{ flex: 1, minWidth: 0, display: 'flex', justifyContent: 'flex-end' }}>
+                  {siblings.next && (
+                    <Tooltip title="次のページ">
+                      <Button
+                        variant="text"
+                        size="small"
+                        endIcon={<ChevronRightIcon />}
+                        component={RouterLink}
+                        to={`/page/${siblings.next.id}`}
+                        sx={{ maxWidth: '100%', textTransform: 'none' }}
+                      >
+                        <Box component="span" sx={{ ...siblingLabelSx, textDecoration: siblings.next.deleted ? 'line-through' : 'none' }}>
+                          {siblings.next.name || '(名前なし)'}
+                        </Box>
+                      </Button>
+                    </Tooltip>
+                  )}
+                </Box>
+              </Box>
+            )}
           </>
         )}
       </Paper>
