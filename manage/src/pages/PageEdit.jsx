@@ -72,6 +72,7 @@ export default function PageEdit() {
   //公開日の打ち直しは既定でオフ
   const [publishUpdate, setPublishUpdate] = useState(false)
   const [deleteDialog, setDeleteDialog] = useState(false)
+  const [imageDeleteDialog, setImageDeleteDialog] = useState(false)
   const [disableDialog, setDisableDialog] = useState(false)
   const [image, setImage] = useState(null)
   const [imageUploading, setImageUploading] = useState(false)
@@ -213,6 +214,7 @@ export default function PageEdit() {
   }
 
   const handleImageDelete = async () => {
+    setImageDeleteDialog(false)
     setImageUploading(true)
     try {
       const pageKey = isNew ? presetKey : key
@@ -501,7 +503,7 @@ export default function PageEdit() {
                         <IconButton
                           size="small"
                           color="error"
-                          onClick={handleImageDelete}
+                          onClick={() => setImageDeleteDialog(true)}
                           disabled={imageUploading}
                           aria-label="画像を削除"
                           sx={imageOverlayButtonSx}
@@ -818,6 +820,23 @@ export default function PageEdit() {
         <DialogActions>
           <Button onClick={() => setDeleteDialog(false)}>キャンセル</Button>
           <Button onClick={handleDelete} color="error" variant="contained">削除</Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={imageDeleteDialog} onClose={() => setImageDeleteDialog(false)}>
+        <DialogTitle>
+          {image?.draft ? '下書きの画像を削除しますか？' : 'ページ画像を削除しますか？'}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            {image?.draft
+              ? '下書きの画像を削除します。公開中の画像がある場合は、その画像に戻ります。'
+              : '公開中のページ画像を削除します。この操作は取り消せません。'}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setImageDeleteDialog(false)}>キャンセル</Button>
+          <Button onClick={handleImageDelete} color="error" variant="contained">削除</Button>
         </DialogActions>
       </Dialog>
 
