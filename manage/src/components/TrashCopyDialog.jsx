@@ -8,8 +8,12 @@ import {
 import SearchIcon from '@mui/icons-material/Search'
 import ClearIcon from '@mui/icons-material/Clear'
 import { getChildren, getPage } from '../api/page'
+import { byNameThenNewest } from '../utils/sortPages'
 
 const TRASH_ID = 'Trash'
+
+//登録日（作成日）を 2026/11/09 の形で出す
+const fmtDate = (iso) => (iso ? new Date(iso).toLocaleDateString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit' }) : '')
 
 TrashCopyDialog.propTypes = {
   open: PropTypes.bool.isRequired,
@@ -37,7 +41,11 @@ export default function TrashCopyDialog({ open, initialQuery = '', onClose, onAp
     setPages(null)
     let canceled = false
     getChildren(TRASH_ID)
-      .then(list => { if (!canceled) setPages(list || []) })
+      .then(list => {
+        if (canceled) return
+        //名前順。同じ名前どうしは登録日の新しい順（子ページ管理の自動ソートと同じ）
+        setPages([...(list || [])].sort(byNameThenNewest))
+      })
       .catch(e => { if (!canceled) setLoadError(e.message) })
     return () => { canceled = true }
   }, [open, initialQuery])
@@ -130,10 +138,18 @@ export default function TrashCopyDialog({ open, initialQuery = '', onClose, onAp
                       onClick={() => handleSelect(p.id)}
                     >
                       <ListItemText
-                        primary={p.name || '(名前なし)'}
+                        primary={
+                          <Box component="span" sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
+                            <Box component="span" sx={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              {p.name || '(名前なし)'}
+                            </Box>
+                            <Typography component="span" variant="caption" color="text.secondary" sx={{ flexShrink: 0 }}>
+                              {fmtDate(p.createdAt)}
+                            </Typography>
+                          </Box>
+                        }
                         secondary={p.description || null}
                         slotProps={{
-                          primary: { noWrap: true },
                           secondary: { noWrap: true },
                         }}
                       />

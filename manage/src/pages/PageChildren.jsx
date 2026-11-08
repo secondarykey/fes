@@ -41,6 +41,7 @@ import { getPage, getChildren, newPage, updatePage, uploadPageImage, sequencePag
 import { addDraftPages, getCurrentDraft } from '../api/draft'
 import FileDropOverlay from '../components/FileDropOverlay'
 import { useFileDrop } from '../hooks/useFileDrop'
+import { byNameThenNewest } from '../utils/sortPages'
 import { publishPages } from '../api/template'
 
 const SITE_TEMPLATE = 1
@@ -243,11 +244,9 @@ export default function PageChildren() {
     setSaving(false)
   }
 
+  //名前順。同じ名前どうしは作成日の新しい順
   const handleSort = () => {
-    setItems(prev => {
-      const sorted = [...prev].sort((a, b) => a.name.localeCompare(b.name, 'ja'))
-      return sorted
-    })
+    setItems(prev => [...prev].sort(byNameThenNewest))
     setDirty(true)
   }
 
@@ -495,7 +494,7 @@ export default function PageChildren() {
             </Button>
           )}
           {key === 'Trash' && (
-            <Tooltip title="名前でアルファベット順に自動ソート">
+            <Tooltip title="名前順に自動ソート（同じ名前は作成日の新しい順）">
               <Button size="small" variant="outlined" startIcon={<SortByAlphaIcon />} onClick={handleSort}>
                 自動ソート
               </Button>
