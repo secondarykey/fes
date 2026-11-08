@@ -31,6 +31,8 @@ import { getCurrentDraft, addDraftPage } from '../api/draft'
 
 const SITE_TEMPLATE = 1
 const PAGE_TEMPLATE = 2
+//子ページの Select で「子ページの追加」を表す値（ページ ID と重ならない）
+const ADD_CHILD = '__add_child__'
 
 function toForm(d) {
   return {
@@ -508,6 +510,32 @@ export default function PageEdit() {
                   </IconButton>
                 </Tooltip>
               )}
+              <FormControl size="small" sx={{ minWidth: 200 }}>
+                <InputLabel>子ページ</InputLabel>
+                <Select
+                  value=""
+                  label="子ページ"
+                  onChange={e => {
+                    if (e.target.value === ADD_CHILD) handleAddChild()
+                    else navigate(`/page/${e.target.value}`)
+                  }}
+                >
+                  <MenuItem value={ADD_CHILD}>
+                    <AddIcon fontSize="small" sx={{ mr: 1, color: 'primary.main' }} />
+                    子ページの追加
+                  </MenuItem>
+                  {(data.children || []).length > 0 && <Divider />}
+                  {(data.children || []).map(c => (
+                    <MenuItem
+                      key={c.id}
+                      value={c.id}
+                      sx={c.deleted ? { textDecoration: 'line-through', color: 'text.disabled' } : undefined}
+                    >
+                      {c.name || '(名前なし)'}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
               <Button
                 variant="text"
                 size="small"
@@ -730,14 +758,6 @@ export default function PageEdit() {
 
             <Divider sx={{ my: 2 }} />
             <Box sx={{ display: 'flex', gap: 1 }}>
-              <Button
-                variant="text"
-                size="small"
-                startIcon={<AddIcon />}
-                onClick={handleAddChild}
-              >
-                子ページの追加
-              </Button>
               <Button
                 variant="text"
                 size="small"

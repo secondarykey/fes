@@ -115,8 +115,8 @@
   {
     "key": "7",
     "group": "food",
-    "name": "うまいもん でぶ屋",
-    "detail": "魔法の粉をかけたフライドポテト、唐揚げ、焼きそば、フランクフルト、ロングチュロス、かき氷、飲料",
+    "name": "うまいもんでぶ屋",
+    "detail": "肉巻きおにぎり、タイ風唐揚げ、かき氷等",
     "links": [],
     "rects": [
       [
@@ -158,7 +158,7 @@
     "key": "9",
     "group": "food",
     "name": "淡路島バーガー静岡田町店",
-    "detail": "ハンバーガー、フライドポテト、チュロス、串焼き、燻製",
+    "detail": "ハンバーガー、フライドポテト",
     "links": [
       "https://www.instagram.com/awajishima_burger_tamachi"
     ],
@@ -436,7 +436,7 @@
     "key": "22",
     "group": "food",
     "name": "レカント",
-    "detail": "シュラスコ\n肉巻きおにぎり\nシュラスコサンド",
+    "detail": "シュラスコ、シュラスコサンド、黒豚ソーセージ",
     "links": [],
     "rects": [
       [
@@ -479,7 +479,7 @@
     "key": "24",
     "group": "food",
     "name": "Di mar",
-    "detail": "エンパナーダ、タチャモラダー",
+    "detail": "エンパナーダ、チチャモラーダ",
     "links": [
       "https://www.instagram.com/di_marciem"
     ],
@@ -499,7 +499,7 @@
     "key": "25",
     "group": "food",
     "name": "牛屋 絆",
-    "detail": "ホルモン焼そば",
+    "detail": "焼きそば、牛串、タン串、肉巻きおにぎり",
     "links": [
       "https://www.instagram.com/gyuuya._.han"
     ],
@@ -538,7 +538,7 @@
     "key": "27",
     "group": "food",
     "name": "らぁ麺 壱喰",
-    "detail": "ラーメン、ソフトドリンク",
+    "detail": "ラーメン、抹茶ドリンク",
     "links": [
       "https://www.instagram.com/ra_men_ikkuu/"
     ],
@@ -630,7 +630,7 @@
     "key": "31",
     "group": "food",
     "name": "極東アンティール",
-    "detail": "ジャーク飯、ジーラポーク、レモンサワー、チャイ　等",
+    "detail": "ダブルス、ジーラポーク、ジャーク飯",
     "links": [
       "https://far-east-antilles.com"
     ],
@@ -652,7 +652,7 @@
     "key": "32",
     "group": "food",
     "name": "SHANTY",
-    "detail": "無添加ジャークチキン",
+    "detail": "各種ジャマイカ料理、ジャークチキン、お菓子",
     "links": [],
     "rects": [
       [
@@ -819,7 +819,7 @@
   {
     "key": "40",
     "group": "food",
-    "name": "Ailie の 野生コーヒー",
+    "name": "Ailie の野生コーヒー",
     "detail": "自家焙煎コーヒー",
     "links": [],
     "rects": [
@@ -859,7 +859,7 @@
   {
     "key": "42",
     "group": "food",
-    "name": "Restrant Sperare",
+    "name": "Restaurant Sperare",
     "detail": "スパイスを効かせたガレット",
     "links": [
       "https://shizuoka.mypl.net/shop/00000378881/"
@@ -991,7 +991,7 @@
   {
     "key": "48",
     "group": "kitchencar",
-    "name": "Lyric Kitchen",
+    "name": "Lyric kitchen",
     "detail": "ビリアタコス、ポークステーキ、ポテト、ドリンク",
     "links": [
       "https://www.instagram.com/lyric_kitchen"
@@ -1221,7 +1221,7 @@
   {
     "key": "59",
     "group": "goods",
-    "name": "HAE.vintage + Lab.PaperDripper",
+    "name": "HAE.vintage + Lab.Paper Dripper",
     "detail": "海外古着と自家焙煎珈琲と焼菓子",
     "links": [
       "https://www.instagram.com/hae.vintage"
@@ -1360,7 +1360,7 @@
   {
     "key": "65",
     "group": "goods",
-    "name": "misa♡prana",
+    "name": "miisa♡prana",
     "detail": "◆ヘナタトゥー＆ジャグアタトゥーをお肌に描きます◆ヘナアートの技法を用いて描いた作品雑貨類の販売◆天然素材100%手作り練り香の販売",
     "links": [],
     "rects": [
@@ -1504,7 +1504,7 @@
   {
     "key": "72",
     "group": "goods",
-    "name": "japa9ja",
+    "name": "Japa9ja",
     "detail": "洋服・バッグ等の小物",
     "links": [
       "https://www.instagram.com/japa9ja.co"
@@ -1644,7 +1644,7 @@
   {
     "key": "78",
     "group": "goods",
-    "name": "Re:彩cle",
+    "name": "Re: 彩 cle",
     "detail": "ノースフェイス専門店　古着と新品",
     "links": [
       "https://www.instagram.com/re.cycle2025/"
@@ -1707,7 +1707,7 @@
     "key": "81",
     "group": "goods",
     "name": "陶工房修",
-    "detail": "陶器",
+    "detail": "陶器、ワークショップ",
     "links": [],
     "rects": [
       [
@@ -1810,7 +1810,7 @@
   {
     "key": "86",
     "group": "goods",
-    "name": "SUNDAY CRAFTSMAN CLUB",
+    "name": "SUNDAY CRAFTSMANS CLUB",
     "detail": "オリジナルタフティングラグ及びオリジナル雑貨販売",
     "links": [
       "https://www.instagram.com/sunday_craftsmans_club/"
@@ -1833,7 +1833,7 @@
   {
     "key": "87",
     "group": "goods",
-    "name": "ONE Wave",
+    "name": "One Wave",
     "detail": "ワークショップ（オリジナルボトル作り）ボトルを選んでいただき中身（ビーチサンド・ジェリー・リキッドなど）を選んでご自身でオリジナルのボトルを作成していただく内容となっています。雑貨はクラゲのランタン、スクイーズ、3Dプリンタードラゴンandモンスターフィギュア、アクセサリー等",
     "links": [
       "https://www.instagram.com/one.wave307/"
@@ -1923,7 +1923,7 @@
   {
     "key": "92",
     "group": "goods",
-    "name": "meChill 整体サロン",
+    "name": "meChill 整体salon",
     "detail": "整体＆足指マッサージ",
     "links": [
       "https://www.instagram.com/mechill_sangobiyou.seitai"
@@ -1945,7 +1945,7 @@
     "key": "93",
     "group": "goods",
     "name": "Nid Belle",
-    "detail": "耳つぼジュエリー",
+    "detail": "耳ツボジュエリー、施術",
     "links": [
       "https://www.instagram.com/nidbelle_52"
     ],
@@ -1985,7 +1985,7 @@
     "key": "95",
     "group": "goods",
     "name": "Emilia",
-    "detail": "耳ツボジュエリー",
+    "detail": "リラクゼーション、耳つぼジュエリー",
     "links": [],
     "rects": [
       [
@@ -2007,7 +2007,7 @@
     "key": "96",
     "group": "goods",
     "name": "FUMIHEALING：GROUP",
-    "detail": "ベッドケア/ふくらはぎケア/ハンドケア",
+    "detail": "深リンパケア",
     "links": [],
     "rects": [
       [
@@ -2164,7 +2164,7 @@
     "key": "104",
     "group": "goods",
     "name": "Harbor Art Village",
-    "detail": "・黄桜じーじのけん玉屋さん（けん玉販売とレクチャー）\n・よいこ共和国（無農薬栽培コーヒー、豆乳チャイ）\n・ヤマチキ（ビリヤニ販売）\n・【酒 -sai-】（日本酒、ふんどし、ワークショップ）\n・ktulma（Leather x African fabric）\n・HAPPY MONSTER（100%ペットボトルに絵を書こう）\n・モウマナモク（キャンドル販売、ワークショップ）\n・~nagi（マクラメアクセサリー）",
+    "detail": "・黄桜じーじのけん玉屋さん（けん玉販売とレクチャー）\n・よいこ共和国（無農薬栽培コーヒー、豆乳チャイ）\n・ヤマチキ（ビリヤニ販売）\n・【酒 -sai-】（日本酒、ふんどし、ワークショップ）\n・ktulma（Leather x African fabric）\n・HAPPY MONSTER（100%ペットボトルに絵を描こう）\n・モウマナモク（キャンドル販売、ワークショップ）\n・~nagi（マクラメアクセサリー）",
     "links": [],
     "rects": [
       [
@@ -2304,7 +2304,9 @@
         95
       ]
     ],
-    "images": []
+    "images": [
+      "WC/0.webp"
+    ]
   },
   {
     "key": "GATE",
@@ -2337,19 +2339,83 @@
       ]
     ],
     "images": [
-      "SEA/0.webp"
+      "SEA/0.webp",
+      "SEA/1.webp"
+    ]
+  },
+  {
+    "key": "PLAY",
+    "group": "facility",
+    "name": "遊具",
+    "detail": "",
+    "links": [],
+    "rects": [
+      [
+        1510,
+        342,
+        70,
+        68
+      ]
+    ],
+    "images": [
+      "PLAY/0.webp",
+      "PLAY/1.webp"
+    ]
+  },
+  {
+    "key": "HILL",
+    "group": "facility",
+    "name": "丘",
+    "detail": "",
+    "links": [],
+    "rects": [
+      [
+        1415,
+        345,
+        50,
+        75
+      ]
+    ],
+    "images": [
+      "HILL/0.webp",
+      "HILL/1.webp",
+      "HILL/2.webp",
+      "HILL/3.webp",
+      "HILL/4.webp",
+      "HILL/5.webp",
+      "HILL/6.webp"
+    ]
+  },
+  {
+    "key": "SHIP",
+    "group": "facility",
+    "name": "難破船遊具",
+    "detail": "",
+    "links": [],
+    "rects": [
+      [
+        1740,
+        150,
+        240,
+        170
+      ]
+    ],
+    "images": [
+      "SHIP/0.webp",
+      "SHIP/1.webp",
+      "SHIP/2.webp"
     ]
   },
   {
     "key": "SECRET",
     "group": "facility",
     "name": "隠れハッち",
-    "detail": "24日限定ですが、これを見せるとドリンクを１杯サービスさせていただきます。",
+    "detail": "こんなところを突っつくなんて、あなたは相当な HummingBird マニアですね。せっかく見つけてくれたので、24日限定ですが、これを見せるとドリンクを１杯サービスさせていただきます。ただし担当者が裏にいるときに限るため、ドリンクのスタッフが知らない場合は無効です。",
     "links": [],
     "rects": [
       [
-        1536,
-        366,
+        715,
+        58,
         10,
         10
       ]

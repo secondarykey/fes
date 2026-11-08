@@ -6,6 +6,9 @@ import useWindowSize from './Window';
 import './App.css'
 import SVGButton from './SVGButton';
 import MapPoint from './MapPoint';
+import { surveyEnabled, useSurvey } from './useSurvey';
+import { SurveyOverlay, SurveyPanel } from './Survey';
+import LocationHelp from './LocationHelp';
 
 //店舗パネルに出す区分の名前（マップ画像の店舗一覧の見出しに合わせる）
 const groupLabels = {
@@ -20,6 +23,55 @@ const showShopNo = (s) => s.key !== undefined && (s.group !== "facility" || /^[A
 
 //会場が狭いので GPS を優先させる（ネットワーク測位だと誤差が会場の幅を超える）
 const geoOptions = { enableHighAccuracy: true };
+
+//全画面にできるブラウザだけ全画面ボタンを出す（iPhone の Safari は動画以外の全画面を許していない）
+const fullscreenEnabled = document.fullscreenEnabled === true;
+
+/**
+ * 最初に出すお知らせ
+ * App の中で定義すると、位置が届いて App を描き直すたびに作り直され、フェードインがやり直される
+ */
+const Notice = ({ onClose }) => {
+  //外側（暗い部分）を押しても閉じる
+  return (
+    <div id="experimental" onClick={onClose}>
+      <div className="card" role="dialog" aria-modal="true" aria-labelledby="experimentalTitle"
+        onClick={(e) => e.stopPropagation()}>
+        <div className="head">
+          <img src="/maps/images/BIRD/0.webp" alt="" />
+          <div>
+            <div className="event">Humming Bird 2026 秋</div>
+            <div className="title" id="experimentalTitle">会場マップ<span className="badge">体験版</span></div>
+          </div>
+        </div>
+        <div className="body">
+          <p>Small-Axe プロジェクトが開催する Humming Bird 2026 秋の会場マップです。</p>
+          <div className="note">
+            <p>
+              お店の情報や配置が実際と違うことがあります。
+              最新の情報は公式サイトでご確認ください。
+            </p>
+            <p>何か機能のご要望があれば、お問い合わせなどでお願いします。</p>
+          </div>
+        </div>
+        <button className="close" onClick={onClose}>マップを見る</button>
+        {/* マップは /maps/ で配信しているので、/ がサイトのトップになる */}
+        <a className="site" href="/">サイトに戻る</a>
+      </div>
+    </div>
+  )
+}
+
+//デバッグ表示（ボタンはコメントアウト中）
+const Debug = ({ text, onClose }) => {
+  return (
+    <div id="debugText">
+      <span>Debug</span>
+      <div>{text}</div>
+      <button onClick={onClose} >閉じる</button>
+    </div>
+  )
+}
 
 function App() {
 
@@ -36,7 +88,21 @@ function App() {
   const [debugText,setDebugText] = useState("");
   const [lock,setLock] = useState(false);
 
+  //位置情報が拒否されている（ブラウザが覚えるので、設定を直すまでダイアログは出ない）
+  const [denied, setDenied] = useState(false);
+  const deniedRef = useRef(false);
+  //拒否されているときの戻し方のカード
+  const [help, setHelp] = useState(false);
+  //現在地ボタンを押した回数（押すたびにハッちを画面の真ん中に寄せる）
+  const [center, setCenter] = useState(0);
+  //全画面表示中か（ブラウザの戻る操作などで抜けることもあるので、イベントで受け取る）
+  const [fullscreen, setFullscreen] = useState(false);
+  const watch = useRef(null);
+
   const [shopStyle, setShopStyle] = useState({left:"100vw",width:"80%",transition:"0.5s"});
+
+  //現地調査（?debug のときだけ）
+  const survey = useSurvey(coords);
 
   const addDebugText = (line) => {
     setDebugText((text) => text + "\n" + line);
@@ -65,31 +131,98 @@ function App() {
     setShopStyle(style);
   }
 
+  const setDeniedState = (v) => {
+    deniedRef.current = v;
+    setDenied(v);
+  }
+
   const handleSuccess = (position) => {
     var coords = position.coords;
     addDebugText("handleSuccess:"+coords.latitude + " - " + coords.longitude)
     setCoords(coords)
     setLock(false);
+    //拒否から許可に戻った。拒否で止まった追いかけをやり直す
+    if ( deniedRef.current ) {
+      setDeniedState(false);
+      setHelp(false);
+      startWatch();
+    }
   }
 
   const handleError = (error) => {
     addDebugText("handleError:"+error.message)
     console.error(`Error: ${error.message}`);
     setLock(false);
+    if ( error.code === error.PERMISSION_DENIED ) {
+      setDeniedState(true);
+    }
+  }
+
+  const startWatch = () => {
+    if ( watch.current !== null ) {
+      navigator.geolocation.clearWatch(watch.current);
+    }
+    addDebugText("watch:");
+    watch.current = navigator.geolocation.watchPosition(handleSuccess, handleError, geoOptions);
+  }
+
+  //拒否されたままかを確かめる（許可に戻っていれば handleSuccess で追いかけ直す）
+  const recheck = (onDenied) => {
+    navigator.geolocation.getCurrentPosition(handleSuccess, (e) => {
+      handleError(e);
+      if ( e.code === e.PERMISSION_DENIED && onDenied ) onDenied();
+    }, geoOptions);
   }
 
   useEffect(() => {
-    addDebugText("watch:");
-    const id = navigator.geolocation.watchPosition(handleSuccess, handleError, geoOptions);
+    startWatch();
     setLock(true);
+
+    //許可の状態が変わったら追いかけ直す（変化を通知しないブラウザもあるので、画面に戻ったときも確かめる）
+    let status = null;
+    navigator.permissions?.query({ name: "geolocation" }).then((s) => {
+      status = s;
+      if ( s.state === "denied" ) setDeniedState(true);
+      s.onchange = () => {
+        if ( s.state === "denied" ) {
+          setDeniedState(true);
+        } else if ( deniedRef.current ) {
+          startWatch();
+        }
+      };
+    }).catch(() => {});
+
+    const handleVisible = () => {
+      if ( document.visibilityState === "visible" && deniedRef.current ) recheck();
+    }
+    document.addEventListener("visibilitychange", handleVisible);
+
     return () => {
-      navigator.geolocation.clearWatch(id);
+      if ( status !== null ) status.onchange = null;
+      document.removeEventListener("visibilitychange", handleVisible);
+      navigator.geolocation.clearWatch(watch.current);
+      watch.current = null;
     }
   }, [])
 
   useEffect(() => {
     createShopStyle();
   },[winSize.width,winSize.height]);
+
+  useEffect(() => {
+    const handleChange = () => setFullscreen(document.fullscreenElement !== null);
+    document.addEventListener("fullscreenchange", handleChange);
+    return () => document.removeEventListener("fullscreenchange", handleChange);
+  }, []);
+
+  //ブラウザのバーを消してマップを画面いっぱいにする（タップからしか全画面にできない）
+  const handleFullscreen = () => {
+    if ( document.fullscreenElement ) {
+      document.exitFullscreen().catch(() => {});
+    } else {
+      document.documentElement.requestFullscreen({ navigationUI: "hide" }).catch((e) => console.error(e));
+    }
+  }
 
 
   const handleHideMessage = () => {
@@ -100,60 +233,12 @@ function App() {
     setDebugDisplay(false);
   }
 
-  const Experimental = () => {
-
-    if (!release) {
-      return <></>;
-    }
-
-    //外側（暗い部分）を押しても閉じる
-    return (
-      <div id="experimental" onClick={handleHideMessage}>
-        <div className="card" role="dialog" aria-modal="true" aria-labelledby="experimentalTitle"
-          onClick={(e) => e.stopPropagation()}>
-          <div className="head">
-            <img src="/maps/images/BIRD/0.webp" alt="" />
-            <div>
-              <div className="event">Humming Bird 2026 秋</div>
-              <div className="title" id="experimentalTitle">会場マップ<span className="badge">体験版</span></div>
-            </div>
-          </div>
-          <div className="body">
-            <p>まずはこのページを見つけてくれてありがとうございます。</p>
-            <p>
-              このマップは Small-Axe プロジェクトが開催している HummingBird 2026 秋のマップ体験版で、
-              次回の開催から導入されるかもしれないマップアプリのテスト版です。
-            </p>
-            <div className="note">
-              <p>
-                不具合や利用したことによる問題は、当方では責任を負いかねますことをご了承ください。
-                特に店舗情報は正しくないかもしれません。
-              </p>
-              <p>何か機能のご要望があれば、お問い合わせなどでお願いします。</p>
-            </div>
-          </div>
-          <button className="close" onClick={handleHideMessage}>マップを見る</button>
-          {/* マップは /maps/ で配信しているので、/ がサイトのトップになる */}
-          <a className="site" href="/">サイトに戻る</a>
-        </div>
-      </div>
-    )
-  }
-
-  const Debug = () => {
-    if ( !debugDisplay ) return (<></>);
-    return (<>
-      <div id="debugText">
-        <span>Debug</span>
-        <div>{debugText}</div>
-        <button onClick={handleHideDebug} >閉じる</button>
-      </div>
-    </>)
-
-  }
-
-
   const handlePosition = () => {
+    if ( denied ) {
+      recheck(() => setHelp(true));
+      return;
+    }
+    setCenter((c) => c + 1);
     if ( !lock ) {
       addDebugText("currentPosition:");
       navigator.geolocation.getCurrentPosition(handleSuccess, handleError, geoOptions);
@@ -183,6 +268,9 @@ function App() {
    */
   const handleShop = (x, y) => {
     if (shop.current === null) return;
+
+    //記録中のタップは今いる場所として使う
+    if ( survey.tap(x, y) ) return;
 
     var hide = false;
     //すでに表示状態かを取得
@@ -248,16 +336,24 @@ function App() {
 
   return (
     <>
-      <Experimental />
-      <Debug />
+      {release && <Notice onClose={handleHideMessage} />}
+      {debugDisplay && <Debug text={debugText} onClose={handleHideDebug} />}
 
-      <Map coords={coords} onShop={handleShop} />
+      <Map coords={coords} center={center} onShop={handleShop}
+        overlay={surveyEnabled ? <SurveyOverlay survey={survey} /> : undefined} />
+      {surveyEnabled && <SurveyPanel survey={survey} />}
 {/**
       <SVGButton id="debugBtn" name="terminal" size="16px" onClick={handleDebug} />
  */}
       <SVGButton id="updateBtn" name="update" size="16px" onClick={handleReload} />
+      {fullscreenEnabled && (
+        <SVGButton id="fullscreenBtn" name={fullscreen ? "fullscreen-exit" : "fullscreen"} size="16px"
+          onClick={handleFullscreen} title={fullscreen ? "全画面をやめる" : "全画面"} />
+      )}
 
-      <SVGButton id="positionBtn" name="cross" size="32px" onClick={handlePosition} />
+      <SVGButton id="positionBtn" name="cross" size="32px" onClick={handlePosition}
+        className={denied ? "denied" : undefined} title={denied ? "位置情報がオフです" : undefined} />
+      {help && <LocationHelp onClose={() => setHelp(false)} />}
 
       <div id="shops" ref={shop} style={shopStyle}>
 

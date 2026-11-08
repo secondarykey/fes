@@ -1,31 +1,28 @@
-import { useEffect, useState } from "react";
-
 import cross from "./assets/crosshair.svg"
 import back from "./assets/arrow-right-square-fill.svg"
 import update from "./assets/arrow-clockwise.svg"
 import terminal from "./assets/terminal.svg"
+import fullscreen from "./assets/fullscreen.svg"
+import fullscreenExit from "./assets/fullscreen-exit.svg"
 
+const icons = {
+  back: back,
+  cross: cross,
+  update: update,
+  terminal: terminal,
+  fullscreen: fullscreen,
+  "fullscreen-exit": fullscreenExit,
+};
+
+//name でアイコンを選ぶ。name が変わればアイコンも変わる（全画面ボタンの切り替えなど）
 const SVGButton = (props) => {
 
-  const [svg,setSVG] = useState(<svg></svg>);
-
-    useEffect( () => {
-      var icon = svg;
-      if ( props.name === "back" ) {
-        icon = back;
-      } else if ( props.name==="cross" ) {
-        icon = cross;
-      } else if ( props.name==="update" ) {
-        icon = update;
-      } else if ( props.name==="terminal" ) {
-        icon = terminal;
-      }
-      setSVG(icon);
-    },[])
+    const svg = icons[props.name];
 
     return (<>
       <button {...props} className={"svgBtn " + (props.className === undefined ? "" : props.className)}>
-        <object type="image/svg+xml" data={svg} width={props.size} height={props.size}/>
+        {/* data を変えても読み直さないブラウザがあるので、アイコンごとに作り直す */}
+        <object key={svg} type="image/svg+xml" data={svg} width={props.size} height={props.size}/>
       </button>
     </>)
 }
