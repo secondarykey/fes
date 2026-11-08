@@ -107,17 +107,7 @@ API などは `localhost:8080` へ中継されるので、Go のサーバーも�
 
 各ディレクトリの詳しいことは [app/AGENTS.md](app/AGENTS.md)・[manage/AGENTS.md](manage/AGENTS.md)・[maps/AGENTS.md](maps/AGENTS.md) にあります。
 
-# Implement
-
-- 公開日の更新方法
-
-  指定日付と自動日付
-  →  Draft機能における自動日付
-
-- 1.20化
-
 # Issue
-
 
 - アーティスト機能
 - タイムテーブル機能
@@ -156,20 +146,6 @@ API などは `localhost:8080` へ中継されるので、Go のサーバーも�
 
 
 
-## データの扱い
-
-- Site
-- Page
-- PageData
-- Content →見直し
-- Children
-
-- Top Deprecated
-- Dir Deprecated
-
-- Prev NotImplemented
-- Next NotImplemented
-
 ## テンプレート
 
 "html"
@@ -180,8 +156,6 @@ API などは `localhost:8080` へ中継されるので、Go のサーバーも�
 "mark"
 "templateContent"
 "variable"
-
-かなり増えた
 
 ## 認証の方法
 
