@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import PropTypes from 'prop-types'
 import { useParams, Link as RouterLink, useNavigate } from 'react-router'
 import {
@@ -7,7 +7,7 @@ import {
   Switch, Button, Tooltip, Snackbar, Alert,
   Dialog, DialogTitle, DialogContent, DialogContentText,
   DialogActions, TextField, Checkbox, Divider, FormControlLabel,
-  IconButton, Menu, MenuItem, InputAdornment,
+  IconButton, Menu, MenuItem, InputAdornment, alpha,
 } from '@mui/material'
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
@@ -22,6 +22,7 @@ import AddIcon from '@mui/icons-material/Add'
 import SearchIcon from '@mui/icons-material/Search'
 import ClearIcon from '@mui/icons-material/Clear'
 import PublishIcon from '@mui/icons-material/Publish'
+import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate'
 import {
   DndContext,
   closestCenter,
@@ -36,9 +37,18 @@ import {
   arrayMove,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { getPage, getChildren, newPage, sequencePages, movePages, deletePages, getPageListHtml } from '../api/page'
+import { getPage, getChildren, newPage, updatePage, uploadPageImage, sequencePages, movePages, deletePages, getPageListHtml } from '../api/page'
 import { addDraftPages, getCurrentDraft } from '../api/draft'
 import { publishPages } from '../api/template'
+
+const SITE_TEMPLATE = 1
+const PAGE_TEMPLATE = 2
+
+//ファイル名から拡張子を除いてページ名にする
+const pageNameFromFile = (file) => file.name.replace(/\.[^.]+$/, '') || file.name
+
+//OS のファイルドラッグか（一覧の並べ替えのドラッグとは区別する）
+const isFileDrag = (e) => Array.from(e.dataTransfer?.types || []).includes('Files')
 
 SortableRow.propTypes = {
   item: PropTypes.object.isRequired,
@@ -143,6 +153,10 @@ export default function PageChildren() {
   const [publishing, setPublishing] = useState(false)
   //公開日の打ち直しは既定でオフ
   const [publishUpdate, setPublishUpdate] = useState(false)
+  //画像ドロップによるページの一括作成
+  const [fileDragging, setFileDragging] = useState(false)
+  const [creating, setCreating] = useState(null) // { done, total }
+  const dragDepth = useRef(0)
 
   const sensors = useSensors(useSensor(PointerSensor))
 
@@ -168,6 +182,17 @@ export default function PageChildren() {
   }, [key])
 
   useEffect(() => { load() }, [load])
+
+  //枠の外に画像を落としたとき、ブラウザが画像を開いて画面から離れないようにする
+  useEffect(() => {
+    const prevent = (e) => { if (isFileDrag(e)) e.preventDefault() }
+    window.addEventListener('dragover', prevent)
+    window.addEventListener('drop', prevent)
+    return () => {
+      window.removeEventListener('dragover', prevent)
+      window.removeEventListener('drop', prevent)
+    }
+  }, [])
 
   const handleDragEnd = ({ active, over }) => {
     if (!over || active.id === over.id) return
@@ -247,6 +272,96 @@ export default function PageChildren() {
     } catch (e) {
       showSnack(e.message, 'error')
     }
+  }
+
+  //ドロップした画像 1 枚につき 1 ページを作り、画像をページ画像にする
+  const createPagesFromImages = async (files) => {
+    const images = files
+      .filter(f => f.type.startsWith('image/'))
+      .sort((a, b) => a.name.localeCompare(b.name, 'ja', { numeric: true }))
+    if (images.length === 0) {
+      showSnack('画像ファイルがありません', 'error')
+      return
+    }
+    if (dirty) {
+      showSnack('並び順の変更を保存してから追加してください', 'error')
+      return
+    }
+
+    //テンプレートは末尾の兄弟ページに合わせる。兄弟が無ければ最初のテンプレート
+    const last = items[items.length - 1]
+    let seq = items.reduce((max, i) => Math.max(max, i.seq || 0), 0)
+    let siteTemplate = last?.siteTemplate || ''
+    let pageTemplate = last?.pageTemplate || ''
+
+    const failed = []
+    setCreating({ done: 0, total: images.length })
+    for (const [idx, file] of images.entries()) {
+      const name = pageNameFromFile(file)
+      try {
+        const scaffold = await newPage(key)
+        if (!scaffold) return
+        const templates = scaffold.templates || []
+        if (!siteTemplate) siteTemplate = templates.find(t => t.type === SITE_TEMPLATE)?.id || ''
+        if (!pageTemplate) pageTemplate = templates.find(t => t.type === PAGE_TEMPLATE)?.id || ''
+        const id = scaffold.page.id
+        seq += 1
+        await updatePage(id, {
+          name,
+          description: '',
+          content: '',
+          parentId: key,
+          siteTemplate,
+          pageTemplate,
+          paging: 0,
+          published: true,
+          version: 0,
+          seq,
+        })
+        await uploadPageImage(id, file)
+      } catch (e) {
+        failed.push(`${name}（${e.message}）`)
+      }
+      setCreating({ done: idx + 1, total: images.length })
+    }
+    setCreating(null)
+
+    const created = images.length - failed.length
+    if (failed.length === 0) {
+      showSnack(`${created} ページを作成しました`)
+    } else {
+      showSnack(`${created} ページを作成、${failed.length} 件失敗しました: ${failed.join('、')}`, 'error')
+    }
+    await load()
+  }
+
+  const canDropImages = key !== 'Trash' && !creating
+
+  const handleFileDragEnter = (e) => {
+    if (!isFileDrag(e) || !canDropImages) return
+    e.preventDefault()
+    dragDepth.current += 1
+    setFileDragging(true)
+  }
+
+  const handleFileDragOver = (e) => {
+    if (!isFileDrag(e) || !canDropImages) return
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'copy'
+  }
+
+  const handleFileDragLeave = (e) => {
+    if (!isFileDrag(e) || !canDropImages) return
+    dragDepth.current = Math.max(0, dragDepth.current - 1)
+    if (dragDepth.current === 0) setFileDragging(false)
+  }
+
+  const handleFileDrop = (e) => {
+    if (!isFileDrag(e) || !canDropImages) return
+    e.preventDefault()
+    dragDepth.current = 0
+    setFileDragging(false)
+    createPagesFromImages(Array.from(e.dataTransfer.files || []))
   }
 
   const handleGenerateList = async () => {
@@ -369,7 +484,48 @@ export default function PageChildren() {
         <Typography color="text.primary">子ページ管理</Typography>
       </Breadcrumbs>
 
-      <Paper sx={{ p: 3 }}>
+      <Paper
+        sx={{ p: 3, position: 'relative' }}
+        onDragEnter={handleFileDragEnter}
+        onDragOver={handleFileDragOver}
+        onDragLeave={handleFileDragLeave}
+        onDrop={handleFileDrop}
+      >
+        {/* 画像ドロップの受け付け・作成中の表示 */}
+        {(fileDragging || creating) && (
+          <Box
+            sx={{
+              position: 'absolute',
+              inset: 0,
+              zIndex: 2,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 1,
+              border: '2px dashed',
+              borderColor: 'primary.main',
+              borderRadius: 1,
+              bgcolor: theme => alpha(theme.palette.background.paper, 0.9),
+              pointerEvents: creating ? 'auto' : 'none',
+            }}
+          >
+            {creating ? (
+              <>
+                <CircularProgress />
+                <Typography color="text.secondary">
+                  ページを作成中 {creating.done} / {creating.total}
+                </Typography>
+              </>
+            ) : (
+              <>
+                <AddPhotoAlternateIcon color="primary" sx={{ fontSize: 48 }} />
+                <Typography color="primary">画像からページを作成</Typography>
+              </>
+            )}
+          </Box>
+        )}
+
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2, flexWrap: 'wrap' }}>
           <Typography variant="h6">
             子ページ管理 — {page.name}
