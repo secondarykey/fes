@@ -26,9 +26,11 @@ import WrapTextIcon from '@mui/icons-material/WrapText'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import TextIncreaseIcon from '@mui/icons-material/TextIncrease'
 import TextDecreaseIcon from '@mui/icons-material/TextDecrease'
+import ManageSearchIcon from '@mui/icons-material/ManageSearch'
 import { useRef } from 'react'
 import { getPage, getChildren, newPage, updatePage, deletePage, publishPage, unpublishPage, getPageImage, uploadPageImage, deletePageImage } from '../api/page'
 import { getCurrentDraft, addDraftPage } from '../api/draft'
+import TrashCopyDialog from '../components/TrashCopyDialog'
 
 const SITE_TEMPLATE = 1
 const PAGE_TEMPLATE = 2
@@ -77,6 +79,7 @@ export default function PageEdit() {
   const [publishUpdate, setPublishUpdate] = useState(false)
   const [deleteDialog, setDeleteDialog] = useState(false)
   const [imageDeleteDialog, setImageDeleteDialog] = useState(false)
+  const [trashDialog, setTrashDialog] = useState(false)
   const [disableDialog, setDisableDialog] = useState(false)
   const [image, setImage] = useState(null)
   const [imageUploading, setImageUploading] = useState(false)
@@ -307,6 +310,13 @@ export default function PageEdit() {
     })
   }
 
+  //Trash のページから説明・コンテンツを写す（保存はしない）
+  const handleApplyFromTrash = ({ description, content }) => {
+    setForm(prev => ({ ...prev, description, content }))
+    setTrashDialog(false)
+    showSnack('説明・コンテンツを設定しました（未保存）')
+  }
+
   const handleAddChild = async () => {
     try {
       const data = await newPage(key)
@@ -403,15 +413,21 @@ export default function PageEdit() {
 
           {/* 左カラム */}
           <Box sx={{ flex: 1, minWidth: 0 }}>
-            {/* ページ名 */}
-            <TextField
-              label="ページ名"
-              value={form.name}
-              onChange={handleText('name')}
-              fullWidth
-              size="small"
-              sx={{ mb: 2 }}
-            />
+            {/* ページ名 + Trash から説明・コンテンツを設定 */}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+              <TextField
+                label="ページ名"
+                value={form.name}
+                onChange={handleText('name')}
+                fullWidth
+                size="small"
+              />
+              <Tooltip title="Trash から説明・コンテンツを設定">
+                <IconButton onClick={() => setTrashDialog(true)} aria-label="Trash から説明・コンテンツを設定">
+                  <ManageSearchIcon />
+                </IconButton>
+              </Tooltip>
+            </Box>
 
             {/* 説明 */}
             <TextField
@@ -875,6 +891,13 @@ export default function PageEdit() {
           <Button onClick={handleDelete} color="error" variant="contained">削除</Button>
         </DialogActions>
       </Dialog>
+
+      <TrashCopyDialog
+        open={trashDialog}
+        initialQuery={form.name}
+        onClose={() => setTrashDialog(false)}
+        onApply={handleApplyFromTrash}
+      />
 
       <Dialog open={imageDeleteDialog} onClose={() => setImageDeleteDialog(false)}>
         <DialogTitle>
