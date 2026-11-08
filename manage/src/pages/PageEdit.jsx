@@ -502,7 +502,35 @@ export default function PageEdit() {
               <Typography variant="body2" color="text.disabled">保存後に設定できます</Typography>
             ) : (
               <>
-                {image?.url ? (
+                {image?.draft && image.publishedUrl ? (
+                  <>
+                    {/* 差し替え中: 公開中を左上、差し替え（下書き）を右下に 80% で重ねる */}
+                    <Box
+                      component="img"
+                      src={image.publishedUrl}
+                      alt="公開中のページ画像"
+                      sx={{ position: 'absolute', top: 0, left: 0, width: '80%', height: '80%', objectFit: 'contain', objectPosition: 'left top' }}
+                    />
+                    <Box
+                      component="img"
+                      src={image.url}
+                      alt="差し替えるページ画像"
+                      sx={{
+                        position: 'absolute',
+                        right: 0,
+                        bottom: 0,
+                        width: '80%',
+                        height: '80%',
+                        objectFit: 'contain',
+                        objectPosition: 'right bottom',
+                        //重なりの境目が分かるよう、画像の形に沿って影を付ける
+                        filter: 'drop-shadow(0 0 4px rgba(0, 0, 0, 0.5))',
+                      }}
+                    />
+                    <Chip label="公開中" size="small" color="success" sx={{ position: 'absolute', top: 8, left: 8 }} />
+                    <Chip label="下書き" size="small" color="warning" sx={{ position: 'absolute', bottom: 8, left: 'calc(20% + 8px)' }} />
+                  </>
+                ) : image?.url ? (
                   <>
                     {/* 画像の大きさで枠が伸びないよう、絶対配置で枠いっぱいに収める */}
                     <Box
