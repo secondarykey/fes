@@ -40,7 +40,12 @@ export default function TrashCopyDialog({ open, initialQuery = '', onClose, onAp
     setPages(null)
     let canceled = false
     getChildren(TRASH_ID)
-      .then(list => { if (!canceled) setPages(list || []) })
+      .then(list => {
+        if (canceled) return
+        //登録日の新しい順
+        const byCreatedDesc = (a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)
+        setPages([...(list || [])].sort(byCreatedDesc))
+      })
       .catch(e => { if (!canceled) setLoadError(e.message) })
     return () => { canceled = true }
   }, [open, initialQuery])
