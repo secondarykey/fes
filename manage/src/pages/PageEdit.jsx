@@ -508,6 +508,26 @@ export default function PageEdit() {
                   </IconButton>
                 </Tooltip>
               )}
+              {(data.children || []).length > 0 && (
+                <FormControl size="small" sx={{ minWidth: 200 }}>
+                  <InputLabel>子ページへ移動</InputLabel>
+                  <Select
+                    value=""
+                    label="子ページへ移動"
+                    onChange={e => navigate(`/page/${e.target.value}`)}
+                  >
+                    {data.children.map(c => (
+                      <MenuItem
+                        key={c.id}
+                        value={c.id}
+                        sx={c.deleted ? { textDecoration: 'line-through', color: 'text.disabled' } : undefined}
+                      >
+                        {c.name || '(名前なし)'}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              )}
               <Button
                 variant="text"
                 size="small"
