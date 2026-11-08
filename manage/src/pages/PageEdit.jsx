@@ -34,6 +34,14 @@ const PAGE_TEMPLATE = 2
 //子ページの Select で「子ページの追加」を表す値（ページ ID と重ならない）
 const ADD_CHILD = '__add_child__'
 
+//ページ画像に重ねる操作ボタン
+const imageOverlayButtonSx = {
+  bgcolor: 'background.paper',
+  opacity: 0.85,
+  boxShadow: 1,
+  '&:hover': { opacity: 1, bgcolor: 'background.paper' },
+}
+
 function toForm(d) {
   return {
     name: d.page.name || '',
@@ -360,7 +368,7 @@ export default function PageEdit() {
       <Paper sx={{ p: 3 }}>
 
         {/* 上段: 左=基本情報、右=ページ画像 */}
-        <Box sx={{ display: 'flex', gap: 3, mb: 2, alignItems: 'flex-start' }}>
+        <Box sx={{ display: 'flex', gap: 3, mb: 2, alignItems: 'stretch' }}>
 
           {/* 左カラム */}
           <Box sx={{ flex: 1, minWidth: 0 }}>
@@ -427,36 +435,44 @@ export default function PageEdit() {
             </Box>
           </Box>
 
-          {/* 右カラム: ページ画像 */}
-          <Box sx={{ width: 260, flexShrink: 0 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-              <Typography variant="subtitle2">ページ画像</Typography>
-              {image?.url && (
-                <Chip
-                  label={image.draft ? '下書き' : '公開中'}
-                  size="small"
-                  color={image.draft ? 'warning' : 'success'}
-                  variant="outlined"
-                />
-              )}
-            </Box>
+          {/* 右カラム: ページ画像（枠は左カラムと同じ高さ） */}
+          <Box
+            sx={{
+              width: 260,
+              flexShrink: 0,
+              position: 'relative',
+              borderWidth: '1px',
+              borderStyle: image?.url ? 'solid' : 'dashed',
+              borderColor: 'divider',
+              borderRadius: 1,
+              overflow: 'hidden',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
             {isNew ? (
-              <Box sx={{ width: '100%', height: 120, border: '1px dashed', borderColor: 'divider', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1 }}>
-                <Typography variant="body2" color="text.disabled">保存後に設定できます</Typography>
-              </Box>
+              <Typography variant="body2" color="text.disabled">保存後に設定できます</Typography>
             ) : (
               <>
                 {image?.url ? (
-                  <Box
-                    component="img"
-                    src={image.url}
-                    alt="ページ画像"
-                    sx={{ width: '100%', maxHeight: 160, objectFit: 'contain', border: '1px solid', borderColor: 'divider', borderRadius: 1, display: 'block', mb: 1 }}
-                  />
+                  <>
+                    {/* 画像の大きさで枠が伸びないよう、絶対配置で枠いっぱいに収める */}
+                    <Box
+                      component="img"
+                      src={image.url}
+                      alt="ページ画像"
+                      sx={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain' }}
+                    />
+                    <Chip
+                      label={image.draft ? '下書き' : '公開中'}
+                      size="small"
+                      color={image.draft ? 'warning' : 'success'}
+                      sx={{ position: 'absolute', top: 8, left: 8 }}
+                    />
+                  </>
                 ) : (
-                  <Box sx={{ width: '100%', height: 120, border: '1px dashed', borderColor: 'divider', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1 }}>
-                    <Typography variant="body2" color="text.disabled">画像なし</Typography>
-                  </Box>
+                  <Typography variant="body2" color="text.disabled">画像なし</Typography>
                 )}
                 <input
                   type="file"
@@ -465,28 +481,35 @@ export default function PageEdit() {
                   style={{ display: 'none' }}
                   onChange={handleImageSelect}
                 />
-                <Box sx={{ display: 'flex', gap: 1 }}>
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    sx={{ flex: 1 }}
-                    startIcon={imageUploading ? <CircularProgress size={14} /> : <ImageIcon />}
-                    onClick={() => imageInputRef.current?.click()}
-                    disabled={imageUploading}
-                  >
-                    {imageUploading ? '処理中...' : '画像を選択'}
-                  </Button>
+                <Box sx={{ position: 'absolute', bottom: 8, right: 8, display: 'flex', gap: 0.5 }}>
+                  <Tooltip title="画像を選択">
+                    <span>
+                      <IconButton
+                        size="small"
+                        onClick={() => imageInputRef.current?.click()}
+                        disabled={imageUploading}
+                        aria-label="画像を選択"
+                        sx={imageOverlayButtonSx}
+                      >
+                        {imageUploading ? <CircularProgress size={18} /> : <ImageIcon fontSize="small" />}
+                      </IconButton>
+                    </span>
+                  </Tooltip>
                   {image?.url && (
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      color="error"
-                      startIcon={<DeleteIcon />}
-                      onClick={handleImageDelete}
-                      disabled={imageUploading}
-                    >
-                      削除
-                    </Button>
+                    <Tooltip title="画像を削除">
+                      <span>
+                        <IconButton
+                          size="small"
+                          color="error"
+                          onClick={handleImageDelete}
+                          disabled={imageUploading}
+                          aria-label="画像を削除"
+                          sx={imageOverlayButtonSx}
+                        >
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      </span>
+                    </Tooltip>
                   )}
                 </Box>
               </>
